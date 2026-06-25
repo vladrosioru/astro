@@ -7,6 +7,10 @@ Route::get('/admin/login', [AuthController::class, 'show'])->name('admin.login')
 Route::post('/admin/login', [AuthController::class, 'login'])->name('admin.login.attempt');
 Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
 
+Route::prefix('admin')->middleware('admin')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+});
+
 Route::get('/', fn () => redirect('/' . config('app.locale')));
 
 Route::prefix('{locale}')
