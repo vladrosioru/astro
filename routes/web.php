@@ -9,6 +9,10 @@ Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.log
 
 Route::prefix('admin')->middleware('admin')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+
+    Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)
+        ->except(['show'])
+        ->names('admin.posts');
 });
 
 Route::get('/', fn () => redirect('/' . config('app.locale')));
