@@ -28,7 +28,8 @@ class PublicPagesTest extends TestCase
         $setting = SiteSetting::current();
         $setting->update(['sections' => ['contact' => false] + $setting->sections]);
 
-        $this->get('/en')
+        // Check on /en/about (no hero) so this isolates nav link visibility.
+        $this->get('/en/about')
             ->assertOk()
             ->assertDontSee('/en/contact');
     }

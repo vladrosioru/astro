@@ -4,6 +4,7 @@
 @endphp
 <nav>
     <div class="container">
+        <a class="brand" href="/{{ $locale }}">✦ {{ config('app.name') }} ✦</a>
         <ul>
             <li><a href="/{{ $locale }}">Home</a></li>
             @if ($setting->sectionVisible('about'))

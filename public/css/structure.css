@@ -3,3 +3,11 @@
 body { margin: 0; }
 .container { max-width: var(--container-width); margin: 0 auto; padding: calc(var(--space-unit) * 4); }
 nav ul { display: flex; gap: calc(var(--space-unit) * 4); list-style: none; padding: 0; }
+
+/* Sticky nav + hero structure (layout only). */
+nav { position: sticky; top: 0; z-index: 10; min-height: var(--nav-height); display: flex; align-items: center; }
+nav .container { display: flex; align-items: center; gap: calc(var(--space-unit) * 6); width: 100%; }
+nav .brand { margin-right: auto; white-space: nowrap; }
+.hero { position: relative; padding: calc(var(--space-unit) * 28) calc(var(--space-unit) * 4); text-align: center; overflow: hidden; }
+.hero-inner { position: relative; z-index: 1; max-width: var(--container-width); margin: 0 auto; }
+.hero-cta { display: inline-block; margin-top: calc(var(--space-unit) * 6); padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 8); }

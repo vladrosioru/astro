@@ -13,6 +13,7 @@ Status: 🔵 idea · 🟡 planned · 🟢 done
 | 4 | Security / maintenance | Revisit the Laravel version: the advisory **block** was disabled to install latest 11.x (issues are debug-mode-only, prod runs `APP_DEBUG=false`). Upgrade to a patched release (or Laravel 12) when available. | Keep dependencies on a non-flagged version once one exists. | 🔵 idea |
 | 5 | Security | Add optional **2FA** for admin login (noted as "later" in the spec). | Stronger admin account protection. | 🔵 idea |
 | 6 | Admin / Editor | CKEditor is **self-hosted** from the npm package's `dist/browser/ckeditor5.umd.js` (distribution channel `"sh"`), valid with the GPL key — no CDN, no Node build. (Earlier attempts failed: GPL is invalid on the CDN/"cloud" build.) When upgrading CKEditor, re-pull the `dist/browser/` UMD from the npm tarball, not the CDN. | 🟢 done |
+| 8 | Theme / UX | Home hero CTA defaults to `/en/contact`; if an admin disables the Contact section the CTA leads to a 404. Make the hero CTA aware of section visibility (or validate the URL) when the hero becomes admin-editable. | Avoid dead CTA when sections are toggled. | 🔵 idea |
 | 7 | Admin / Editor | Premium CKEditor features (Import from Word, Export PDF/Word, CKBox, merge fields, AI, comments/track-changes) are **paid** and excluded. Revisit only if a real need + budget appears. | Sets expectations vs. the CKEditor marketing demo. | 🔵 idea |
 
 ## How to use this file

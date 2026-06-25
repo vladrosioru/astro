@@ -15,4 +15,14 @@ class SkinCssTest extends TestCase
         $this->assertStringContainsString('.image-style-side', $css);
         $this->assertStringContainsString('figure.image img', $css);
     }
+
+    public function test_skin_defines_hero_and_nav_appearance(): void
+    {
+        $css = file_get_contents(public_path('css/skin.css'));
+
+        $this->assertStringContainsString('.hero', $css);
+        $this->assertStringContainsString('var(--hero-overlay)', $css);
+        $this->assertStringContainsString('var(--font-display)', $css);
+        $this->assertStringContainsString('var(--color-heading)', $css);
+    }
 }
