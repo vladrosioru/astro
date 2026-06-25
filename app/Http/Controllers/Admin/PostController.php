@@ -69,7 +69,7 @@ class PostController extends Controller
                     'title' => $title,
                     'slug' => $request->input("{$locale}_slug"),
                     'excerpt' => $request->input("{$locale}_excerpt"),
-                    'body' => clean($request->input("{$locale}_body", '')),
+                    'body' => clean($request->input("{$locale}_body", ''), 'blog'),
                     'seo_title' => $request->input("{$locale}_seo_title"),
                     'seo_description' => $request->input("{$locale}_seo_description"),
                 ],
