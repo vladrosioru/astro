@@ -4,3 +4,14 @@ h1, h2, h3 { font-family: var(--font-heading); }
 a { color: var(--color-primary); }
 .muted { color: var(--color-muted); }
 .card { border-radius: var(--radius); box-shadow: var(--shadow); }
+
+/* CKEditor image layout (token-driven spacing). */
+figure.image { margin: calc(var(--space-unit) * 4) 0; }
+figure.image img { max-width: 100%; height: auto; border-radius: var(--radius); }
+figure.image figcaption { color: var(--color-muted); font-size: 0.9em; padding-top: calc(var(--space-unit) * 1); }
+.image-style-align-center { display: block; margin-inline: auto; }
+.image-style-align-left { float: left; margin: 0 calc(var(--space-unit) * 4) calc(var(--space-unit) * 2) 0; }
+.image-style-align-right { float: right; margin: 0 0 calc(var(--space-unit) * 2) calc(var(--space-unit) * 4); }
+.image-style-side { float: right; max-width: 50%; margin: 0 0 calc(var(--space-unit) * 2) calc(var(--space-unit) * 4); }
+.image_resized { max-width: 100%; }
+.image_resized img { width: 100%; }
