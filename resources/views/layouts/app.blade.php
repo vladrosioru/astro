@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ asset('css/skin.css') }}">
 </head>
 <body>
+    @include('partials.nav')
     @yield('content')
 </body>
 </html>
