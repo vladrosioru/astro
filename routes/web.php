@@ -27,4 +27,6 @@ Route::prefix('{locale}')
         Route::get('/', [\App\Http\Controllers\PageController::class, 'home'])->name('home');
         Route::get('/about', [\App\Http\Controllers\PageController::class, 'about'])->name('about');
         Route::get('/contact', [\App\Http\Controllers\PageController::class, 'contact'])->name('contact');
+        Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
+        Route::get('/blog/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
     });
