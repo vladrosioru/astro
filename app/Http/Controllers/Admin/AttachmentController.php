@@ -23,9 +23,13 @@ class AttachmentController extends Controller
         $path = 'media/' . Str::uuid() . '.jpg';
         Storage::disk('public')->put($path, (string) $image->encodeUsingFileExtension('jpg', quality: 82));
 
+        // Store a root-relative URL (e.g. /storage/media/uuid.jpg) so embedded
+        // images resolve on any host/port/domain — never bake in APP_URL.
+        $url = parse_url(Storage::disk('public')->url($path), PHP_URL_PATH);
+
         $media = Media::create([
             'path' => $path,
-            'url' => Storage::disk('public')->url($path),
+            'url' => $url,
             'width' => $image->width(),
             'height' => $image->height(),
         ]);

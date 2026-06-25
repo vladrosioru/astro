@@ -25,6 +25,11 @@ class AttachmentUploadTest extends TestCase
         $response->assertOk()->assertJsonStructure(['url']);
         $this->assertSame(1, Media::count());
         Storage::disk('public')->assertExists(Media::first()->path);
+
+        // URL must be root-relative (portable across host/port/domain), not absolute.
+        $url = $response->json('url');
+        $this->assertStringStartsWith('/', $url);
+        $this->assertStringNotContainsString('http', $url);
     }
 
     public function test_guest_cannot_upload(): void
