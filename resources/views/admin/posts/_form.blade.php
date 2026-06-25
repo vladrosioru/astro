@@ -1,6 +1,6 @@
 @php($t = isset($post) ? fn ($l) => optional($post->translation($l)) : fn ($l) => null)
-<link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.1.0/ckeditor5.css">
-<script src="https://cdn.ckeditor.com/ckeditor5/44.1.0/ckeditor5.umd.js"></script>
+<link rel="stylesheet" href="{{ asset('vendor/ckeditor/ckeditor5.css') }}">
+<script src="{{ asset('vendor/ckeditor/ckeditor5.umd.js') }}"></script>
 
 <p><label>Status
     <select name="status">

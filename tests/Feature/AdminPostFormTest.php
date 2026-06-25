@@ -16,8 +16,7 @@ class AdminPostFormTest extends TestCase
 
         $this->actingAs($admin)->get('/admin/posts/create')
             ->assertOk()
-            ->assertSee('cdn.ckeditor.com/ckeditor5')
-            ->assertSee('ckeditor5.umd.js')
+            ->assertSee('vendor/ckeditor/ckeditor5.umd.js')
             ->assertSee('name="en_body"', false)
             ->assertDontSee('trix-editor');
     }
