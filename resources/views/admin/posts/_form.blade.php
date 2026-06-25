@@ -1,6 +1,6 @@
 @php($t = isset($post) ? fn ($l) => optional($post->translation($l)) : fn ($l) => null)
-<link rel="stylesheet" href="{{ asset('vendor/ckeditor/ckeditor5.css') }}">
-<script src="{{ asset('vendor/ckeditor/ckeditor5.umd.js') }}"></script>
+<link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.1.0/ckeditor5.css">
+<script src="https://cdn.ckeditor.com/ckeditor5/44.1.0/ckeditor5.umd.js"></script>
 
 <p><label>Status
     <select name="status">
@@ -21,22 +21,31 @@
 
 <script>
 const {
-    ClassicEditor, Essentials, Paragraph, Heading, Bold, Italic, Link, List, BlockQuote,
-    Image, ImageToolbar, ImageCaption, ImageStyle, ImageResize, LinkImage, SimpleUploadAdapter
+    ClassicEditor, Essentials, Paragraph, Heading, Bold, Italic, Underline, Strikethrough, RemoveFormat,
+    Link, List, BlockQuote, Alignment, Indent, HorizontalLine,
+    Image, ImageToolbar, ImageCaption, ImageStyle, ImageResize, ImageUpload, ImageInsert, LinkImage,
+    Table, TableToolbar, SourceEditing, SimpleUploadAdapter
 } = CKEDITOR;
 
 ['en', 'ro'].forEach(function (loc) {
     ClassicEditor.create(document.querySelector('#editor_' + loc), {
         licenseKey: 'GPL',
-        plugins: [Essentials, Paragraph, Heading, Bold, Italic, Link, List, BlockQuote,
-                  Image, ImageToolbar, ImageCaption, ImageStyle, ImageResize, LinkImage, SimpleUploadAdapter],
-        toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList',
-                  'blockQuote', 'insertImage', '|', 'undo', 'redo'],
+        plugins: [Essentials, Paragraph, Heading, Bold, Italic, Underline, Strikethrough, RemoveFormat,
+                  Link, List, BlockQuote, Alignment, Indent, HorizontalLine,
+                  Image, ImageToolbar, ImageCaption, ImageStyle, ImageResize, ImageUpload, ImageInsert, LinkImage,
+                  Table, TableToolbar, SourceEditing, SimpleUploadAdapter],
+        toolbar: ['undo', 'redo', '|', 'sourceEditing', '|', 'heading', '|',
+                  'bold', 'italic', 'underline', 'strikethrough', 'removeFormat', '|',
+                  'link', 'insertImage', 'insertTable', 'blockQuote', 'horizontalLine', '|',
+                  'alignment', '|', 'bulletedList', 'numberedList', 'outdent', 'indent'],
         image: {
             resizeUnit: '%',
             toolbar: ['toggleImageCaption', 'imageTextAlternative', '|',
                       'imageStyle:inline', 'imageStyle:wrapText', 'imageStyle:breakText', '|',
                       'resizeImage']
+        },
+        table: {
+            contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
         },
         simpleUpload: {
             uploadUrl: '{{ route('admin.attachments.store') }}',
