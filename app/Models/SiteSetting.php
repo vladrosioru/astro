@@ -14,6 +14,7 @@ class SiteSetting extends Model
         'contact'  => 'array',
         'branding' => 'array',
         'locales'  => 'array',
+        'hero'     => 'array',
     ];
 
     public static function current(): self
@@ -29,6 +30,17 @@ class SiteSetting extends Model
             'contact'  => ['email' => '', 'phone' => '', 'address' => ''],
             'branding' => [],
             'locales'  => ['default' => 'en', 'supported' => ['en', 'ro']],
+            'hero'     => self::heroDefaults(),
+        ];
+    }
+
+    public static function heroDefaults(): array
+    {
+        return [
+            'headline'  => 'Personal Horoscope & Magic Services',
+            'subhead'   => 'Enjoy a vivid discussion about your horoscope or birth chart with a certified professional astrologer.',
+            'cta_label' => 'Begin Here',
+            'cta_url'   => '/en/contact',
         ];
     }
 
