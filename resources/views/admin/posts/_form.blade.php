@@ -19,3 +19,16 @@
         <trix-editor input="{{ $locale }}_body_input"></trix-editor>
     </fieldset>
 @endforeach
+
+<script>
+document.addEventListener('trix-attachment-add', function (event) {
+    const attachment = event.attachment;
+    if (!attachment.file) return;
+    const body = new FormData();
+    body.append('file', attachment.file);
+    body.append('_token', '{{ csrf_token() }}');
+    fetch('{{ route('admin.attachments.store') }}', { method: 'POST', body })
+        .then(r => r.json())
+        .then(data => attachment.setAttributes({ url: data.url, href: data.url }));
+});
+</script>

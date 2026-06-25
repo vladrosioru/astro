@@ -13,6 +13,9 @@ Route::prefix('admin')->middleware('admin')->group(function () {
     Route::resource('posts', \App\Http\Controllers\Admin\PostController::class)
         ->except(['show'])
         ->names('admin.posts');
+
+    Route::post('attachments', [\App\Http\Controllers\Admin\AttachmentController::class, 'store'])
+        ->name('admin.attachments.store');
 });
 
 Route::get('/', fn () => redirect('/' . config('app.locale')));
