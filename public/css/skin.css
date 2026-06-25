@@ -1,0 +1,6 @@
+/* Skin layer: appearance only, fully token-driven. */
+body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-base); }
+h1, h2, h3 { font-family: var(--font-heading); }
+a { color: var(--color-primary); }
+.muted { color: var(--color-muted); }
+.card { border-radius: var(--radius); box-shadow: var(--shadow); }

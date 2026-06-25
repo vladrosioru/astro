@@ -1,0 +1,5 @@
+/* Structural layer: layout only, no appearance tokens. */
+* { box-sizing: border-box; }
+body { margin: 0; }
+.container { max-width: var(--container-width); margin: 0 auto; padding: calc(var(--space-unit) * 4); }
+nav ul { display: flex; gap: calc(var(--space-unit) * 4); list-style: none; padding: 0; }
