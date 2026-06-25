@@ -13,5 +13,8 @@ figure.image figcaption { color: var(--color-muted); font-size: 0.9em; padding-t
 .image-style-align-left { float: left; margin: 0 calc(var(--space-unit) * 4) calc(var(--space-unit) * 2) 0; }
 .image-style-align-right { float: right; margin: 0 0 calc(var(--space-unit) * 2) calc(var(--space-unit) * 4); }
 .image-style-side { float: right; max-width: 50%; margin: 0 0 calc(var(--space-unit) * 2) calc(var(--space-unit) * 4); }
+.image-style-block-align-left { margin-right: auto; }
+.image-style-block-align-right { margin-left: auto; }
 .image_resized { max-width: 100%; }
 .image_resized img { width: 100%; }
+img.image_resized { height: auto; }

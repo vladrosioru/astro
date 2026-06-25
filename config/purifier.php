@@ -34,9 +34,9 @@ return [
             'Attr.EnableID' => 'true',
         ],
         'blog'    => [
-            'HTML.Allowed'              => 'p,br,strong,em,u,s,h2,h3,blockquote,ul,ol,li,a[href|title|target|rel],figure[class],figcaption,img[src|alt|width|height|style|class]',
+            'HTML.Allowed'              => 'p,br,strong,em,u,s,h2,h3,blockquote,ul,ol,li,a[href|title|target|rel],figure[class|style],figcaption,img[src|alt|width|height|style|class]',
             'CSS.AllowedProperties'     => 'width,height',
-            'Attr.AllowedClasses'       => 'image,image-style-align-left,image-style-align-right,image-style-align-center,image-style-side,image_resized',
+            'Attr.AllowedClasses'       => 'image,image-inline,image_resized,image-style-align-left,image-style-align-right,image-style-align-center,image-style-block-align-left,image-style-block-align-right,image-style-side',
             'HTML.TargetBlank'          => true,
             'Attr.AllowedFrameTargets'  => ['_blank'],
         ],

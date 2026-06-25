@@ -33,9 +33,10 @@ const {
         toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList',
                   'blockQuote', 'insertImage', '|', 'undo', 'redo'],
         image: {
-            toolbar: ['imageStyle:alignLeft', 'imageStyle:alignCenter', 'imageStyle:alignRight',
-                      'imageStyle:side', '|', 'toggleImageCaption', 'imageTextAlternative', 'linkImage'],
-            resizeUnit: '%'
+            resizeUnit: '%',
+            toolbar: ['toggleImageCaption', 'imageTextAlternative', '|',
+                      'imageStyle:inline', 'imageStyle:wrapText', 'imageStyle:breakText', '|',
+                      'resizeImage']
         },
         simpleUpload: {
             uploadUrl: '{{ route('admin.attachments.store') }}',
