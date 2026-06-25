@@ -1,6 +1,6 @@
 @php($t = isset($post) ? fn ($l) => optional($post->translation($l)) : fn ($l) => null)
-<link rel="stylesheet" href="{{ asset('vendor/trix/trix.css') }}">
-<script src="{{ asset('vendor/trix/trix.umd.min.js') }}"></script>
+<link rel="stylesheet" href="{{ asset('vendor/ckeditor/ckeditor5.css') }}">
+<script src="{{ asset('vendor/ckeditor/ckeditor5.umd.js') }}"></script>
 
 <p><label>Status
     <select name="status">
@@ -15,20 +15,32 @@
         <p><label>Title <input name="{{ $locale }}_title" value="{{ old("{$locale}_title", $t($locale)?->title) }}"></label></p>
         <p><label>Slug <input name="{{ $locale }}_slug" value="{{ old("{$locale}_slug", $t($locale)?->slug) }}"></label></p>
         <p><label>Excerpt <input name="{{ $locale }}_excerpt" value="{{ old("{$locale}_excerpt", $t($locale)?->excerpt) }}"></label></p>
-        <input id="{{ $locale }}_body_input" type="hidden" name="{{ $locale }}_body" value="{{ old("{$locale}_body", $t($locale)?->body) }}">
-        <trix-editor input="{{ $locale }}_body_input"></trix-editor>
+        <textarea name="{{ $locale }}_body" id="editor_{{ $locale }}">{{ old("{$locale}_body", $t($locale)?->body) }}</textarea>
     </fieldset>
 @endforeach
 
 <script>
-document.addEventListener('trix-attachment-add', function (event) {
-    const attachment = event.attachment;
-    if (!attachment.file) return;
-    const body = new FormData();
-    body.append('file', attachment.file);
-    body.append('_token', '{{ csrf_token() }}');
-    fetch('{{ route('admin.attachments.store') }}', { method: 'POST', body })
-        .then(r => r.json())
-        .then(data => attachment.setAttributes({ url: data.url, href: data.url }));
+const {
+    ClassicEditor, Essentials, Paragraph, Heading, Bold, Italic, Link, List, BlockQuote,
+    Image, ImageToolbar, ImageCaption, ImageStyle, ImageResize, LinkImage, SimpleUploadAdapter
+} = CKEDITOR;
+
+['en', 'ro'].forEach(function (loc) {
+    ClassicEditor.create(document.querySelector('#editor_' + loc), {
+        licenseKey: 'GPL',
+        plugins: [Essentials, Paragraph, Heading, Bold, Italic, Link, List, BlockQuote,
+                  Image, ImageToolbar, ImageCaption, ImageStyle, ImageResize, LinkImage, SimpleUploadAdapter],
+        toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList',
+                  'blockQuote', 'insertImage', '|', 'undo', 'redo'],
+        image: {
+            toolbar: ['imageStyle:alignLeft', 'imageStyle:alignCenter', 'imageStyle:alignRight',
+                      'imageStyle:side', '|', 'toggleImageCaption', 'imageTextAlternative', 'linkImage'],
+            resizeUnit: '%'
+        },
+        simpleUpload: {
+            uploadUrl: '{{ route('admin.attachments.store') }}',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+        }
+    }).catch(function (e) { console.error(e); });
 });
 </script>
