@@ -14,10 +14,12 @@ class AttachmentController extends Controller
 {
     public function store(Request $request)
     {
-        $request->validate(['file' => ['required', 'image', 'max:8192']]);
+        $uploaded = $request->file('upload') ?? $request->file('file');
+        abort_if($uploaded === null, 422, 'No file provided.');
+        validator(['file' => $uploaded], ['file' => ['required', 'image', 'max:8192']])->validate();
 
         $manager = new ImageManager(new Driver());
-        $image = $manager->decodePath($request->file('file')->getRealPath());
+        $image = $manager->decodePath($uploaded->getRealPath());
         $image->scaleDown(width: 1600);
 
         $path = 'media/' . Str::uuid() . '.jpg';

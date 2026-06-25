@@ -36,4 +36,16 @@ class AttachmentUploadTest extends TestCase
     {
         $this->post('/admin/attachments', [])->assertRedirect('/admin/login');
     }
+
+    public function test_accepts_ckeditor_upload_field(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)->post('/admin/attachments', [
+            'upload' => UploadedFile::fake()->image('p.jpg', 800, 600),
+        ])->assertOk()->assertJsonStructure(['url']);
+
+        $this->assertSame(1, Media::count());
+    }
 }
