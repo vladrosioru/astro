@@ -8,6 +8,7 @@
     @include('partials.tokens')
     <link rel="stylesheet" href="{{ asset('css/structure.css') }}">
     <link rel="stylesheet" href="{{ asset('css/skin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/hero-solarsystem.css') }}">
 </head>
 <body>
     @include('partials.nav')
