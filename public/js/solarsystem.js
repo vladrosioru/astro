@@ -1,5 +1,5 @@
 /* ============================================================
-   AstroTherapia — Celestial Guidance
+   Solar System theme
    Interactions: starfield generation + parallax depth
    ============================================================ */
 (function () {

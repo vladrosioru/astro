@@ -15,6 +15,8 @@ class FontsCssTest extends TestCase
         $this->assertStringContainsString("font-family: 'Cormorant Garamond'", $css);
         $this->assertStringContainsString('cormorant-garamond-400.woff2', $css);
         $this->assertStringContainsString('cormorant-garamond-400-italic.woff2', $css);
+        $this->assertStringContainsString("font-family: 'EB Garamond'", $css);
+        $this->assertStringContainsString('cinzel-400.woff2', $css);
     }
 
     public function test_theme_font_files_exist(): void
