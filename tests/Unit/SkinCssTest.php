@@ -25,4 +25,22 @@ class SkinCssTest extends TestCase
         $this->assertStringContainsString('var(--font-display)', $css);
         $this->assertStringContainsString('var(--color-heading)', $css);
     }
+
+    public function test_skin_defines_home_nav_overlay(): void
+    {
+        $css = file_get_contents(public_path('css/skin.css'));
+
+        $this->assertStringContainsString('.page-home nav', $css);
+    }
+
+    public function test_skin_retains_test_contract_tokens(): void
+    {
+        $css = file_get_contents(public_path('css/skin.css'));
+
+        // Contract required by ThemeTokens/SkinCss expectations.
+        $this->assertStringContainsString('.hero', $css);
+        $this->assertStringContainsString('var(--hero-overlay)', $css);
+        $this->assertStringContainsString('var(--font-display)', $css);
+        $this->assertStringContainsString('var(--color-heading)', $css);
+    }
 }
