@@ -88,6 +88,7 @@ SiteSetting.branding (active theme overrides)
 resources/views/partials/tokens.blade.php   (inline <style> in <head>)
         │   consumed by ▼
 public/css/structure.css   (layout only — no colours)
+public/css/cosmos.css      (shared starfield backdrop, behind every page)
 public/css/skin.css        (appearance only — all var(--token))
 public/css/hero-solarsystem.css  (animated Home stage, .stage-scoped)
 ```
@@ -111,12 +112,13 @@ public/css/hero-solarsystem.css  (animated Home stage, .stage-scoped)
 ### The Solar System theme
 
 - **Palette/fonts:** `themes.solarsystem` (dark `#05060c` bg, icy `#9dc1e6` accent; `Jost` body / `Cormorant Garamond` headings / `Cinzel` chrome).
-- **Home hero** is a full-viewport animated `.stage`:
-  - [`public/css/hero-solarsystem.css`](public/css/hero-solarsystem.css) — starfield, nebula, five orbiting planets + sun, vignette. **Every selector is scoped under `.stage`** so it never affects inner pages; `@keyframes` are global.
-  - [`public/js/solarsystem.js`](public/js/solarsystem.js) — generates twinkling stars and binds mouse parallax. **Self-guards** (`if (!.stage) return`), so it's inert on inner pages and safe to load site-wide with `defer`.
+- **Shared cosmos backdrop:** the deep-space gradient, drifting starfield, nebula glow and twinkling stars live in one fixed, full-viewport layer rendered behind **every** page — [`public/css/cosmos.css`](public/css/cosmos.css) + [`resources/views/partials/cosmos.blade.php`](resources/views/partials/cosmos.blade.php) (included once by the layout). It has **no solar system and no mouse parallax / 3D movement** — gentle ambient drift only.
+- **Home hero** is a full-viewport `.stage` that sits transparently over the shared backdrop:
+  - [`public/css/hero-solarsystem.css`](public/css/hero-solarsystem.css) — the five orbiting planets + sun, vignette, hero copy. **Every selector is scoped under `.stage`** so it never affects inner pages; `@keyframes` are global. (The starfield/nebula/twinkle art now lives in `cosmos.css`.)
+  - [`public/js/solarsystem.js`](public/js/solarsystem.js) — generates twinkling stars (into `.twinkle`) and binds mouse parallax to the solar system. **Self-guards** (`if (!.stage) return`), so the parallax is inert on inner pages and safe to load site-wide with `defer`.
   - Markup is [`resources/views/partials/hero.blade.php`](resources/views/partials/hero.blade.php); **all copy comes from `SiteSetting.hero`** (no hardcoded text).
-- **Inner pages** (About/Contact/Blog) inherit the dark "cosmos" skin (palette + a static CSS starfield) from `skin.css` — no orbit animation.
-- **Nav** is one data-driven partial; a `page-home` body class makes it a transparent overlay on Home and a sticky translucent bar elsewhere.
+- **Inner pages** (About/Contact/Blog) show the same shared cosmos backdrop (no solar system, no parallax) and inherit the dark token skin — no orbit animation.
+- **Nav** is one data-driven partial; a `page-home` body class makes it a transparent overlay on Home and a sticky translucent bar elsewhere. The menu is centered as **2 links · logo · 2 links**: the brand is the image [`public/img/logo-nav.png`](public/img/logo-nav.png) (a transparent PNG keyed/cropped from `res/logo.jpeg`, sized to 3× the nav-link letters) rather than a text wordmark.
 
 > Design docs: [`docs/superpowers/specs/2026-06-26-solarsystem-theme-design.md`](docs/superpowers/specs/2026-06-26-solarsystem-theme-design.md) and the matching plan in `docs/superpowers/plans/`.
 
@@ -139,7 +141,7 @@ All fonts are self-hosted WOFF2 in [`public/fonts/`](public/fonts/) and declared
 
 ## CSS / asset layering
 
-`layouts/app.blade.php` loads, in order: `fonts.css` → inline `:root` tokens (`partials/tokens`) → `structure.css` → `skin.css` → `hero-solarsystem.css`, then `solarsystem.js` (`defer`). Keep the **structure (layout) vs. skin (appearance)** split: positional rules go in `structure.css`, anything visual goes in `skin.css` and must use tokens.
+`layouts/app.blade.php` loads, in order: `fonts.css` → inline `:root` tokens (`partials/tokens`) → `structure.css` → `cosmos.css` → `skin.css` → `hero-solarsystem.css` → `@stack('head')`, then renders the shared `partials/cosmos` backdrop and loads `solarsystem.js` (`defer`). Page-specific stylesheets are pushed via `@push('head')` (e.g. the blog article loads `ckeditor5.css` + `article.css`). Keep the **structure (layout) vs. skin (appearance)** split: positional rules go in `structure.css`, anything visual goes in `skin.css` and must use tokens.
 
 ---
 
@@ -150,6 +152,8 @@ All fonts are self-hosted WOFF2 in [`public/fonts/`](public/fonts/) and declared
 - **CKEditor 5** is **self-hosted** at [`public/vendor/ckeditor/`](public/vendor/ckeditor/) using the npm package's `dist/browser/ckeditor5.umd.js` (distribution channel `"sh"`, valid with the GPL key). **Do not use the CDN/"cloud" build** — the GPL key is invalid there. On upgrade, re-pull the UMD from the npm tarball.
 - Submitted HTML is sanitised through a dedicated **`blog` HTMLPurifier profile** (`mews/purifier`).
 - Image uploads go through `Admin\AttachmentController` (`intervention/image` v4) and are stored as **root-relative** `/storage/...` URLs. Public image-alignment CSS lives in `skin.css`.
+- **Blog card image.** Each post can have a representative card image, stored on `posts.featured_image` (one image per post, shared across locales). Admins upload it via the **Card image** field in the post editor; on save it is validated (`image`, max 8 MB), square-cropped server-side to 1200×1200 (Intervention Image, centered cover crop), stored on the public disk as a `Media` row, and saved as a root-relative URL. The blog listing (`resources/views/blog/index.blade.php`) renders posts as a `.blog-grid` of cards — a square image on top and title + excerpt below; posts without an image render a text-only card.
+- **Article display fidelity:** the single-post view ([`blog/show.blade.php`](resources/views/blog/show.blade.php)) renders the body inside a `.ck-content` wrapper on a white "paper" sheet ([`public/css/article.css`](public/css/article.css)) and loads the editor's own `ckeditor5.css`, so a published article looks **exactly as authored in CKEditor**. The cosmic theme is reset out of `.ck-content`; only the article `<h1>` title above the sheet stays themed like the rest of the site.
 
 ---
 
@@ -174,13 +178,13 @@ config/
   tokens.php             token names + light defaults (source of truth)
   themes.php             named token sets (solarsystem, mystik)
 public/
-  css/                   fonts, structure, skin, hero-solarsystem
+  css/                   fonts, structure, cosmos, skin, hero-solarsystem, article
   js/                    solarsystem.js
   fonts/                 self-hosted WOFF2
   vendor/ckeditor/       self-hosted CKEditor 5 (GPL "sh" build)
 resources/views/
   layouts/app.blade.php  master layout
-  partials/              nav, hero (the .stage), tokens
+  partials/              nav, cosmos (shared backdrop), hero (the .stage), tokens
   pages/                 home, about, contact
   blog/                  index, show
   admin/                 dashboard, login, posts/*

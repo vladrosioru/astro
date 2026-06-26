@@ -10,15 +10,18 @@
       "named_theme_sets": "config/themes.php",
       "token_emitter": "resources/views/partials/tokens.blade.php  (renders <style>:root{ --token: value }</style> in <head>; merges config('tokens.defaults') with SiteSetting.branding)",
       "branding_store": "SiteSetting.branding (DB JSON column; the active theme's token overrides)",
-      "master_layout": "resources/views/layouts/app.blade.php",
+      "master_layout": "resources/views/layouts/app.blade.php (renders partials/cosmos before content; exposes @stack('head') for page-specific stylesheets)",
+      "shared_backdrop": "resources/views/partials/cosmos.blade.php + public/css/cosmos.css — a fixed, full-viewport starfield/nebula/twinkle layer behind EVERY page (z-index:-1). Same cosmos art as the old stage, MINUS the solar system and the mouse parallax / 3D movement (gentle ambient drift only). The .twinkle node is populated by solarsystem.js.",
       "css_load_order": [
         "public/css/fonts.css            (self-hosted @font-face)",
         "partials/tokens.blade.php       (inline :root tokens)",
         "public/css/structure.css        (LAYOUT only — no color/font)",
+        "public/css/cosmos.css           (shared fixed starfield backdrop; behind all pages)",
         "public/css/skin.css             (APPEARANCE — token-driven; styles all pages)",
-        "public/css/hero-solarsystem.css (animated Home stage, scoped under .stage)"
+        "public/css/hero-solarsystem.css (animated Home stage, scoped under .stage)",
+        "@stack('head')                  (page-specific; blog article pushes ckeditor5.css + public/css/article.css)"
       ],
-      "stage_js": "public/js/solarsystem.js (twinkle-star generation + mouse parallax; self-guards on .stage so it is inert on non-Home pages)"
+      "stage_js": "public/js/solarsystem.js (twinkle-star generation into .twinkle + mouse parallax bound to the solar system; self-guards on .stage so the parallax is inert on non-Home pages)"
     },
     "activation": {
       "apply_theme": "php artisan app:apply-theme {name}   (writes config('themes.{name}') into SiteSetting.branding)",
@@ -35,9 +38,10 @@
     ],
     "principles": [
       "Swap a theme by overriding tokens, not by editing markup.",
-      "Inner pages (About/Contact/Blog) are 100% token-driven — they re-skin with zero CSS edits.",
+      "Every page shares one fixed cosmos backdrop (cosmos.css) behind the content — no solar system, no parallax/3D — see the 'Shared cosmos backdrop' element.",
+      "Inner pages (About/Contact/Blog list) are token-driven — they re-skin with zero CSS edits. EXCEPTION: the single blog post body is a deliberate non-token 'paper' that mirrors the CKEditor editing surface — see the 'Blog article paper' element.",
       "The animated Home stage is partly tokenized and partly hardcoded cosmic art — see `stage`.",
-      "UI chrome is non-selectable: nav, .brand, h1-h3, and all .stage hero text use user-select:none with cursor:default (no text caret/highlight); only links & buttons show the pointer. Article/body and .muted text stay selectable. Defined in skin.css and hero-solarsystem.css."
+      "UI chrome is non-selectable: nav, h1-h3, and all .stage hero text use user-select:none (h1-h3 also cursor:default); the .nav-logo img is non-selectable/non-draggable chrome; only links & buttons show the pointer. Article/body and .muted text stay selectable. Defined in skin.css and hero-solarsystem.css."
     ]
   },
 
@@ -111,11 +115,10 @@
     },
     "color-heading": {
       "type": "color",
-      "role": "Headings (h1–h3), brand wordmark, stage hero title.",
+      "role": "Headings (h1–h3), stage hero title.",
       "defaults": { "light": "#111827", "solarsystem": "#f2f7fd", "mystik": "#f0a23c" },
       "consumed_by": [
         "h1,h2,h3 {color} @ skin.css",
-        ".brand {color} @ skin.css (inherits from h1,h2,h3,.brand rule)",
         ".stage .title {color} @ hero-solarsystem.css"
       ]
     },
@@ -153,14 +156,14 @@
     },
     "font-display": {
       "type": "font-stack",
-      "role": "Brand wordmark + button/CTA chrome (uppercase, letter-spaced).",
+      "role": "Button/CTA chrome (uppercase, letter-spaced). Formerly the text brand wordmark too, now replaced by the nav logo image.",
       "defaults": {
         "light": "system-ui, -apple-system, 'Segoe UI', Roboto, serif",
         "solarsystem": "'Cinzel', serif",
         "mystik": "'Cinzel', serif"
       },
       "consumed_by": [
-        ".brand / h1,h2,h3,.brand {font-family} @ skin.css (line 23; note the later Solar System h1,h2,h3 rule overrides heading font with font-heading, leaving .brand on font-display)",
+        "h1,h2,h3 {font-family} @ skin.css (early rule; the later Solar System h1,h2,h3 rule overrides it with font-heading, so this token now only effectively paints buttons/CTAs)",
         ".btn,.hero-cta {font-family} @ skin.css"
       ]
     },
@@ -219,30 +222,44 @@
     {
       "element": "Page / body",
       "applies_to": "all pages",
-      "selectors": ["body @ structure.css (margin)", "body @ skin.css (bg, color, font, static CSS starfield)"],
+      "selectors": ["body @ structure.css (margin)", "body @ skin.css (bg color, fg, font)"],
       "tokens": ["color-bg", "color-fg", "font-base"],
-      "literals": ["6-layer radial-gradient starfield (white/icy dots) with background-attachment: fixed — decorative; visible only on a dark color-bg"],
-      "notes": "On a light theme the starfield dots are invisible (white-on-light); harmless. Remove/adjust the body background-image block for a non-starry theme."
+      "notes": "Body keeps a solid color-bg (avoids a flash before the backdrop paints). The decorative starfield now lives in the SHARED COSMOS BACKDROP (see the 'Shared cosmos backdrop' element below), not on body."
+    },
+    {
+      "element": "Shared cosmos backdrop (.cosmos)",
+      "applies_to": "all pages (fixed layer behind content; markup partials/cosmos.blade.php)",
+      "selectors": [
+        ".cosmos (fixed, inset:0, z-index:-1) @ cosmos.css",
+        ".cosmos .bg-base / .bg-layer / .stars / .stars1 / .stars2 / .nebula / .twinkle / .twinkle .star @ cosmos.css"
+      ],
+      "tokens": ["color-bg"],
+      "literals": ["deep-space radial gradient (#0b1426→#04050b)", "two tiled drifting star layers (drift1/drift2)", "blue/purple nebula glow (pulse)", "JS-generated twinkling stars (twinkle)"],
+      "notes": "DECORATIVE cosmos art, the single source of truth for the starfield (the Home .stage is transparent and shows this through). NO solar system, NO mouse parallax / 3D movement — gentle ambient drift only. drift1/drift2/twinkle/pulse keyframes are defined here. For a non-cosmic theme, replace/remove cosmos.css + partials/cosmos.blade.php."
     },
     {
       "element": "Headings (h1, h2, h3)",
       "applies_to": "all pages",
       "selectors": ["h1,h2,h3 @ skin.css line 67 (Solar System block wins)"],
       "tokens": ["font-heading", "color-heading"],
-      "notes": "An earlier rule (line 23) sets headings+.brand to font-display; the later Solar System rule re-sets h1–h3 to font-heading. Net: headings=font-heading, .brand=font-display."
+      "notes": "An earlier rule sets headings to font-display; the later Solar System rule re-sets h1–h3 to font-heading. Net: headings=font-heading. (The former .brand wordmark that stayed on font-display is gone — replaced by the nav logo image.)"
     },
     {
-      "element": "Brand wordmark (.brand)",
-      "applies_to": "global nav (inner pages)",
-      "selectors": ["h1,h2,h3,.brand @ skin.css line 23", ".brand @ skin.css line 24"],
-      "tokens": ["font-display", "color-heading"],
-      "notes": "On the Home stage the brand is styled by `.stage .brand` with HARDCODED font/color — see stage literals."
+      "element": "Nav logo (.nav-logo / .nav-logo img)",
+      "applies_to": "global nav, all pages (replaces the former text brand wordmark)",
+      "selectors": [
+        ".nav-logo / .nav-logo img @ structure.css (centered flex item; img height 2.4rem = 3× the 0.8rem nav-link letters, 1.9rem on phone)",
+        ".nav-logo img @ skin.css (user-select/drag none — chrome)"
+      ],
+      "tokens": [],
+      "notes": "Image asset, NOT token-driven: public/img/logo-nav.png — a transparent PNG derived from res/logo.jpeg (near-white background keyed out, autocropped, rendered at 120px for retina). Links to the locale home; alt = config('app.name'). Markup: partials/nav.blade.php splits the menu 2-left · logo · 2-right. To rebrand, replace public/img/logo-nav.png (keep transparent background so it reads on the dark/translucent nav)."
     },
     {
       "element": "Global navigation bar (nav)",
       "applies_to": "all pages (single partial; transparent overlay on Home via .page-home)",
       "selectors": [
         "nav @ structure.css (sticky, min-height, flex)",
+        "nav .nav-left/.nav-right/.nav-logo @ structure.css (balanced 3-part centered layout)",
         ".page-home nav @ structure.css (absolute overlay on Home)",
         "nav @ skin.css (translucent bg via color-mix, blur, border)",
         "nav a @ skin.css (muted, uppercase, letter-spacing)",
@@ -250,7 +267,7 @@
         ".page-home nav @ skin.css (transparent, no border on Home)"
       ],
       "tokens": ["color-bg", "color-bg-alt", "color-muted", "color-accent", "nav-height", "space-unit", "container-width"],
-      "notes": "Inner pages: sticky translucent bar. Home: transparent overlay over the stage."
+      "notes": "Layout: two equal flex link-groups (.nav-left, .nav-right) flank the centered .nav-logo. Inner pages: sticky translucent bar. Home: transparent overlay over the stage."
     },
     {
       "element": "Links (a) + muted text (.muted)",
@@ -271,11 +288,19 @@
       "notes": "These ARE fully token-driven. The visually-identical buttons inside the .stage are NOT (hardcoded) — see stage literals."
     },
     {
-      "element": "Cards / content panels (.card)",
+      "element": "Cards / content panels (.card, .blog-grid, .card--media, .card__media, .card__body)",
       "applies_to": "all pages (e.g. blog list items)",
-      "selectors": [".card @ skin.css line 6 (radius, shadow)", ".card @ skin.css line 95 (bg, border, padding)", ".card a @ skin.css"],
-      "tokens": ["color-bg-alt", "color-fg", "radius", "shadow", "space-unit"],
-      "notes": "Two .card rules exist (later wins for border opacity); behavior correct, could be consolidated."
+      "selectors": [
+        ".card @ skin.css line 6 (radius, shadow)",
+        ".card @ skin.css line 95 (bg, border, padding)",
+        ".card a @ skin.css",
+        ".blog-grid @ skin.css (responsive grid: auto-fill minmax(16rem,1fr))",
+        ".card--media @ skin.css (image card: flex column, padding:0, overflow:hidden)",
+        ".card__media @ skin.css (square image: aspect-ratio 1/1, object-fit cover)",
+        ".card__body @ skin.css (title + line-clamped excerpt)"
+      ],
+      "tokens": ["color-bg-alt", "color-fg", "color-muted", "radius", "shadow", "space-unit"],
+      "notes": "Blog listing (resources/views/blog/index.blade.php) renders posts as a .blog-grid of cards. A post with posts.featured_image shows a square .card__media (top 2/3) above .card__body (title + excerpt, bottom 1/3); a post without one falls back to the plain text .card. The whole card is a link. Two base .card rules exist (later wins for border opacity); behavior correct, could be consolidated."
     },
     {
       "element": "Content container (.container)",
@@ -288,7 +313,20 @@
       "applies_to": "blog post bodies",
       "selectors": ["figure.image / img / figcaption @ skin.css", ".image-style-align-* / -side / -block-align-* @ skin.css", ".image_resized @ skin.css"],
       "tokens": ["space-unit", "radius", "color-muted"],
-      "notes": "Layout/alignment for rich-text images. Class names are produced by CKEditor; do not rename. Required by SkinCssTest."
+      "notes": "Layout/alignment for rich-text images, mirroring CKEditor's .ck-content rules so published articles match the editor: default block images center via figure.image{display:table;margin:* auto}; alignment overrides are qualified figure.image.<class> to beat the base shorthand. Class names are produced by CKEditor; do not rename. Required by SkinCssTest. NOTE: on the single-post page the real ckeditor5.css is also loaded and its higher-specificity .ck-content rules win — these skin.css rules remain the fallback/contract and cover pages that don't load ckeditor5.css."
+    },
+    {
+      "element": "Blog article paper (.article-paper / .ck-content)",
+      "applies_to": "single blog post body ONLY (resources/views/blog/show.blade.php)",
+      "selectors": [
+        ".article-paper (white sheet, radius, shadow, max-width) @ article.css",
+        ".article-paper .ck-content (base color #333, --ck-font-face) @ article.css",
+        ".article-paper .ck-content h1–h6 / a (reset cosmic theme bleed) @ article.css",
+        "vendor/ckeditor/ckeditor5.css .ck-content * (authoritative rich-text styling, pushed via @push('head'))"
+      ],
+      "tokens": ["space-unit", "radius"],
+      "literals": ["#fff paper (CKEditor --ck-color-base-background)", "#333 text (--ck-color-base-text)", "Helvetica/Arial content font (--ck-font-face)", "shadow rgba(0,0,0,.45)"],
+      "notes": "INTENTIONAL THEME EXCEPTION: the article body must render EXACTLY as authored in CKEditor, so it is deliberately NOT token-driven. The body is wrapped in .ck-content on a white sheet and the editor's own ckeditor5.css is loaded; article.css resets the cosmic skin out of .ck-content (dark text, neutral font, selectable headings). The article <h1> title sits ABOVE the sheet and stays themed (token-driven, like other page headings). Do not tokenize the paper literals — they mirror CKEditor's editing surface."
     },
     {
       "element": "LEGACY hero (.hero, .hero-inner, .hero-title, .hero-subhead, .hero-cta)",
@@ -300,7 +338,7 @@
   ],
 
   "stage": {
-    "description": "The animated Solar System Home hero. Full-viewport (.stage), scoped CSS so it never leaks to inner pages. Markup: resources/views/partials/hero.blade.php (cosmos layers + 5 orbits/planets + sun + nebula + vignette + hero copy + scroll cue). Behavior: public/js/solarsystem.js.",
+    "description": "The animated Solar System Home hero. Full-viewport (.stage), TRANSPARENT background — the shared cosmos backdrop (see meta.shared_backdrop / the 'Shared cosmos backdrop' element) shows through. Scoped CSS so it never leaks to inner pages. Markup: resources/views/partials/hero.blade.php (5 orbits/planets + sun + vignette + hero copy + scroll cue; the starfield/nebula/twinkle layers moved to partials/cosmos.blade.php). Behavior: public/js/solarsystem.js (parallax now moves only the solar system).",
     "file": "public/css/hero-solarsystem.css",
     "scope": "every selector prefixed `.stage `; @keyframes are global",
     "data_driven_copy": {
@@ -314,7 +352,7 @@
       }
     },
     "tokenized_selectors": {
-      ".stage": ["color-bg"],
+      ".stage": ["(transparent — backdrop shows through; no color-bg)"],
       ".stage .eyebrow": ["color-primary"],
       ".stage .eyebrow .rule": ["color-primary (via color-mix)"],
       ".stage .title": ["color-heading"],
@@ -342,12 +380,8 @@
       ]
     },
     "decorative_art_literals": {
-      "$comment": "Purpose-built cosmic art — NOT brand tokens. For a non-cosmic theme, replace or remove these wholesale rather than tokenizing.",
+      "$comment": "Purpose-built cosmic art — NOT brand tokens. For a non-cosmic theme, replace or remove these wholesale rather than tokenizing. The deep-space gradient / starfield / nebula / twinkle moved to the shared backdrop (public/css/cosmos.css, .cosmos-scoped) — see the 'Shared cosmos backdrop' element. The items below are the solar system + chrome that remain in hero-solarsystem.css.",
       "items": [
-        { "selector": ".stage .bg-base", "what": "deep-space radial gradient", "value": "radial-gradient(120% 100% at 50% 30%, #0b1426, #070a14 45%, #04050b)" },
-        { "selector": ".stage .stars1 / .stars2", "what": "tiled drifting star dots", "value": "multiple white/icy radial-gradients; animation drift1/drift2" },
-        { "selector": ".stage .nebula", "what": "blue/purple nebula glow", "value": "rgba(74,124,196,.20) + rgba(120,96,190,.14); animation pulse" },
-        { "selector": ".stage .twinkle .star", "what": "JS-generated twinkling stars", "value": "#fff + box-shadow #cfe2f5; animation twinkle" },
         { "selector": ".stage .planet-mercury/venus/earth/mars", "what": "planet bodies", "value": "per-planet radial-gradient + colored glow" },
         { "selector": ".stage .planet-saturn / .saturn-ring / .saturn-body", "what": "Saturn + ring", "value": "gray-blue gradients + rgba ring" },
         { "selector": ".stage .sun", "what": "central sun", "value": "radial-gradient(#fff4d6→#c97f2c) + warm glow" },
@@ -360,9 +394,9 @@
       "--px / --py": "parallax offsets set by solarsystem.js on .solar-wrap",
       "--dur / --delay": "per-star twinkle timing set by solarsystem.js"
     },
-    "keyframes": ["drift1", "drift2", "spin", "spinrev", "twinkle", "pulse", "scrollcue"],
+    "keyframes": ["spin", "spinrev", "scrollcue", "(drift1/drift2/twinkle/pulse moved to cosmos.css)"],
     "responsive_breakpoints": ["1024px", "720px (hides .cta)", "460px"],
-    "reduced_motion": "@media (prefers-reduced-motion: reduce) disables all stage animations"
+    "reduced_motion": "@media (prefers-reduced-motion: reduce) disables stage animations (orbits/planets/scroll-cue); the shared backdrop has its own reduced-motion rule in cosmos.css"
   },
 
   "fonts": [
