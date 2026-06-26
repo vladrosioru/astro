@@ -237,7 +237,8 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 14px 24px 0;
+  /* clear the absolutely-positioned overlay nav (~var(--nav-height) tall) */
+  padding: calc(var(--nav-height) + 1.75rem) 24px 0;
 }
 
 .stage .eyebrow {
@@ -366,7 +367,7 @@
   .stage .nav { flex-wrap: wrap; gap: 16px; padding: 22px 22px; justify-content: center; }
   .stage .nav-links { gap: 22px; font-size: 12px; }
   .stage .cta { display: none; }
-  .stage .hero { padding-top: 8px; }
+  .stage .hero { padding-top: calc(var(--nav-height) + 1rem); }
   .stage .eyebrow { letter-spacing: .3em; font-size: 11px; }
   .stage { --solar-scale: 0.72; }
   .stage .solar-wrap { top: 82%; }
