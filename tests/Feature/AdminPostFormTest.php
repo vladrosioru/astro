@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -29,5 +30,18 @@ class AdminPostFormTest extends TestCase
             ->assertOk()
             ->assertSee('enctype="multipart/form-data"', false)
             ->assertSee('name="card_image"', false);
+    }
+
+    public function test_edit_form_has_enctype_and_card_image_controls(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $post = Post::create(['status' => 'draft', 'featured_image' => '/storage/media/pic.jpg']);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Test', 'slug' => 'test']);
+
+        $this->actingAs($admin)->get(route('admin.posts.edit', $post))
+            ->assertOk()
+            ->assertSee('enctype="multipart/form-data"', false)
+            ->assertSee('src="/storage/media/pic.jpg"', false)
+            ->assertSee('name="remove_card_image"', false);
     }
 }
