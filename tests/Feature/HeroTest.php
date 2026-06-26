@@ -14,7 +14,7 @@ class HeroTest extends TestCase
     {
         $this->get('/en')
             ->assertOk()
-            ->assertSee('Personal Horoscope &amp; Magic Services', false)
+            ->assertSee('Understanding the Why Behind Your Choices')
             ->assertSee('Begin Here');
     }
 

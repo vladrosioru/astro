@@ -37,8 +37,8 @@ class SiteSetting extends Model
     public static function heroDefaults(): array
     {
         return [
-            'headline'   => 'Personal Horoscope & Magic Services',
-            'subhead'    => 'Enjoy a vivid discussion about your horoscope or birth chart with a certified professional astrologer.',
+            'headline'   => 'Understanding the Why Behind Your Choices',
+            'subhead'    => 'When the planets align, so do the patterns within you. Read the map you were born under and move with intention.',
             'cta_label'  => 'Begin Here',
             'cta_url'    => '/en/contact',
             'eyebrow'    => 'Celestial Guidance',

@@ -367,7 +367,8 @@
   .stage .nav { flex-wrap: wrap; gap: 16px; padding: 22px 22px; justify-content: center; }
   .stage .nav-links { gap: 22px; font-size: 12px; }
   .stage .cta { display: none; }
-  .stage .hero { padding-top: calc(var(--nav-height) + 1rem); }
+  /* phone nav is an in-flow sticky bar (not an overlay) — hero needs no nav offset here */
+  .stage .hero { padding-top: 1.5rem; }
   .stage .eyebrow { letter-spacing: .3em; font-size: 11px; }
   .stage { --solar-scale: 0.72; }
   .stage .solar-wrap { top: 82%; }

@@ -5,7 +5,4 @@
 
 @section('content')
     @include('partials.hero')
-    <div class="container">
-        <h2>{{ config('app.name') }}</h2>
-    </div>
 @endsection
