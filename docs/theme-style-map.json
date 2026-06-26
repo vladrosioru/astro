@@ -36,7 +36,8 @@
     "principles": [
       "Swap a theme by overriding tokens, not by editing markup.",
       "Inner pages (About/Contact/Blog) are 100% token-driven — they re-skin with zero CSS edits.",
-      "The animated Home stage is partly tokenized and partly hardcoded cosmic art — see `stage`."
+      "The animated Home stage is partly tokenized and partly hardcoded cosmic art — see `stage`.",
+      "UI chrome is non-selectable: nav, .brand, h1-h3, and all .stage hero text use user-select:none with cursor:default (no text caret/highlight); only links & buttons show the pointer. Article/body and .muted text stay selectable. Defined in skin.css and hero-solarsystem.css."
     ]
   },
 

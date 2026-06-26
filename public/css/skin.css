@@ -111,3 +111,8 @@ a:hover { color: var(--color-accent); }
     .brand { font-size: 1.15rem; }
     nav a { font-size: 0.72rem; letter-spacing: 0.1em; }
 }
+
+/* Non-selectable UI chrome: labels/headings show no text caret and can't be
+   highlighted; real links/buttons keep the pointer cursor. */
+nav, .brand, h1, h2, h3 { user-select: none; -webkit-user-select: none; }
+.brand, h1, h2, h3 { cursor: default; }

@@ -16,6 +16,10 @@
   --solar-scale: 1.18;
 }
 
+/* Hero text is decorative — no text caret / highlight. Links & buttons keep the pointer. */
+.stage { user-select: none; -webkit-user-select: none; }
+.stage .eyebrow, .stage .title, .stage .lede, .stage .scroll-cue { cursor: default; }
+
 /* Prevent inner-page .hero skin from bleeding into the stage's <main class="hero"> */
 .stage .hero { background: none; }
 .stage .hero::before { content: none; }
