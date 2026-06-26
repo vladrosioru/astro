@@ -38,4 +38,14 @@ class ApplyThemeCommandTest extends TestCase
     {
         $this->artisan('app:apply-theme', ['name' => 'nope'])->assertExitCode(1);
     }
+
+    public function test_applying_solarsystem_writes_cosmos_tokens(): void
+    {
+        $this->artisan('app:apply-theme', ['name' => 'solarsystem'])->assertExitCode(0);
+
+        $branding = SiteSetting::current()->fresh()->branding;
+        $this->assertSame('#05060c', $branding['color-bg']);
+        $this->assertSame('#9dc1e6', $branding['color-primary']);
+        $this->assertSame("'Jost', system-ui, sans-serif", $branding['font-base']);
+    }
 }

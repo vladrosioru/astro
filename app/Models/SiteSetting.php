@@ -37,10 +37,13 @@ class SiteSetting extends Model
     public static function heroDefaults(): array
     {
         return [
-            'headline'  => 'Personal Horoscope & Magic Services',
-            'subhead'   => 'Enjoy a vivid discussion about your horoscope or birth chart with a certified professional astrologer.',
-            'cta_label' => 'Begin Here',
-            'cta_url'   => '/en/contact',
+            'headline'   => 'Personal Horoscope & Magic Services',
+            'subhead'    => 'Enjoy a vivid discussion about your horoscope or birth chart with a certified professional astrologer.',
+            'cta_label'  => 'Begin Here',
+            'cta_url'    => '/en/contact',
+            'eyebrow'    => 'Celestial Guidance',
+            'cta2_label' => 'Read the Journal',
+            'cta2_url'   => '/en/blog',
         ];
     }
 

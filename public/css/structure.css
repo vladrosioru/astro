@@ -11,3 +11,7 @@ nav .brand { margin-right: auto; white-space: nowrap; }
 .hero { position: relative; padding: calc(var(--space-unit) * 28) calc(var(--space-unit) * 4); text-align: center; overflow: hidden; }
 .hero-inner { position: relative; z-index: 1; max-width: var(--container-width); margin: 0 auto; }
 .hero-cta { display: inline-block; margin-top: calc(var(--space-unit) * 6); padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 8); }
+
+/* Solar System: Home nav overlays the stage; inner-page nav is the sticky bar above. */
+.page-home nav { position: absolute; top: 0; left: 0; right: 0; }
+.page-home { position: relative; }

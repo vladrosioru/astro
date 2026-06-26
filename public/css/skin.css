@@ -44,3 +44,58 @@ nav a { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; te
 .hero-cta { background: var(--color-primary); color: var(--color-bg); border-radius: var(--radius); text-decoration: none; font-family: var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
 .card { background: var(--color-bg-alt); border: 1px solid color-mix(in srgb, var(--color-fg) 12%, transparent); padding: calc(var(--space-unit) * 4); }
 button, .hero-cta { cursor: pointer; }
+
+/* ============================================================
+   Solar System skin (token-driven). Appearance only.
+   ============================================================ */
+
+/* Inner pages: static CSS starfield over the dark base (no JS, no orbits). */
+body {
+    background-color: var(--color-bg);
+    background-image:
+        radial-gradient(1px 1px at 20% 30%, #ffffff 50%, transparent 51%),
+        radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,.75) 50%, transparent 51%),
+        radial-gradient(1.4px 1.4px at 40% 80%, rgba(220,235,255,.9) 50%, transparent 51%),
+        radial-gradient(1px 1px at 85% 25%, #cbd5e1 50%, transparent 51%),
+        radial-gradient(1px 1px at 55% 15%, rgba(255,255,255,.6) 50%, transparent 51%),
+        radial-gradient(1.5px 1.5px at 10% 70%, #e2e8f0 50%, transparent 51%);
+    background-size: 320px 320px, 280px 280px, 400px 400px, 360px 360px, 240px 240px, 300px 300px;
+    background-attachment: fixed;
+}
+
+/* Headings use the heading serif; brand uses the display serif. */
+h1, h2, h3 { font-family: var(--font-heading); color: var(--color-heading); letter-spacing: 0.01em; }
+
+/* Nav: transparent overlay on Home, translucent sticky bar elsewhere. */
+.page-home nav { background: transparent; backdrop-filter: none; border-bottom: 0; }
+nav a { color: var(--color-muted); }
+nav a:hover { color: var(--color-accent); }
+
+/* Links + muted text. */
+a { color: var(--color-primary); }
+a:hover { color: var(--color-accent); }
+.muted { color: var(--color-muted); }
+
+/* Buttons / CTAs (icy pill + ghost). */
+.btn, .hero-cta {
+    text-decoration: none; font-family: var(--font-display);
+    font-size: 0.78rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+    transition: background .25s ease, color .25s ease;
+}
+.btn-primary, .hero-cta {
+    display: inline-block; border: 1px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
+    border-radius: 999px; padding: 0.9rem 2rem;
+    color: var(--color-accent); background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+}
+.btn-primary:hover, .hero-cta:hover { background: color-mix(in srgb, var(--color-primary) 16%, transparent); }
+.btn-ghost { display: inline-flex; align-items: center; gap: 8px; color: var(--color-primary); padding: 0.9rem 0.25rem; }
+.btn-ghost:hover { color: var(--color-accent); }
+
+/* Cards / content panels. */
+.card {
+    background: var(--color-bg-alt);
+    border: 1px solid color-mix(in srgb, var(--color-fg) 14%, transparent);
+    padding: calc(var(--space-unit) * 4);
+}
+.card a { text-decoration: none; }
+.container { color: var(--color-fg); }

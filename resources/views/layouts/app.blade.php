@@ -8,9 +8,11 @@
     @include('partials.tokens')
     <link rel="stylesheet" href="{{ asset('css/structure.css') }}">
     <link rel="stylesheet" href="{{ asset('css/skin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/hero-solarsystem.css') }}">
 </head>
-<body>
+<body class="@yield('body_class')">
     @include('partials.nav')
     @yield('content')
+    <script src="{{ asset('js/solarsystem.js') }}" defer></script>
 </body>
 </html>
