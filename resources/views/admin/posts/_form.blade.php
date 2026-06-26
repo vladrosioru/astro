@@ -9,6 +9,17 @@
     </select>
 </label></p>
 
+<fieldset>
+    <legend>Card image</legend>
+    @if (isset($post) && $post->featured_image)
+        <p><img src="{{ $post->featured_image }}" alt="" style="max-width:160px;height:auto;display:block;border-radius:var(--radius)"></p>
+        <p><label><input type="checkbox" name="remove_card_image" value="1"> Remove card image</label></p>
+    @endif
+    <p><label>{{ isset($post) && $post->featured_image ? 'Replace image' : 'Upload image' }}
+        <input type="file" name="card_image" accept="image/*"></label></p>
+    <p class="muted">Shown on the blog listing card. Cropped to a square (1200×1200).</p>
+</fieldset>
+
 @foreach (['en', 'ro'] as $locale)
     <fieldset>
         <legend>{{ strtoupper($locale) }}</legend>
