@@ -13,5 +13,6 @@
 <body>
     @include('partials.nav')
     @yield('content')
+    <script src="{{ asset('js/solarsystem.js') }}" defer></script>
 </body>
 </html>
