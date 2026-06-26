@@ -16,4 +16,18 @@ return [
         'nav-height'    => '4.5rem',
         'hero-overlay'  => 'rgba(0,0,0,0.55)',
     ],
+    'solarsystem' => [
+        'color-bg'      => '#05060c',
+        'color-bg-alt'  => '#0b1426',
+        'color-fg'      => '#aab6c8',
+        'color-heading' => '#f2f7fd',
+        'color-muted'   => '#9aa6b8',
+        'color-primary' => '#9dc1e6',
+        'color-accent'  => '#dcebfb',
+        'font-display'  => "'Cinzel', serif",
+        'font-heading'  => "'Cormorant Garamond', serif",
+        'font-base'     => "'Jost', system-ui, sans-serif",
+        'nav-height'    => '4.5rem',
+        'hero-overlay'  => 'rgba(0,0,0,0.45)',
+    ],
 ];
