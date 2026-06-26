@@ -49,4 +49,23 @@ class PublicBlogTest extends TestCase
 
         $this->get('/en/blog')->assertNotFound();
     }
+
+    public function test_card_shows_image_when_featured_image_set(): void
+    {
+        $post = $this->publishedPost();
+        $post->update(['featured_image' => '/storage/media/pic.jpg']);
+
+        $this->get('/en/blog')->assertOk()
+            ->assertSee('card__media', false)
+            ->assertSee('/storage/media/pic.jpg', false);
+    }
+
+    public function test_card_is_text_only_without_featured_image(): void
+    {
+        $this->publishedPost();
+
+        $response = $this->get('/en/blog')->assertOk();
+        $response->assertSee('blog-grid', false);
+        $response->assertDontSee('card__media', false);
+    }
 }
