@@ -1,0 +1,403 @@
+/* ============================================================
+   AstroTherapia — Celestial Guidance
+   Stylesheet
+   ============================================================ */
+
+:root {
+  --bg:           #05060c;
+  --ink:          #f2f7fd;   /* headings */
+  --text:         #aab6c8;   /* body */
+  --muted:        #9aa6b8;   /* inactive nav */
+  --icy:          #9dc1e6;   /* accent */
+  --icy-bright:   #dcebfb;   /* accent highlight */
+  --icy-line:     rgba(157, 193, 230, 0.7);
+  --solar-scale:  1.18;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Jost', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { -webkit-tap-highlight-color: transparent; }
+
+/* ---------- Stage ---------------------------------------- */
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 680px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.bg-base {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 100% at 50% 30%, #0b1426 0%, #070a14 45%, #04050b 100%);
+  z-index: 0;
+}
+
+/* ---------- Starfield (drifting tiled layers) ------------ */
+.bg-layer { position: absolute; inset: 0; z-index: 1; will-change: transform; }
+
+.stars { position: absolute; inset: -320px; }
+
+.stars1 {
+  background-image:
+    radial-gradient(1px 1px at 25px 35px, #fff, transparent),
+    radial-gradient(1px 1px at 75px 120px, rgba(255,255,255,.75), transparent),
+    radial-gradient(1px 1px at 140px 60px, rgba(210,228,255,.8), transparent),
+    radial-gradient(1.4px 1.4px at 180px 165px, #fff, transparent),
+    radial-gradient(1px 1px at 110px 205px, rgba(255,255,255,.6), transparent),
+    radial-gradient(1px 1px at 45px 185px, rgba(190,215,255,.8), transparent);
+  background-size: 220px 240px;
+  animation: drift1 150s linear infinite;
+}
+
+.stars2 {
+  background-image:
+    radial-gradient(1.6px 1.6px at 60px 50px, #fff, transparent),
+    radial-gradient(1px 1px at 200px 100px, rgba(255,255,255,.55), transparent),
+    radial-gradient(2px 2px at 130px 220px, rgba(220,235,255,.9), transparent),
+    radial-gradient(1px 1px at 280px 180px, rgba(255,255,255,.5), transparent);
+  background-size: 320px 300px;
+  opacity: .85;
+  animation: drift2 210s linear infinite;
+}
+
+/* ---------- Nebula glow ---------------------------------- */
+.nebula {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(38% 48% at 28% 32%, rgba(74,124,196,.20), transparent 70%),
+    radial-gradient(45% 55% at 76% 66%, rgba(120,96,190,.14), transparent 72%);
+  animation: pulse 16s ease-in-out infinite;
+}
+
+/* ---------- Twinkle stars (JS-generated) ----------------- */
+.twinkle { position: absolute; inset: 0; z-index: 1; will-change: transform; }
+.twinkle .star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px 1px #cfe2f5;
+  animation: twinkle var(--dur, 5s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* ---------- Solar system --------------------------------- */
+.solar-wrap {
+  position: absolute;
+  left: 50%;
+  top: 78%;
+  width: 560px;
+  height: 560px;
+  margin: 0;
+  perspective: 1300px;
+  z-index: 2;
+  transform: translate(calc(-50% + var(--px, 0px)), calc(-50% + var(--py, 0px))) scale(var(--solar-scale));
+  will-change: transform;
+}
+
+.plane {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(60deg);
+  transform-style: preserve-3d;
+}
+
+.orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-style: preserve-3d;
+  animation-name: spin;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.anchor {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
+}
+
+.planet {
+  border-radius: 50%;
+  animation-name: spinrev;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* orbit radii / speeds / start offsets */
+.orbit-1 { width: 150px; height: 150px; margin: -75px;  animation-duration: 46s;  animation-delay: -5s;   }
+.orbit-2 { width: 228px; height: 228px; margin: -114px; animation-duration: 70s;  animation-delay: -20s;  }
+.orbit-3 { width: 312px; height: 312px; margin: -156px; animation-duration: 96s;  animation-delay: -42s;  }
+.orbit-4 { width: 404px; height: 404px; margin: -202px; animation-duration: 132s; animation-delay: -85s;  }
+.orbit-5 { width: 506px; height: 506px; margin: -253px; animation-duration: 184s; animation-delay: -150s; }
+
+/* planet counter-rotation must match its orbit's duration + delay */
+.planet-mercury { width: 9px;  height: 9px;  animation-duration: 46s;  animation-delay: -5s;   background: radial-gradient(circle at 32% 28%, #cdd4dd, #6c727c); box-shadow: 0 0 10px rgba(170,190,220,.4); }
+.planet-venus   { width: 15px; height: 15px; animation-duration: 70s;  animation-delay: -20s;  background: radial-gradient(circle at 32% 28%, #fff6e2, #b9a079); box-shadow: 0 0 14px rgba(210,190,150,.4); }
+.planet-earth   { width: 17px; height: 17px; animation-duration: 96s;  animation-delay: -42s;  background: radial-gradient(circle at 30% 28%, #dceafb, #3f6aa0 60%, #22406b); box-shadow: 0 0 16px rgba(110,160,225,.55); }
+.planet-mars    { width: 12px; height: 12px; animation-duration: 132s; animation-delay: -85s;  background: radial-gradient(circle at 32% 28%, #e7b9a4, #9a5b48); box-shadow: 0 0 12px rgba(190,120,95,.4); }
+
+.planet-saturn  { position: relative; width: 22px; height: 22px; animation-duration: 184s; animation-delay: -150s; transform-style: preserve-3d; }
+.saturn-ring {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 44px; height: 44px;
+  transform: translate(-50%, -50%) rotateX(74deg);
+  border-radius: 50%;
+  border: 2px solid rgba(190,210,235,.45);
+  box-shadow: 0 0 8px rgba(157,193,230,.25);
+}
+.saturn-body {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #eef3f9, #b6bcc7 55%, #8a93a4);
+  box-shadow: 0 0 14px rgba(180,200,225,.4);
+}
+
+.sun {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 46px; height: 46px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #fff4d6, #ffd98a 40%, #f1ad4e 72%, #c97f2c);
+  box-shadow: 0 0 40px 10px rgba(245,200,120,.45), 0 0 90px 30px rgba(245,190,110,.18);
+  z-index: 4;
+}
+
+/* ---------- Vignette ------------------------------------- */
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 40%, transparent 38%, rgba(0,0,0,.55) 100%);
+}
+
+/* ---------- Navigation ----------------------------------- */
+.nav {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 34px 60px;
+}
+
+.brand {
+  font-family: 'Cinzel', serif;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: .36em;
+  color: #eef4fc;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 46px;
+  align-items: center;
+  font-size: 13px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 400;
+  transition: color .25s ease;
+}
+.nav-links a:hover { color: var(--icy-bright); }
+.nav-links a.is-active { color: var(--icy-bright); font-weight: 500; }
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(157,193,230,.4);
+  border-radius: 999px;
+  padding: 10px 20px;
+  color: var(--icy-bright);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  transition: background .25s ease;
+  white-space: nowrap;
+}
+.cta:hover { background: rgba(157,193,230,.12); }
+
+/* ---------- Hero ----------------------------------------- */
+.hero {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 14px 24px 0;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 26px;
+  color: var(--icy);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .42em;
+  text-transform: uppercase;
+}
+.eyebrow .rule { width: 34px; height: 1px; background: linear-gradient(90deg, transparent, var(--icy-line)); }
+.eyebrow .rule:last-child { background: linear-gradient(90deg, var(--icy-line), transparent); }
+
+.title {
+  margin: 0;
+  max-width: 760px;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  font-size: clamp(40px, 6.4vw, 74px);
+  line-height: 1.04;
+  color: var(--ink);
+  text-shadow: 0 2px 30px rgba(0,0,0,.6), 0 0 60px rgba(20,40,80,.5);
+}
+.title em { font-style: italic; color: #bcd6f2; }
+
+.lede {
+  max-width: 480px;
+  margin: 26px 0 0;
+  font-size: clamp(15px, 1.6vw, 16px);
+  font-weight: 300;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 40px;
+}
+
+.btn {
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  transition: background .25s ease, color .25s ease;
+}
+.btn-primary {
+  border: 1px solid rgba(157,193,230,.55);
+  border-radius: 999px;
+  padding: 15px 32px;
+  color: #eaf3fd;
+  background: rgba(157,193,230,.06);
+}
+.btn-primary:hover { background: rgba(157,193,230,.16); }
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--icy);
+  padding: 15px 4px;
+}
+.btn-ghost:hover { color: var(--icy-bright); }
+
+/* ---------- Scroll cue ----------------------------------- */
+.scroll-cue {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #6f7a8c;
+  font-size: 10px;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+}
+.scroll-cue .arrow { font-size: 13px; color: var(--icy); animation: scrollcue 2.4s ease-in-out infinite; }
+
+/* ============================================================
+   Keyframes
+   ============================================================ */
+@keyframes drift1 { from { transform: translate3d(0,0,0); } to { transform: translate3d(-220px,-240px,0); } }
+@keyframes drift2 { from { transform: translate3d(0,0,0); } to { transform: translate3d(200px,-180px,0); } }
+
+/* midpoint stop prevents the 0deg/360deg no-op optimization */
+@keyframes spin {
+  0%   { transform: rotateZ(0deg); }
+  50%  { transform: rotateZ(180deg); }
+  100% { transform: rotateZ(360deg); }
+}
+@keyframes spinrev {
+  0%   { transform: rotateZ(0deg)    rotateX(-60deg); }
+  50%  { transform: rotateZ(-180deg) rotateX(-60deg); }
+  100% { transform: rotateZ(-360deg) rotateX(-60deg); }
+}
+
+@keyframes twinkle { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+@keyframes pulse   { 0%, 100% { opacity: .45; } 50% { opacity: .85; } }
+@keyframes scrollcue {
+  0%   { opacity: 0; transform: translateY(-6px); }
+  40%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(8px); }
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+  .nav { padding: 28px 36px; }
+  .nav-links { gap: 30px; }
+  :root { --solar-scale: 1.0; }
+  .solar-wrap { top: 80%; }
+}
+
+@media (max-width: 720px) {
+  .nav { flex-wrap: wrap; gap: 16px; padding: 22px 22px; justify-content: center; }
+  .nav-links { gap: 22px; font-size: 12px; }
+  .cta { display: none; }
+  .hero { padding-top: 8px; }
+  .eyebrow { letter-spacing: .3em; font-size: 11px; }
+  :root { --solar-scale: 0.72; }
+  .solar-wrap { top: 82%; }
+}
+
+@media (max-width: 460px) {
+  :root { --solar-scale: 0.52; }
+  .actions { gap: 12px; }
+  .btn-primary { padding: 13px 24px; }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .stars1, .stars2, .nebula, .twinkle .star, .scroll-cue .arrow,
+  .orbit, .planet { animation: none !important; }
+}
