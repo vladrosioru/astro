@@ -25,4 +25,13 @@ class HeroTest extends TestCase
 
         $this->get('/en')->assertSee('Custom Headline');
     }
+
+    public function test_hero_defaults_include_eyebrow_and_secondary_cta(): void
+    {
+        $defaults = SiteSetting::heroDefaults();
+
+        $this->assertSame('Celestial Guidance', $defaults['eyebrow']);
+        $this->assertArrayHasKey('cta2_label', $defaults);
+        $this->assertArrayHasKey('cta2_url', $defaults);
+    }
 }
