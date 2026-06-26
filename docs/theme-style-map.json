@@ -1,0 +1,379 @@
+{
+  "$comment": "Complete style map for the Reusable Site Template. Purpose: let an agent author a new, drop-in-replaceable theme. Read meta.how_to_create_a_theme first, then `tokens` (the swappable vocabulary), then `elements` (what each token paints) and `stage` (the animated Home hero, which has theme-specific literals to override). Generated 2026-06-26 against the live CSS.",
+
+  "meta": {
+    "project": "Reusable Site Template (Laravel 11, Node-free)",
+    "styling_model": "CSS design tokens. No raw color/font literals in markup. Brand-level appearance flows through CSS custom properties (:root) that a theme overrides; only intentionally-decorative art (planets, starfield, nebula) is hardcoded.",
+    "node_free": true,
+    "files": {
+      "token_names_and_light_defaults": "config/tokens.php",
+      "named_theme_sets": "config/themes.php",
+      "token_emitter": "resources/views/partials/tokens.blade.php  (renders <style>:root{ --token: value }</style> in <head>; merges config('tokens.defaults') with SiteSetting.branding)",
+      "branding_store": "SiteSetting.branding (DB JSON column; the active theme's token overrides)",
+      "master_layout": "resources/views/layouts/app.blade.php",
+      "css_load_order": [
+        "public/css/fonts.css            (self-hosted @font-face)",
+        "partials/tokens.blade.php       (inline :root tokens)",
+        "public/css/structure.css        (LAYOUT only — no color/font)",
+        "public/css/skin.css             (APPEARANCE — token-driven; styles all pages)",
+        "public/css/hero-solarsystem.css (animated Home stage, scoped under .stage)"
+      ],
+      "stage_js": "public/js/solarsystem.js (twinkle-star generation + mouse parallax; self-guards on .stage so it is inert on non-Home pages)"
+    },
+    "activation": {
+      "apply_theme": "php artisan app:apply-theme {name}   (writes config('themes.{name}') into SiteSetting.branding)",
+      "reset": "php artisan app:apply-theme default          (clears branding → back to config/tokens.php light defaults)",
+      "active_theme": "solarsystem",
+      "available_themes": ["solarsystem", "mystik", "default(=light)"]
+    },
+    "how_to_create_a_theme": [
+      "1. PALETTE/FONTS ONLY (recolor, no new hero art): add a new array to config/themes.php with values for the tokens listed in `tokens`. Add @font-face rules to public/css/fonts.css for any new self-hosted fonts and reference the family names in the font-* tokens. Run `php artisan app:apply-theme {yourname}`. This re-skins every page EXCEPT the hardcoded parts of the animated stage (see `stage.theme_specific_literals`).",
+      "2. NEW HERO LOOK: the .stage hero (public/css/hero-solarsystem.css) is purpose-built cosmic art (orbiting planets, starfield). For a non-cosmic theme, either (a) tokenize/override the literals in `stage.theme_specific_literals`, or (b) replace resources/views/partials/hero.blade.php + hero-solarsystem.css with your own hero and drop solarsystem.js. Keep hero copy bound to SiteSetting.hero (no hardcoded text).",
+      "3. To make the stage FULLY token-swappable, replace the literals in `stage.theme_specific_literals` with their `suggested_token` so a palette swap also recolors the hero chrome.",
+      "4. Keep the structure-vs-skin split: positional CSS in structure.css, all visual CSS token-driven in skin.css.",
+      "5. Preserve the test contract: skin.css must keep the strings `.hero`, `var(--hero-overlay)`, `var(--font-display)`, `var(--color-heading)`, and the CKEditor `.image-style-*` rules; config/tokens.php defaults must stay light (e.g. --nav-height: 4rem)."
+    ],
+    "principles": [
+      "Swap a theme by overriding tokens, not by editing markup.",
+      "Inner pages (About/Contact/Blog) are 100% token-driven — they re-skin with zero CSS edits.",
+      "The animated Home stage is partly tokenized and partly hardcoded cosmic art — see `stage`."
+    ]
+  },
+
+  "token_types": {
+    "color": "any CSS color; may be consumed directly or via color-mix(in srgb, var(--token) N%, transparent)",
+    "font-stack": "a CSS font-family list; the first family must have @font-face entries in fonts.css",
+    "length": "a CSS length; some are multiplied via calc(var(--token) * n)",
+    "shadow": "a CSS box-shadow value"
+  },
+
+  "tokens": {
+    "color-primary": {
+      "type": "color",
+      "role": "Primary brand / accent: links, primary button fill/border, eyebrow text, ghost-button text, scroll-cue arrow.",
+      "defaults": { "light": "#2563eb", "solarsystem": "#9dc1e6", "mystik": "#f0a23c" },
+      "consumed_by": [
+        "a {color} @ skin.css",
+        ".hero-cta {background} @ skin.css (legacy hero)",
+        ".btn-primary,.hero-cta {border,background via color-mix} @ skin.css",
+        ".btn-ghost {color} @ skin.css",
+        ".stage .eyebrow {color} @ hero-solarsystem.css",
+        ".stage .eyebrow .rule {background via color-mix} @ hero-solarsystem.css",
+        ".stage .btn-ghost {color} @ hero-solarsystem.css",
+        ".stage .scroll-cue .arrow {color} @ hero-solarsystem.css"
+      ]
+    },
+    "color-accent": {
+      "type": "color",
+      "role": "Secondary accent / hover-highlight: link hover, nav link hover & active, button hover text.",
+      "defaults": { "light": "#7c3aed", "solarsystem": "#dcebfb", "mystik": "#c9962f" },
+      "consumed_by": [
+        "a:hover {color} @ skin.css",
+        "nav a:hover {color} @ skin.css",
+        ".btn-ghost:hover {color} @ skin.css",
+        ".stage .nav-links a:hover / a.is-active {color} @ hero-solarsystem.css",
+        ".stage .cta {color} @ hero-solarsystem.css",
+        ".stage .btn-ghost:hover {color} @ hero-solarsystem.css"
+      ]
+    },
+    "color-bg": {
+      "type": "color",
+      "role": "Page background; also the .stage base background and the source for the translucent nav (via color-mix). Legacy hero-cta text color.",
+      "defaults": { "light": "#ffffff", "solarsystem": "#05060c", "mystik": "#0a0a0f" },
+      "consumed_by": [
+        "body {background-color} @ skin.css",
+        "nav {background via color-mix 82%} @ skin.css",
+        ".hero {background-color} @ skin.css (legacy starfield hero)",
+        ".hero-cta {color} @ skin.css (legacy)",
+        ".stage {background} @ hero-solarsystem.css"
+      ]
+    },
+    "color-bg-alt": {
+      "type": "color",
+      "role": "Elevated surfaces: card/panel background, nav bottom border.",
+      "defaults": { "light": "#f5f5f7", "solarsystem": "#0b1426", "mystik": "#14141f" },
+      "consumed_by": [
+        ".card {background} @ skin.css",
+        "nav {border-bottom} @ skin.css"
+      ]
+    },
+    "color-fg": {
+      "type": "color",
+      "role": "Body / default text. Also card border tint (via color-mix) and the stage lede text.",
+      "defaults": { "light": "#111827", "solarsystem": "#aab6c8", "mystik": "#e8e6f0" },
+      "consumed_by": [
+        "body {color} @ skin.css",
+        ".container {color} @ skin.css",
+        ".card {border via color-mix} @ skin.css",
+        ".stage .lede {color} @ hero-solarsystem.css"
+      ]
+    },
+    "color-heading": {
+      "type": "color",
+      "role": "Headings (h1–h3), brand wordmark, stage hero title.",
+      "defaults": { "light": "#111827", "solarsystem": "#f2f7fd", "mystik": "#f0a23c" },
+      "consumed_by": [
+        "h1,h2,h3 {color} @ skin.css",
+        ".brand {color} @ skin.css (inherits from h1,h2,h3,.brand rule)",
+        ".stage .title {color} @ hero-solarsystem.css"
+      ]
+    },
+    "color-muted": {
+      "type": "color",
+      "role": "Secondary / muted text: .muted, inactive nav links, figcaption, legacy hero subhead, stage nav links (idle).",
+      "defaults": { "light": "#6b7280", "solarsystem": "#9aa6b8", "mystik": "#9a96ad" },
+      "consumed_by": [
+        ".muted {color} @ skin.css",
+        "nav a {color} @ skin.css",
+        "figure.image figcaption {color} @ skin.css",
+        ".hero-subhead {color} @ skin.css (legacy)",
+        ".stage .nav-links a {color} @ hero-solarsystem.css"
+      ]
+    },
+    "font-base": {
+      "type": "font-stack",
+      "role": "Body / UI text.",
+      "defaults": {
+        "light": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "solarsystem": "'Jost', system-ui, sans-serif",
+        "mystik": "'EB Garamond', serif"
+      },
+      "consumed_by": ["body {font-family} @ skin.css"]
+    },
+    "font-heading": {
+      "type": "font-stack",
+      "role": "Headings (h1–h3) on inner pages; conceptually the stage hero title (currently hardcoded there — see stage literals).",
+      "defaults": {
+        "light": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "solarsystem": "'Cormorant Garamond', serif",
+        "mystik": "(not set — inherits light default)"
+      },
+      "consumed_by": ["h1,h2,h3 {font-family} @ skin.css (Solar System block, line 67)"]
+    },
+    "font-display": {
+      "type": "font-stack",
+      "role": "Brand wordmark + button/CTA chrome (uppercase, letter-spaced).",
+      "defaults": {
+        "light": "system-ui, -apple-system, 'Segoe UI', Roboto, serif",
+        "solarsystem": "'Cinzel', serif",
+        "mystik": "'Cinzel', serif"
+      },
+      "consumed_by": [
+        ".brand / h1,h2,h3,.brand {font-family} @ skin.css (line 23; note the later Solar System h1,h2,h3 rule overrides heading font with font-heading, leaving .brand on font-display)",
+        ".btn,.hero-cta {font-family} @ skin.css"
+      ]
+    },
+    "space-unit": {
+      "type": "length",
+      "role": "Spacing scale base, multiplied via calc(var(--space-unit) * n) for padding/margins/gaps.",
+      "defaults": { "light": "0.25rem", "solarsystem": "(inherits light)", "mystik": "(inherits light)" },
+      "consumed_by": [
+        ".container {padding} @ structure.css",
+        "nav ul / nav .container {gap} @ structure.css",
+        ".hero / .hero-cta {padding,margin} @ structure.css (legacy)",
+        ".card {padding} @ skin.css",
+        "figure.image + .image-style-* {margin} @ skin.css"
+      ]
+    },
+    "radius": {
+      "type": "length",
+      "role": "Corner radius for cards, content images, legacy hero CTA.",
+      "defaults": { "light": "0.5rem", "solarsystem": "(inherits light)", "mystik": "(inherits light)" },
+      "consumed_by": [
+        ".card {border-radius} @ skin.css",
+        "figure.image img {border-radius} @ skin.css",
+        ".hero-cta {border-radius} @ skin.css (legacy)"
+      ]
+    },
+    "shadow": {
+      "type": "shadow",
+      "role": "Card elevation shadow.",
+      "defaults": { "light": "0 1px 3px rgba(0,0,0,0.1)", "solarsystem": "(inherits light)", "mystik": "(inherits light)" },
+      "consumed_by": [".card {box-shadow} @ skin.css"]
+    },
+    "container-width": {
+      "type": "length",
+      "role": "Max width of centered content + nav.",
+      "defaults": { "light": "64rem", "solarsystem": "(inherits light)", "mystik": "(inherits light)" },
+      "consumed_by": [
+        ".container {max-width} @ structure.css",
+        ".hero-inner {max-width} @ structure.css (legacy)"
+      ]
+    },
+    "nav-height": {
+      "type": "length",
+      "role": "Minimum nav bar height.",
+      "defaults": { "light": "4rem", "solarsystem": "4.5rem", "mystik": "4.5rem" },
+      "consumed_by": ["nav {min-height} @ structure.css"]
+    },
+    "hero-overlay": {
+      "type": "color",
+      "role": "Dark scrim over the LEGACY .hero starfield (not the .stage). Retained for the mystik hero + test contract.",
+      "defaults": { "light": "rgba(0,0,0,0)", "solarsystem": "rgba(0,0,0,0.45)", "mystik": "rgba(0,0,0,0.55)" },
+      "consumed_by": [".hero::before {background} @ skin.css (legacy)"]
+    }
+  },
+
+  "elements": [
+    {
+      "element": "Page / body",
+      "applies_to": "all pages",
+      "selectors": ["body @ structure.css (margin)", "body @ skin.css (bg, color, font, static CSS starfield)"],
+      "tokens": ["color-bg", "color-fg", "font-base"],
+      "literals": ["6-layer radial-gradient starfield (white/icy dots) with background-attachment: fixed — decorative; visible only on a dark color-bg"],
+      "notes": "On a light theme the starfield dots are invisible (white-on-light); harmless. Remove/adjust the body background-image block for a non-starry theme."
+    },
+    {
+      "element": "Headings (h1, h2, h3)",
+      "applies_to": "all pages",
+      "selectors": ["h1,h2,h3 @ skin.css line 67 (Solar System block wins)"],
+      "tokens": ["font-heading", "color-heading"],
+      "notes": "An earlier rule (line 23) sets headings+.brand to font-display; the later Solar System rule re-sets h1–h3 to font-heading. Net: headings=font-heading, .brand=font-display."
+    },
+    {
+      "element": "Brand wordmark (.brand)",
+      "applies_to": "global nav (inner pages)",
+      "selectors": ["h1,h2,h3,.brand @ skin.css line 23", ".brand @ skin.css line 24"],
+      "tokens": ["font-display", "color-heading"],
+      "notes": "On the Home stage the brand is styled by `.stage .brand` with HARDCODED font/color — see stage literals."
+    },
+    {
+      "element": "Global navigation bar (nav)",
+      "applies_to": "all pages (single partial; transparent overlay on Home via .page-home)",
+      "selectors": [
+        "nav @ structure.css (sticky, min-height, flex)",
+        ".page-home nav @ structure.css (absolute overlay on Home)",
+        "nav @ skin.css (translucent bg via color-mix, blur, border)",
+        "nav a @ skin.css (muted, uppercase, letter-spacing)",
+        "nav a:hover @ skin.css",
+        ".page-home nav @ skin.css (transparent, no border on Home)"
+      ],
+      "tokens": ["color-bg", "color-bg-alt", "color-muted", "color-accent", "nav-height", "space-unit", "container-width"],
+      "notes": "Inner pages: sticky translucent bar. Home: transparent overlay over the stage."
+    },
+    {
+      "element": "Links (a) + muted text (.muted)",
+      "applies_to": "all pages",
+      "selectors": ["a / a:hover @ skin.css", ".muted @ skin.css"],
+      "tokens": ["color-primary", "color-accent", "color-muted"]
+    },
+    {
+      "element": "Buttons / CTAs (.btn, .btn-primary, .btn-ghost, .hero-cta) — INNER PAGES",
+      "applies_to": "inner pages (token-driven)",
+      "selectors": [
+        ".btn,.hero-cta @ skin.css (font-display, uppercase)",
+        ".btn-primary,.hero-cta @ skin.css (icy pill via color-mix)",
+        ".btn-primary:hover @ skin.css",
+        ".btn-ghost / .btn-ghost:hover @ skin.css"
+      ],
+      "tokens": ["color-primary", "color-accent", "font-display"],
+      "notes": "These ARE fully token-driven. The visually-identical buttons inside the .stage are NOT (hardcoded) — see stage literals."
+    },
+    {
+      "element": "Cards / content panels (.card)",
+      "applies_to": "all pages (e.g. blog list items)",
+      "selectors": [".card @ skin.css line 6 (radius, shadow)", ".card @ skin.css line 95 (bg, border, padding)", ".card a @ skin.css"],
+      "tokens": ["color-bg-alt", "color-fg", "radius", "shadow", "space-unit"],
+      "notes": "Two .card rules exist (later wins for border opacity); behavior correct, could be consolidated."
+    },
+    {
+      "element": "Content container (.container)",
+      "applies_to": "all inner-page content",
+      "selectors": [".container @ structure.css (max-width, padding)", ".container @ skin.css (color)"],
+      "tokens": ["container-width", "space-unit", "color-fg"]
+    },
+    {
+      "element": "CKEditor content images (figure.image, .image-style-*, .image_resized)",
+      "applies_to": "blog post bodies",
+      "selectors": ["figure.image / img / figcaption @ skin.css", ".image-style-align-* / -side / -block-align-* @ skin.css", ".image_resized @ skin.css"],
+      "tokens": ["space-unit", "radius", "color-muted"],
+      "notes": "Layout/alignment for rich-text images. Class names are produced by CKEditor; do not rename. Required by SkinCssTest."
+    },
+    {
+      "element": "LEGACY hero (.hero, .hero-inner, .hero-title, .hero-subhead, .hero-cta)",
+      "applies_to": "NOT used by the Solar System markup; belongs to the mystik/CSS-starfield hero. Retained for mystik + test contract.",
+      "selectors": [".hero @ structure.css", ".hero / ::before / .hero-title / .hero-subhead / .hero-cta @ skin.css"],
+      "tokens": ["color-bg", "color-muted", "color-primary", "hero-overlay", "radius", "font-display", "space-unit", "container-width"],
+      "notes": "The current Home hero uses `.stage` markup (see stage). These classes still render the CSS-starfield hero if a theme/markup uses them."
+    }
+  ],
+
+  "stage": {
+    "description": "The animated Solar System Home hero. Full-viewport (.stage), scoped CSS so it never leaks to inner pages. Markup: resources/views/partials/hero.blade.php (cosmos layers + 5 orbits/planets + sun + nebula + vignette + hero copy + scroll cue). Behavior: public/js/solarsystem.js.",
+    "file": "public/css/hero-solarsystem.css",
+    "scope": "every selector prefixed `.stage `; @keyframes are global",
+    "data_driven_copy": {
+      "source": "SiteSetting.hero (merged with SiteSetting::heroDefaults())",
+      "map": {
+        ".stage .eyebrow": "hero.eyebrow (rendered if non-empty)",
+        ".stage .title": "hero.headline",
+        ".stage .lede": "hero.subhead",
+        ".stage .btn-primary": "hero.cta_label / cta_url",
+        ".stage .btn-ghost": "hero.cta2_label / cta2_url (rendered if cta2_label non-empty)"
+      }
+    },
+    "tokenized_selectors": {
+      ".stage": ["color-bg"],
+      ".stage .eyebrow": ["color-primary"],
+      ".stage .eyebrow .rule": ["color-primary (via color-mix)"],
+      ".stage .title": ["color-heading"],
+      ".stage .lede": ["color-fg"],
+      ".stage .nav-links a": ["color-muted"],
+      ".stage .nav-links a:hover / .is-active": ["color-accent"],
+      ".stage .cta": ["color-accent (text only)"],
+      ".stage .btn-ghost": ["color-primary"],
+      ".stage .btn-ghost:hover": ["color-accent"],
+      ".stage .scroll-cue .arrow": ["color-primary"]
+    },
+    "theme_specific_literals": {
+      "$comment": "These hardcode the Solar System icy palette / fonts instead of tokens. A palette swap via app:apply-theme will NOT recolor them. To make the stage fully swappable, replace each `value` with its `suggested_token`.",
+      "items": [
+        { "selector": ".stage .brand", "property": "font-family", "value": "'Cinzel', serif", "suggested_token": "var(--font-display)" },
+        { "selector": ".stage .brand", "property": "color", "value": "#eef4fc", "suggested_token": "var(--color-heading)" },
+        { "selector": ".stage .title", "property": "font-family", "value": "'Cormorant Garamond', serif", "suggested_token": "var(--font-heading)" },
+        { "selector": ".stage .title em", "property": "color", "value": "#bcd6f2", "suggested_token": "var(--color-accent) or a new --color-heading-em" },
+        { "selector": ".stage .cta", "property": "border-color", "value": "rgba(157,193,230,.4)", "suggested_token": "color-mix(in srgb, var(--color-primary) 40%, transparent)" },
+        { "selector": ".stage .cta:hover", "property": "background", "value": "rgba(157,193,230,.12)", "suggested_token": "color-mix(in srgb, var(--color-primary) 12%, transparent)" },
+        { "selector": ".stage .btn-primary", "property": "border-color", "value": "rgba(157,193,230,.55)", "suggested_token": "color-mix(in srgb, var(--color-primary) 55%, transparent)" },
+        { "selector": ".stage .btn-primary", "property": "color", "value": "#eaf3fd", "suggested_token": "var(--color-accent)" },
+        { "selector": ".stage .btn-primary", "property": "background", "value": "rgba(157,193,230,.06)", "suggested_token": "color-mix(in srgb, var(--color-primary) 6%, transparent)" },
+        { "selector": ".stage .btn-primary:hover", "property": "background", "value": "rgba(157,193,230,.16)", "suggested_token": "color-mix(in srgb, var(--color-primary) 16%, transparent)" }
+      ]
+    },
+    "decorative_art_literals": {
+      "$comment": "Purpose-built cosmic art — NOT brand tokens. For a non-cosmic theme, replace or remove these wholesale rather than tokenizing.",
+      "items": [
+        { "selector": ".stage .bg-base", "what": "deep-space radial gradient", "value": "radial-gradient(120% 100% at 50% 30%, #0b1426, #070a14 45%, #04050b)" },
+        { "selector": ".stage .stars1 / .stars2", "what": "tiled drifting star dots", "value": "multiple white/icy radial-gradients; animation drift1/drift2" },
+        { "selector": ".stage .nebula", "what": "blue/purple nebula glow", "value": "rgba(74,124,196,.20) + rgba(120,96,190,.14); animation pulse" },
+        { "selector": ".stage .twinkle .star", "what": "JS-generated twinkling stars", "value": "#fff + box-shadow #cfe2f5; animation twinkle" },
+        { "selector": ".stage .planet-mercury/venus/earth/mars", "what": "planet bodies", "value": "per-planet radial-gradient + colored glow" },
+        { "selector": ".stage .planet-saturn / .saturn-ring / .saturn-body", "what": "Saturn + ring", "value": "gray-blue gradients + rgba ring" },
+        { "selector": ".stage .sun", "what": "central sun", "value": "radial-gradient(#fff4d6→#c97f2c) + warm glow" },
+        { "selector": ".stage .vignette", "what": "edge darkening", "value": "radial-gradient transparent→rgba(0,0,0,.55)" },
+        { "selector": ".stage .scroll-cue", "what": "scroll hint text", "value": "color #6f7a8c" }
+      ]
+    },
+    "geometry_vars": {
+      "--solar-scale": "scales the whole solar-system cluster; set on .stage (1.18) and overridden in media queries (1.0 / 0.72 / 0.52)",
+      "--px / --py": "parallax offsets set by solarsystem.js on .solar-wrap",
+      "--dur / --delay": "per-star twinkle timing set by solarsystem.js"
+    },
+    "keyframes": ["drift1", "drift2", "spin", "spinrev", "twinkle", "pulse", "scrollcue"],
+    "responsive_breakpoints": ["1024px", "720px (hides .cta)", "460px"],
+    "reduced_motion": "@media (prefers-reduced-motion: reduce) disables all stage animations"
+  },
+
+  "fonts": [
+    { "family": "Jost", "weights": [300, 400, 500, 600], "style": "normal", "files": ["/fonts/jost-300.woff2", "/fonts/jost-400.woff2", "/fonts/jost-500.woff2", "/fonts/jost-600.woff2"], "used_for": "font-base (Solar System body/UI)" },
+    { "family": "Cormorant Garamond", "weights": [400, 500], "style": "normal+italic(400)", "files": ["/fonts/cormorant-garamond-400.woff2", "/fonts/cormorant-garamond-500.woff2", "/fonts/cormorant-garamond-400-italic.woff2"], "used_for": "font-heading (Solar System headings + stage title literal)" },
+    { "family": "Cinzel", "weights": [400, 600, 700], "style": "normal", "files": ["/fonts/cinzel-400.woff2", "/fonts/cinzel-600.woff2", "/fonts/cinzel-700.woff2"], "used_for": "font-display (brand/chrome)" },
+    { "family": "EB Garamond", "weights": [400, 700], "style": "normal+italic(400)", "files": ["/fonts/eb-garamond-400.woff2", "/fonts/eb-garamond-700.woff2", "/fonts/eb-garamond-400-italic.woff2"], "used_for": "mystik theme font-base" }
+  ],
+
+  "known_inconsistencies_for_theme_author": [
+    "Stage buttons/brand/title hardcode the icy palette & fonts (see stage.theme_specific_literals) — a token-only swap recolors inner pages but not those stage elements. Tokenize them for a fully swappable theme.",
+    "skin.css has duplicate body / h1,h2,h3 / .card rules (original light-theme block + appended Solar System block; the later wins). Cosmetic; consolidate if rewriting.",
+    "Legacy .hero* classes (CSS-starfield hero) coexist with the .stage hero; only .stage is used by current Home markup."
+  ]
+}

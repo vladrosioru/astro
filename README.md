@@ -120,6 +120,10 @@ public/css/hero-solarsystem.css  (animated Home stage, .stage-scoped)
 
 > Design docs: [`docs/superpowers/specs/2026-06-26-solarsystem-theme-design.md`](docs/superpowers/specs/2026-06-26-solarsystem-theme-design.md) and the matching plan in `docs/superpowers/plans/`.
 
+### Building a new theme
+
+[`docs/theme-style-map.json`](docs/theme-style-map.json) is a complete machine-readable map of the styling system — every token (role, type, per-theme values, and which selectors consume it), an element→token map per component, and the animated stage's tokenized vs. hardcoded literals. It's written to be handed to an agent to author a new, drop-in-replaceable theme. Start at its `meta.how_to_create_a_theme`.
+
 ---
 
 ## Fonts (self-hosted)
