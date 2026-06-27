@@ -1,0 +1,40 @@
+{
+  "$schema": "../theme.schema.json",
+  "name": "solarsystem",
+  "title": "Solar System",
+  "description": "Dark celestial theme with an animated orbiting-planets hero and shared cosmos backdrop.",
+  "version": "1.0.0",
+  "screenshot": "screenshot.png",
+  "page_home_class": "page-home",
+  "tokens": {
+    "color-primary": { "type": "color", "role": "Links, primary button, eyebrow, scroll cue", "value": "#9dc1e6" },
+    "color-accent":  { "type": "color", "role": "Hover/active highlight", "value": "#dcebfb" },
+    "color-bg":      { "type": "color", "role": "Page background; stage base; nav source", "value": "#05060c" },
+    "color-bg-alt":  { "type": "color", "role": "Cards/panels; nav border", "value": "#0b1426" },
+    "color-fg":      { "type": "color", "role": "Body text; card border tint; stage lede", "value": "#aab6c8" },
+    "color-heading": { "type": "color", "role": "Headings; stage title", "value": "#f2f7fd" },
+    "color-muted":   { "type": "color", "role": "Muted text; idle nav links", "value": "#9aa6b8" },
+    "font-base":     { "type": "font-stack", "role": "Body/UI text", "value": "'Jost', system-ui, sans-serif" },
+    "font-heading":  { "type": "font-stack", "role": "Headings", "value": "'Cormorant Garamond', serif" },
+    "font-display":  { "type": "font-stack", "role": "Button/CTA chrome", "value": "'Cinzel', serif" },
+    "space-unit":    { "type": "length", "role": "Spacing scale base", "value": "0.25rem" },
+    "radius":        { "type": "length", "role": "Corner radius", "value": "0.5rem" },
+    "shadow":        { "type": "shadow", "role": "Card elevation", "value": "0 1px 3px rgba(0,0,0,0.1)" },
+    "container-width": { "type": "length", "role": "Max content width", "value": "64rem" },
+    "nav-height":    { "type": "length", "role": "Nav min height", "value": "4.5rem" },
+    "hero-overlay":  { "type": "color", "role": "Legacy hero scrim", "value": "rgba(0,0,0,0.45)" }
+  },
+  "fonts": [
+    { "family": "Jost", "weights": [300,400,500,600], "style": "normal",
+      "files": ["fonts/jost-300.woff2","fonts/jost-400.woff2","fonts/jost-500.woff2","fonts/jost-600.woff2"], "used_for": "font-base" },
+    { "family": "Cormorant Garamond", "weights": [400,500], "style": "normal+italic(400)",
+      "files": ["fonts/cormorant-garamond-400.woff2","fonts/cormorant-garamond-500.woff2","fonts/cormorant-garamond-400-italic.woff2"], "used_for": "font-heading" },
+    { "family": "Cinzel", "weights": [400,600,700], "style": "normal",
+      "files": ["fonts/cinzel-400.woff2","fonts/cinzel-600.woff2","fonts/cinzel-700.woff2"], "used_for": "font-display" }
+  ],
+  "assets": {
+    "css": ["css/fonts.css", "css/structure.css", "css/cosmos.css", "css/skin.css", "css/hero.css"],
+    "js": [{ "src": "js/solarsystem.js", "defer": true }]
+  },
+  "views": { "namespace": "theme", "hero": "hero", "cosmos": "cosmos" }
+}

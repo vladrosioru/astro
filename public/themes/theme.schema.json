@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Site Template theme.json",
+  "type": "object",
+  "required": ["name", "title", "tokens", "assets"],
+  "properties": {
+    "name": { "type": "string", "pattern": "^[a-z0-9_-]+$" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "version": { "type": "string" },
+    "screenshot": { "type": "string" },
+    "page_home_class": { "type": "string" },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["type", "role", "value"],
+        "properties": {
+          "type": { "enum": ["color", "font-stack", "length", "shadow"] },
+          "role": { "type": "string" },
+          "value": { "type": "string" }
+        }
+      }
+    },
+    "fonts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["family", "files"],
+        "properties": {
+          "family": { "type": "string" },
+          "weights": { "type": "array", "items": { "type": "number" } },
+          "style": { "type": "string" },
+          "files": { "type": "array", "items": { "type": "string" } },
+          "used_for": { "type": "string" }
+        }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "required": ["css"],
+      "properties": {
+        "css": { "type": "array", "items": { "type": "string" } },
+        "js": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["src"],
+            "properties": {
+              "src": { "type": "string" },
+              "defer": { "type": "boolean" },
+              "async": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "views": {
+      "type": "object",
+      "properties": {
+        "namespace": { "type": "string" },
+        "hero": { "type": "string" },
+        "cosmos": { "type": "string" },
+        "nav": { "type": "string" }
+      }
+    }
+  }
+}

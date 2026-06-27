@@ -1,0 +1,87 @@
+/* ============================================================
+   Shared cosmos backdrop
+   A fixed, full-viewport layer rendered behind EVERY page.
+   Same starfield / nebula / twinkle art as the Home stage,
+   MINUS the solar system and MINUS the mouse parallax / 3D
+   perspective movement. Gentle ambient drift only.
+   Decorative art literals (kept in sync with hero-solarsystem.css).
+   ============================================================ */
+
+.cosmos {
+  position: fixed;
+  inset: 0;
+  z-index: -1;            /* behind all page content */
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--color-bg);
+}
+
+/* ---------- Deep-space base gradient ---------------------- */
+.cosmos .bg-base {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 100% at 50% 30%, #0b1426 0%, #070a14 45%, #04050b 100%);
+  z-index: 0;
+}
+
+/* ---------- Starfield (drifting tiled layers) ------------ */
+.cosmos .bg-layer { position: absolute; inset: 0; z-index: 1; }
+.cosmos .stars { position: absolute; inset: -320px; }
+
+.cosmos .stars1 {
+  background-image:
+    radial-gradient(1px 1px at 25px 35px, #fff, transparent),
+    radial-gradient(1px 1px at 75px 120px, rgba(255,255,255,.75), transparent),
+    radial-gradient(1px 1px at 140px 60px, rgba(210,228,255,.8), transparent),
+    radial-gradient(1.4px 1.4px at 180px 165px, #fff, transparent),
+    radial-gradient(1px 1px at 110px 205px, rgba(255,255,255,.6), transparent),
+    radial-gradient(1px 1px at 45px 185px, rgba(190,215,255,.8), transparent);
+  background-size: 220px 240px;
+  animation: drift1 150s linear infinite;
+}
+
+.cosmos .stars2 {
+  background-image:
+    radial-gradient(1.6px 1.6px at 60px 50px, #fff, transparent),
+    radial-gradient(1px 1px at 200px 100px, rgba(255,255,255,.55), transparent),
+    radial-gradient(2px 2px at 130px 220px, rgba(220,235,255,.9), transparent),
+    radial-gradient(1px 1px at 280px 180px, rgba(255,255,255,.5), transparent);
+  background-size: 320px 300px;
+  opacity: .85;
+  animation: drift2 210s linear infinite;
+}
+
+/* ---------- Nebula glow ---------------------------------- */
+.cosmos .nebula {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(38% 48% at 28% 32%, rgba(74,124,196,.20), transparent 70%),
+    radial-gradient(45% 55% at 76% 66%, rgba(120,96,190,.14), transparent 72%);
+  animation: pulse 16s ease-in-out infinite;
+}
+
+/* ---------- Twinkle stars (JS-generated into .twinkle) --- */
+.cosmos .twinkle { position: absolute; inset: 0; z-index: 1; }
+.cosmos .twinkle .star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px 1px #cfe2f5;
+  animation: twinkle var(--dur, 5s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* ============================================================
+   Keyframes (ambient drift only — no 3D / parallax)
+   ============================================================ */
+@keyframes drift1 { from { transform: translate3d(0,0,0); } to { transform: translate3d(-220px,-240px,0); } }
+@keyframes drift2 { from { transform: translate3d(0,0,0); } to { transform: translate3d(200px,-180px,0); } }
+@keyframes twinkle { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+@keyframes pulse   { 0%, 100% { opacity: .45; } 50% { opacity: .85; } }
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .cosmos .stars1, .cosmos .stars2, .cosmos .nebula, .cosmos .twinkle .star { animation: none !important; }
+}
