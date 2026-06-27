@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\ThemeManager;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,7 +16,16 @@ class ThemeServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        try {
+        // ThemeManager reads SiteSetting (the DB) to resolve the active theme.
+        // During the test bootstrap the site_settings table may not exist yet
+        // (providers boot before RefreshDatabase migrates), so guard the read.
+        // callAfterResolving defers execution until the view factory is first used,
+        // by which point migrations have already run.
+        $this->callAfterResolving('view', function () {
+            if (! Schema::hasTable('site_settings')) {
+                return;
+            }
+
             $manager = $this->app->make('theme.manager');
 
             if ($path = $manager->viewsPath()) {
@@ -24,16 +34,6 @@ class ThemeServiceProvider extends ServiceProvider
 
             View::share('themeManager', $manager);
             View::share('theme', $manager->manifest());
-        } catch (\Throwable $e) {
-            // Database may not be available during initial app bootstrap in tests.
-            // The singleton is still registered and will work once the database is available.
-            // Attempt to register the namespace without database access by using the database default theme.
-            // (This assumes the database will have a 'solarsystem' theme as default when it's created)
-            $fallback = 'solarsystem';
-            $path = public_path(config('theme.path', 'themes') . '/theme_' . $fallback . '/views');
-            if (is_dir($path)) {
-                View::addNamespace('theme', $path);
-            }
-        }
+        });
     }
 }
