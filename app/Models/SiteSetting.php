@@ -29,6 +29,7 @@ class SiteSetting extends Model
             'nav'      => [],
             'contact'  => ['email' => '', 'phone' => '', 'address' => ''],
             'branding' => [],
+            'theme'    => 'solarsystem',
             'locales'  => ['default' => 'en', 'supported' => ['en', 'ro']],
             'hero'     => self::heroDefaults(),
         ];
