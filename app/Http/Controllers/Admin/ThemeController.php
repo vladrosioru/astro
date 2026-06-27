@@ -25,7 +25,7 @@ class ThemeController extends Controller
             'theme' => ['required', 'string', Rule::in($names)],
         ]);
 
-        SiteSetting::current()->update(['theme' => $data['theme']]);
+        SiteSetting::current()->switchTheme($data['theme']);
         Artisan::call('view:clear');
 
         return redirect('/admin/themes')->with('status', "Theme switched to {$data['theme']}.");

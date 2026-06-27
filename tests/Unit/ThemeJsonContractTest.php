@@ -27,6 +27,11 @@ class ThemeJsonContractTest extends TestCase
                 foreach (['type', 'role', 'value'] as $field) {
                     $this->assertArrayHasKey($field, $def, "Token '$name' missing '$field' in $manifestPath");
                 }
+                $this->assertContains(
+                    $def['type'],
+                    ['color', 'font-stack', 'length', 'shadow'],
+                    "Token '$name' has invalid type '{$def['type']}' in $manifestPath"
+                );
             }
 
             // Every referenced CSS asset exists on disk.

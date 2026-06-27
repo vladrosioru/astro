@@ -23,7 +23,7 @@ class ApplyTheme extends Command
             return self::FAILURE;
         }
 
-        SiteSetting::current()->update(['theme' => $name]);
+        SiteSetting::current()->switchTheme($name);
         Artisan::call('view:clear');
         app()->forgetInstance('theme.manager');
         $this->info("Active theme set to '{$name}'.");

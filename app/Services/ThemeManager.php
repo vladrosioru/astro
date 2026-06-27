@@ -95,7 +95,8 @@ class ThemeManager
 
         foreach (glob(public_path(config('theme.path') . '/theme_*'), GLOB_ONLYDIR) as $dir) {
             $m = json_decode(@file_get_contents($dir . '/theme.json'), true) ?: [];
-            $name = $m['name'] ?? basename($dir);
+            // The folder name is authoritative: it is what active() and the
+            // Rule::in() allow-list compare against, so derive the name from it.
             $name = preg_replace('/^theme_/', '', basename($dir));
             $out[] = [
                 'name'        => $name,
