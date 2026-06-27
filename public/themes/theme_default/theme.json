@@ -1,0 +1,29 @@
+{
+  "$schema": "../theme.schema.json",
+  "name": "default",
+  "title": "Default (Light)",
+  "description": "Minimal light base theme with system-ui fonts and default token values.",
+  "version": "1.0.0",
+  "tokens": {
+    "color-primary":   { "type": "color",      "role": "Links, primary button, eyebrow",       "value": "#2563eb" },
+    "color-accent":    { "type": "color",      "role": "Hover/active highlight",                "value": "#7c3aed" },
+    "color-bg":        { "type": "color",      "role": "Page background; stage base; nav source","value": "#ffffff" },
+    "color-bg-alt":    { "type": "color",      "role": "Cards/panels; nav border",              "value": "#f5f5f7" },
+    "color-fg":        { "type": "color",      "role": "Body text; card border tint; stage lede","value": "#111827" },
+    "color-heading":   { "type": "color",      "role": "Headings; stage title",                 "value": "#111827" },
+    "color-muted":     { "type": "color",      "role": "Muted text; idle nav links",            "value": "#6b7280" },
+    "font-base":       { "type": "font-stack", "role": "Body/UI text",                          "value": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" },
+    "font-heading":    { "type": "font-stack", "role": "Headings",                              "value": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" },
+    "font-display":    { "type": "font-stack", "role": "Button/CTA chrome",                     "value": "system-ui, -apple-system, 'Segoe UI', Roboto, serif" },
+    "space-unit":      { "type": "length",     "role": "Spacing scale base",                    "value": "0.25rem" },
+    "radius":          { "type": "length",     "role": "Corner radius",                         "value": "0.5rem" },
+    "shadow":          { "type": "shadow",     "role": "Card elevation",                        "value": "0 1px 3px rgba(0,0,0,0.1)" },
+    "container-width": { "type": "length",     "role": "Max content width",                     "value": "64rem" },
+    "nav-height":      { "type": "length",     "role": "Nav min height",                        "value": "4rem" },
+    "hero-overlay":    { "type": "color",      "role": "Legacy hero scrim",                     "value": "rgba(0,0,0,0)" }
+  },
+  "assets": {
+    "css": ["css/structure.css", "css/skin.css"]
+  },
+  "views": { "namespace": "theme", "hero": "hero" }
+}
