@@ -9,11 +9,13 @@ class NavBrandingTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_nav_shows_the_gold_wordmark(): void
+    public function test_nav_shows_the_logo_centered_between_the_links(): void
     {
         $this->get('/en')
             ->assertOk()
-            ->assertSee('✦')
+            // Logo image replaces the old text wordmark; alt carries the site name.
+            ->assertSee('img/logo-nav.png', false)
+            ->assertSee('class="nav-logo"', false)
             ->assertSee(config('app.name'));
     }
 }

@@ -12,7 +12,7 @@
   min-height: 680px;
   overflow: hidden;
   isolation: isolate;
-  background: var(--color-bg);
+  background: transparent;   /* shared cosmos backdrop (cosmos.css) shows through */
   --solar-scale: 1.18;
 }
 
@@ -24,62 +24,9 @@
 .stage .hero { background: none; }
 .stage .hero::before { content: none; }
 
-.stage .bg-base {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(120% 100% at 50% 30%, #0b1426 0%, #070a14 45%, #04050b 100%);
-  z-index: 0;
-}
-
-/* ---------- Starfield (drifting tiled layers) ------------ */
-.stage .bg-layer { position: absolute; inset: 0; z-index: 1; will-change: transform; }
-
-.stage .stars { position: absolute; inset: -320px; }
-
-.stage .stars1 {
-  background-image:
-    radial-gradient(1px 1px at 25px 35px, #fff, transparent),
-    radial-gradient(1px 1px at 75px 120px, rgba(255,255,255,.75), transparent),
-    radial-gradient(1px 1px at 140px 60px, rgba(210,228,255,.8), transparent),
-    radial-gradient(1.4px 1.4px at 180px 165px, #fff, transparent),
-    radial-gradient(1px 1px at 110px 205px, rgba(255,255,255,.6), transparent),
-    radial-gradient(1px 1px at 45px 185px, rgba(190,215,255,.8), transparent);
-  background-size: 220px 240px;
-  animation: drift1 150s linear infinite;
-}
-
-.stage .stars2 {
-  background-image:
-    radial-gradient(1.6px 1.6px at 60px 50px, #fff, transparent),
-    radial-gradient(1px 1px at 200px 100px, rgba(255,255,255,.55), transparent),
-    radial-gradient(2px 2px at 130px 220px, rgba(220,235,255,.9), transparent),
-    radial-gradient(1px 1px at 280px 180px, rgba(255,255,255,.5), transparent);
-  background-size: 320px 300px;
-  opacity: .85;
-  animation: drift2 210s linear infinite;
-}
-
-/* ---------- Nebula glow ---------------------------------- */
-.stage .nebula {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    radial-gradient(38% 48% at 28% 32%, rgba(74,124,196,.20), transparent 70%),
-    radial-gradient(45% 55% at 76% 66%, rgba(120,96,190,.14), transparent 72%);
-  animation: pulse 16s ease-in-out infinite;
-}
-
-/* ---------- Twinkle stars (JS-generated) ----------------- */
-.stage .twinkle { position: absolute; inset: 0; z-index: 1; will-change: transform; }
-.stage .twinkle .star {
-  position: absolute;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 6px 1px #cfe2f5;
-  animation: twinkle var(--dur, 5s) ease-in-out infinite;
-  animation-delay: var(--delay, 0s);
-}
+/* The deep-space base, drifting starfield, nebula glow and twinkle stars now
+   live in the shared backdrop (public/css/cosmos.css) and show through the
+   transparent stage — keeping a single source of truth for the cosmos art. */
 
 /* ---------- Solar system --------------------------------- */
 .stage .solar-wrap {
@@ -334,8 +281,7 @@
 /* ============================================================
    Keyframes
    ============================================================ */
-@keyframes drift1 { from { transform: translate3d(0,0,0); } to { transform: translate3d(-220px,-240px,0); } }
-@keyframes drift2 { from { transform: translate3d(0,0,0); } to { transform: translate3d(200px,-180px,0); } }
+/* Background drift keyframes (drift1/drift2/twinkle/pulse) live in cosmos.css. */
 
 /* midpoint stop prevents the 0deg/360deg no-op optimization */
 @keyframes spin {
@@ -349,8 +295,6 @@
   100% { transform: rotateZ(-360deg) rotateX(-60deg); }
 }
 
-@keyframes twinkle { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
-@keyframes pulse   { 0%, 100% { opacity: .45; } 50% { opacity: .85; } }
 @keyframes scrollcue {
   0%   { opacity: 0; transform: translateY(-6px); }
   40%  { opacity: 1; }
@@ -386,6 +330,5 @@
 
 /* Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
-  .stage .stars1, .stage .stars2, .stage .nebula, .stage .twinkle .star, .stage .scroll-cue .arrow,
-  .stage .orbit, .stage .planet { animation: none !important; }
+  .stage .scroll-cue .arrow, .stage .orbit, .stage .planet { animation: none !important; }
 }

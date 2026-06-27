@@ -1,0 +1,45 @@
+/* ============================================================
+   Blog article display area
+   The CKEditor-authored body renders on a clean white "paper"
+   sheet over the shared cosmos backdrop — exactly as the user
+   edits it. The page loads the same ckeditor5.css and wraps the
+   body in `.ck-content`, so all rich-text styling (headings,
+   lists, tables, blockquotes, images, alignment) matches the
+   editor. The cosmic theme is reset OUT of `.ck-content` so the
+   site skin never bleeds into the content.
+   The article <h1> title above the sheet stays themed like the
+   rest of the site (light serif on the cosmos).
+   ============================================================ */
+
+.article-paper {
+  max-width: 48rem;
+  margin: calc(var(--space-unit) * 6) auto calc(var(--space-unit) * 12);
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  background: #fff;                         /* CKEditor --ck-color-base-background */
+  border-radius: var(--radius);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .45);
+}
+
+/* Content base: match CKEditor's editing surface (dark text, default font). */
+.article-paper .ck-content {
+  color: #333;                             /* CKEditor --ck-color-base-text */
+  font-family: Helvetica, Arial, Tahoma, Verdana, sans-serif; /* --ck-font-face */
+  line-height: 1.6;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Undo the cosmic theme's global heading styling so article headings render
+   like the editor (dark, readable, selectable) instead of the site skin. */
+.article-paper .ck-content :is(h1, h2, h3, h4, h5, h6) {
+  color: #1a1a1a;
+  font-family: inherit;
+  letter-spacing: normal;
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+
+/* Links inside the article read as document links, not theme links. */
+.article-paper .ck-content a { color: #1a6dde; }
+.article-paper .ck-content a:hover { color: #0b50b0; }

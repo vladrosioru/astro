@@ -2,12 +2,9 @@
     $hero = array_merge(\App\Models\SiteSetting::heroDefaults(), \App\Models\SiteSetting::current()->hero ?? []);
 @endphp
 <section class="stage">
-    {{-- cosmos background --}}
-    <div class="bg-base"></div>
-    <div class="bg-layer" data-depth="0.35"><div class="stars stars1"></div></div>
-    <div class="bg-layer" data-depth="0.7"><div class="stars stars2"></div></div>
-    <div class="nebula"></div>
-    <div class="twinkle" data-depth="1.1"></div>
+    {{-- Cosmos background is shared site-wide (partials/cosmos.blade.php) and
+         shows through the transparent stage. Only the solar system + parallax
+         live here. --}}
 
     {{-- solar system --}}
     <div class="solar-wrap" data-parallax="solar">
