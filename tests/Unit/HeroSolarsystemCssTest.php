@@ -2,23 +2,25 @@
 
 namespace Tests\Unit;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class HeroSolarsystemCssTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_stage_css_defines_animated_solar_system(): void
     {
-        $css = file_get_contents(public_path('css/hero-solarsystem.css'));
-
+        $css = file_get_contents(public_path('themes/theme_solarsystem/css/hero.css'));
         $this->assertStringContainsString('.stage', $css);
         $this->assertStringContainsString('.orbit', $css);
         $this->assertStringContainsString('@keyframes spin', $css);
         $this->assertStringContainsString('prefers-reduced-motion', $css);
     }
 
-    public function test_layout_links_stage_stylesheet(): void
+    public function test_active_theme_manifest_loads_stage_stylesheet(): void
     {
-        $blade = file_get_contents(resource_path('views/layouts/app.blade.php'));
-        $this->assertStringContainsString('hero-solarsystem.css', $blade);
+        $css = app('theme.manager')->cssUrls();
+        $this->assertNotEmpty(array_filter($css, fn ($u) => str_ends_with($u, '/css/hero.css')));
     }
 }
