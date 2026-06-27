@@ -16,6 +16,9 @@ Route::prefix('admin')->middleware('admin')->group(function () {
 
     Route::post('attachments', [\App\Http\Controllers\Admin\AttachmentController::class, 'store'])
         ->name('admin.attachments.store');
+
+    Route::get('themes', [\App\Http\Controllers\Admin\ThemeController::class, 'index'])->name('admin.themes.index');
+    Route::patch('themes', [\App\Http\Controllers\Admin\ThemeController::class, 'update'])->name('admin.themes.update');
 });
 
 Route::get('/', fn () => redirect('/' . config('app.locale')));

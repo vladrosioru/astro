@@ -1,8 +1,5 @@
 @php
-    $tokens = array_merge(
-        config('tokens.defaults'),
-        \App\Models\SiteSetting::current()->branding ?? []
-    );
+    $tokens = app('theme.manager')->tokens();
 @endphp
 <style>
 :root {

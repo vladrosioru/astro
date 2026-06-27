@@ -2,24 +2,26 @@
 
 namespace Tests\Unit;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class SolarsystemJsTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_js_exists_and_self_guards(): void
     {
-        $js = file_get_contents(public_path('js/solarsystem.js'));
-
+        $js = file_get_contents(public_path('themes/theme_solarsystem/js/solarsystem.js'));
         $this->assertStringContainsString('.twinkle', $js);
-        $this->assertStringContainsString("data-parallax", $js);
-        // Must no-op when there is no stage on the page.
-        $this->assertStringContainsString(".stage", $js);
+        $this->assertStringContainsString('data-parallax', $js);
+        $this->assertStringContainsString('.stage', $js);
     }
 
-    public function test_layout_loads_js_deferred(): void
+    public function test_active_theme_loads_js_deferred(): void
     {
-        $blade = file_get_contents(resource_path('views/layouts/app.blade.php'));
-        $this->assertStringContainsString('solarsystem.js', $blade);
-        $this->assertStringContainsString('defer', $blade);
+        $js = app('theme.manager')->jsAssets();
+        $solar = array_values(array_filter($js, fn ($a) => str_ends_with($a['url'], 'solarsystem.js')));
+        $this->assertNotEmpty($solar);
+        $this->assertTrue($solar[0]['defer']);
     }
 }

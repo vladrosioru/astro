@@ -4,34 +4,29 @@ namespace App\Console\Commands;
 
 use App\Models\SiteSetting;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 
 class ApplyTheme extends Command
 {
     protected $signature = 'app:apply-theme {name}';
 
-    protected $description = 'Apply a named theme token set to SiteSetting.branding';
+    protected $description = 'Set the active theme (folder under public/themes/theme_<name>)';
 
     public function handle(): int
     {
         $name = $this->argument('name');
+        $names = array_column(app('theme.manager')->available(), 'name');
 
-        if ($name === 'default') {
-            SiteSetting::current()->update(['branding' => []]);
-            $this->info('Theme reset to default.');
-
-            return self::SUCCESS;
-        }
-
-        $tokens = config("themes.{$name}");
-
-        if (! is_array($tokens)) {
-            $this->error("Unknown theme: {$name}");
+        if (! in_array($name, $names, true)) {
+            $this->error("Unknown theme: {$name}. Available: " . implode(', ', $names));
 
             return self::FAILURE;
         }
 
-        SiteSetting::current()->update(['branding' => $tokens]);
-        $this->info("Theme '{$name}' applied.");
+        SiteSetting::current()->switchTheme($name);
+        Artisan::call('view:clear');
+        app()->forgetInstance('theme.manager');
+        $this->info("Active theme set to '{$name}'.");
 
         return self::SUCCESS;
     }

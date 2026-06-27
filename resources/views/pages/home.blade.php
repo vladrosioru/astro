@@ -4,5 +4,5 @@
 @section('body_class', 'page-home')
 
 @section('content')
-    @include('partials.hero')
+    @includeIf('theme::hero')
 @endsection

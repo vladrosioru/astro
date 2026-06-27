@@ -4,18 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', config('app.name'))</title>
-    <link rel="stylesheet" href="{{ asset('css/fonts.css') }}">
     @include('partials.tokens')
-    <link rel="stylesheet" href="{{ asset('css/structure.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/cosmos.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/skin.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/hero-solarsystem.css') }}">
+    @foreach (app('theme.manager')->cssUrls() as $href)
+        <link rel="stylesheet" href="{{ $href }}">
+    @endforeach
     @stack('head')
 </head>
 <body class="@yield('body_class')">
-    @include('partials.cosmos')
+    @includeIf('theme::cosmos')
     @include('partials.nav')
     @yield('content')
-    <script src="{{ asset('js/solarsystem.js') }}" defer></script>
+    @foreach (app('theme.manager')->jsAssets() as $js)
+        <script src="{{ $js['url'] }}" @if($js['defer'])defer @endif @if($js['async'])async @endif></script>
+    @endforeach
 </body>
 </html>

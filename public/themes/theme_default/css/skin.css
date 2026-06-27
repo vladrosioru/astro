@@ -1,0 +1,85 @@
+/* Skin layer: appearance only, fully token-driven. */
+body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-base); }
+h1, h2, h3 { font-family: var(--font-heading); color: var(--color-heading); }
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { color: var(--color-accent); }
+.muted { color: var(--color-muted); }
+
+/* Nav: translucent sticky bar; uppercase, muted idle links. */
+nav { background: color-mix(in srgb, var(--color-bg) 88%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--color-bg-alt); }
+nav a { color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; }
+nav a:hover { color: var(--color-accent); }
+
+/* Home hero. */
+.stage .eyebrow { color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.8rem; margin: 0 0 calc(var(--space-unit) * 3); }
+.stage .title { font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1.05; max-width: 18em; margin: 0 auto; }
+.stage .lede { color: var(--color-muted); font-size: 1.2rem; max-width: 32rem; margin: calc(var(--space-unit) * 4) auto 0; }
+
+/* Buttons / CTAs: solid primary pill + ghost link. */
+.btn { font-family: var(--font-display); font-size: 0.8rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; transition: background .2s ease, color .2s ease; }
+.btn-primary { display: inline-block; border-radius: var(--radius); padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 6); background: var(--color-primary); color: var(--color-bg); }
+.btn-primary:hover { background: var(--color-accent); }
+.btn-ghost { display: inline-flex; align-items: center; gap: 8px; color: var(--color-primary); padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 2); }
+.btn-ghost:hover { color: var(--color-accent); }
+
+/* Cards / content panels. */
+.card { background: var(--color-bg-alt); border: 1px solid color-mix(in srgb, var(--color-fg) 12%, transparent); border-radius: var(--radius); box-shadow: var(--shadow); padding: calc(var(--space-unit) * 4); }
+
+/* Blog listing: responsive card grid. Each card with an image shows a square
+   media area (2/3 of a ~3:2 card) above the title + excerpt body (1/3). Cards
+   without an image fall back to the plain text .card. Token-driven. */
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: calc(var(--space-unit) * 6);
+    margin-top: calc(var(--space-unit) * 6);
+}
+.card--media {
+    display: flex;
+    flex-direction: column;
+    padding: 0;                 /* image is flush to the card edges */
+    overflow: hidden;           /* clip the image to the card's rounded corners */
+}
+.card__media {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1 / 1;        /* square: the top 2/3 of the card */
+    object-fit: cover;          /* fill the square, crop overflow, no distortion */
+}
+.card--media .card__body {
+    padding: calc(var(--space-unit) * 4);
+}
+.card__body h2 {
+    margin-top: 0;
+}
+/* Keep card heights tidy: clamp the excerpt to a few lines. */
+.card__body .muted {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* CKEditor content images: mirror the editor's `.ck-content` rules so published
+   articles render exactly like the editing view (token-driven vertical spacing).
+   The figure-targeting overrides are qualified with `figure.image.<class>` so they
+   outweigh the base `figure.image` shorthand (same trick CKEditor uses via
+   `.ck-content .image.<class>`). Default (break-text) block images center via
+   display:table + auto horizontal margins. */
+figure.image { display: table; clear: both; text-align: center; margin: calc(var(--space-unit) * 4) auto; min-width: 50px; }
+figure.image img { display: block; margin: 0 auto; max-width: 100%; height: auto; border-radius: var(--radius); }
+figure.image figcaption { display: table-caption; caption-side: bottom; color: var(--color-muted); font-size: 0.9em; padding-top: calc(var(--space-unit) * 1); word-break: break-word; }
+figure.image.image_resized { display: block; box-sizing: border-box; max-width: 100%; }
+figure.image.image_resized img { width: 100%; }
+figure.image.image_resized figcaption { display: block; }
+figure.image.image-style-align-left { float: left; margin: 0 calc(var(--space-unit) * 4) calc(var(--space-unit) * 2) 0; }
+figure.image.image-style-align-right { float: right; margin: 0 0 calc(var(--space-unit) * 2) calc(var(--space-unit) * 4); }
+figure.image.image-style-side { float: right; max-width: 50%; margin: 0 0 calc(var(--space-unit) * 2) calc(var(--space-unit) * 4); }
+figure.image.image-style-block-align-left { margin-left: 0; margin-right: auto; }
+figure.image.image-style-block-align-right { margin-left: auto; margin-right: 0; }
+/* Inline images: centering follows the host paragraph's text-align. */
+.image-style-align-center { margin-left: auto; margin-right: auto; }
+.image_resized { max-width: 100%; }
+.image_resized img { width: 100%; }
+img.image_resized { height: auto; }

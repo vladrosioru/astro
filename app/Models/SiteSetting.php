@@ -29,6 +29,7 @@ class SiteSetting extends Model
             'nav'      => [],
             'contact'  => ['email' => '', 'phone' => '', 'address' => ''],
             'branding' => [],
+            'theme'    => 'solarsystem',
             'locales'  => ['default' => 'en', 'supported' => ['en', 'ro']],
             'hero'     => self::heroDefaults(),
         ];
@@ -45,6 +46,18 @@ class SiteSetting extends Model
             'cta2_label' => 'Read the Journal',
             'cta2_url'   => '/en/blog',
         ];
+    }
+
+    /**
+     * Point the site at a theme. Branding is a per-theme override layer, so a
+     * real switch clears it — otherwise the previous theme's palette overrides
+     * the new theme's tokens. Re-applying the active theme preserves branding.
+     */
+    public function switchTheme(string $name): void
+    {
+        $this->update($this->theme === $name
+            ? ['theme' => $name]
+            : ['theme' => $name, 'branding' => []]);
     }
 
     public function sectionVisible(string $key): bool

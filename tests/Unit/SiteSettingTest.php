@@ -35,4 +35,9 @@ class SiteSettingTest extends TestCase
         $setting->update(['sections' => ['blog' => false] + $setting->sections]);
         $this->assertFalse($setting->fresh()->sectionVisible('blog'));
     }
+
+    public function test_current_has_default_theme_pointer(): void
+    {
+        $this->assertSame('solarsystem', \App\Models\SiteSetting::current()->theme);
+    }
 }

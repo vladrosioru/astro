@@ -12,6 +12,9 @@
             @if (Route::has('admin.payments.edit'))
                 <li><a href="{{ route('admin.payments.edit') }}">Payment settings</a></li>
             @endif
+            @if (Route::has('admin.themes.index'))
+                <li><a href="{{ route('admin.themes.index') }}">Themes</a></li>
+            @endif
         </ul>
         <form method="POST" action="{{ route('admin.logout') }}">@csrf<button type="submit">Log out</button></form>
     </div>

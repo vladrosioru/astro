@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Site Template theme.json",
+  "description": "Manifest for a theme package under public/themes/theme_<name>/. It is both the app's loader manifest and the portable spec for authoring a compatible theme. See AUTHORING.md (next to this file) for the CSS class vocabulary a theme must style and the full authoring guide. The canonical token registry lives in config/tokens.php.",
+  "type": "object",
+  "required": ["name", "title", "tokens", "assets"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$",
+      "description": "Theme identifier. Must match the folder suffix: folder theme_<name>. This is what SiteSetting.theme and app:apply-theme compare against."
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable name shown in the admin Themes picker, e.g. 'Default (Light)'."
+    },
+    "description": {
+      "type": "string",
+      "description": "One-line summary of the theme's look, shown in the admin Themes picker."
+    },
+    "version": {
+      "type": "string",
+      "description": "Optional semantic version of the theme package."
+    },
+    "screenshot": {
+      "type": "string",
+      "description": "Optional path (relative to the theme folder) to a preview image shown in the admin Themes picker, e.g. 'screenshot.png'."
+    },
+    "page_home_class": {
+      "type": "string",
+      "description": "RESERVED — not yet consumed by the app. The layout currently hardcodes the 'page-home' body class on Home; style .page-home directly."
+    },
+    "tokens": {
+      "type": "object",
+      "description": "Design tokens this theme sets. Keys must be names from config/tokens.php (the registry of safe light defaults); omitted tokens fall back to those defaults. Every color/font/space/radius in the theme's CSS must reference a token via var(--<name>) rather than a literal, so values stay overridable by SiteSetting.branding.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["type", "role", "value"],
+        "properties": {
+          "type": {
+            "enum": ["color", "font-stack", "length", "shadow"],
+            "description": "Value kind: color (#hex/rgb/named), font-stack (CSS font-family list), length (rem/px/etc.), or shadow (box-shadow value)."
+          },
+          "role": {
+            "type": "string",
+            "description": "Documentation of where this token is used in the theme's CSS (e.g. 'Headings; hero title'). Keep accurate so the manifest stays a true map of token -> element."
+          },
+          "value": {
+            "type": "string",
+            "description": "The token's value for this theme, e.g. '#ffffff' or '0.5rem'."
+          }
+        }
+      }
+    },
+    "fonts": {
+      "type": "array",
+      "description": "Self-hosted font faces the theme ships under fonts/. Declare the matching @font-face in a CSS file listed in assets.css, and point the font-* tokens at these families.",
+      "items": {
+        "type": "object",
+        "required": ["family", "files"],
+        "properties": {
+          "family": { "type": "string", "description": "CSS font-family name, as referenced by a font-* token." },
+          "weights": { "type": "array", "items": { "type": "number" }, "description": "Font weights provided, e.g. [400, 600]." },
+          "style": { "type": "string", "description": "Font style, e.g. 'normal' or 'italic'." },
+          "files": { "type": "array", "items": { "type": "string" }, "description": "Font file paths relative to the theme folder, e.g. ['fonts/Cinzel.woff2']." },
+          "used_for": { "type": "string", "description": "Note on what this face is used for, e.g. 'headings'." }
+        }
+      }
+    },
+    "assets": {
+      "type": "object",
+      "description": "CSS (and optional JS) the layout loads for this theme, in array order.",
+      "required": ["css"],
+      "properties": {
+        "css": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Stylesheet paths relative to the theme folder, loaded in order. Convention: structure.css (layout only) then skin.css (token-driven appearance); fonts first if used."
+        },
+        "js": {
+          "type": "array",
+          "description": "Optional scripts loaded at end of body, in order.",
+          "items": {
+            "type": "object",
+            "required": ["src"],
+            "properties": {
+              "src": { "type": "string", "description": "Script path relative to the theme folder." },
+              "defer": { "type": "boolean", "description": "Add the defer attribute." },
+              "async": { "type": "boolean", "description": "Add the async attribute." }
+            }
+          }
+        }
+      }
+    },
+    "views": {
+      "type": "object",
+      "description": "Blade view slots the theme provides under views/, exposed via the theme:: namespace.",
+      "properties": {
+        "namespace": { "type": "string", "description": "Blade namespace for the theme's views. Must be 'theme'." },
+        "hero": { "type": "string", "description": "View name (without .blade.php) for the Home hero, rendered as theme::hero on the Home page." },
+        "cosmos": { "type": "string", "description": "View name for an optional site-wide backdrop, rendered as theme::cosmos behind every page. Omit for a flat background." },
+        "nav": { "type": "string", "description": "RESERVED — not yet consumed. The layout always renders the shared resources/views/partials/nav.blade.php; this slot does not currently override it." }
+      }
+    }
+  }
+}
