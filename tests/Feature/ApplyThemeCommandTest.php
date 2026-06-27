@@ -10,42 +10,27 @@ class ApplyThemeCommandTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_applying_mystik_writes_gold_dark_tokens(): void
+    public function test_applying_solarsystem_sets_pointer_and_emits_cosmos_tokens(): void
     {
-        $this->artisan('app:apply-theme', ['name' => 'mystik'])->assertExitCode(0);
+        $this->artisan('app:apply-theme', ['name' => 'solarsystem'])->assertExitCode(0);
 
-        $branding = SiteSetting::current()->fresh()->branding;
-        $this->assertSame('#f0a23c', $branding['color-heading']);
-        $this->assertSame('#0a0a0f', $branding['color-bg']);
-    }
-
-    public function test_applying_mystik_makes_token_partial_emit_gold(): void
-    {
-        $this->artisan('app:apply-theme', ['name' => 'mystik']);
+        $this->assertSame('solarsystem', SiteSetting::current()->fresh()->theme);
         $html = view('partials.tokens')->render();
-        $this->assertStringContainsString('--color-heading: #f0a23c', $html);
+        $this->assertStringContainsString('--color-bg: #05060c', $html);
     }
 
-    public function test_applying_default_clears_branding(): void
+    public function test_applying_default_sets_pointer_and_emits_light(): void
     {
-        $this->artisan('app:apply-theme', ['name' => 'mystik']);
         $this->artisan('app:apply-theme', ['name' => 'default'])->assertExitCode(0);
 
-        $this->assertSame([], SiteSetting::current()->fresh()->branding);
+        $this->assertSame('default', SiteSetting::current()->fresh()->theme);
+        $html = view('partials.tokens')->render();
+        $this->assertStringContainsString('--color-primary: #2563eb', $html);
     }
 
     public function test_unknown_theme_fails(): void
     {
         $this->artisan('app:apply-theme', ['name' => 'nope'])->assertExitCode(1);
-    }
-
-    public function test_applying_solarsystem_writes_cosmos_tokens(): void
-    {
-        $this->artisan('app:apply-theme', ['name' => 'solarsystem'])->assertExitCode(0);
-
-        $branding = SiteSetting::current()->fresh()->branding;
-        $this->assertSame('#05060c', $branding['color-bg']);
-        $this->assertSame('#9dc1e6', $branding['color-primary']);
-        $this->assertSame("'Jost', system-ui, sans-serif", $branding['font-base']);
+        $this->assertSame('solarsystem', SiteSetting::current()->fresh()->theme);
     }
 }
