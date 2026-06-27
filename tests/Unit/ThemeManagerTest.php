@@ -49,4 +49,10 @@ class ThemeManagerTest extends TestCase
         $names = array_column((new ThemeManager)->available(), 'active', 'name');
         $this->assertTrue($names['solarsystem']);
     }
+
+    public function test_theme_namespace_resolves_hero_partial(): void
+    {
+        $this->assertTrue(view()->exists('theme::hero'));
+        $this->assertTrue(view()->exists('theme::cosmos'));
+    }
 }
