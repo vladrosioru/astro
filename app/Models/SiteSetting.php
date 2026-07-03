@@ -42,7 +42,7 @@ class SiteSetting extends Model
             'subhead'    => 'When the planets align, so do the patterns within you. Read the map you were born under and move with intention.',
             'cta_label'  => 'Begin Here',
             'cta_url'    => '/en/contact',
-            'eyebrow'    => 'Celestial Guidance',
+            'eyebrow'    => 'AstroTherapia',
             'cta2_label' => 'Read the Journal',
             'cta2_url'   => '/en/blog',
         ];

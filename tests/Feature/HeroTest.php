@@ -30,7 +30,7 @@ class HeroTest extends TestCase
     {
         $defaults = SiteSetting::heroDefaults();
 
-        $this->assertSame('Celestial Guidance', $defaults['eyebrow']);
+        $this->assertSame('AstroTherapia', $defaults['eyebrow']);
         $this->assertArrayHasKey('cta2_label', $defaults);
         $this->assertArrayHasKey('cta2_url', $defaults);
     }
@@ -40,7 +40,7 @@ class HeroTest extends TestCase
         $this->get('/en')
             ->assertOk()
             ->assertSee('class="stage"', false)
-            ->assertSee('Celestial Guidance')      // eyebrow default
+            ->assertSee('AstroTherapia')      // eyebrow default
             ->assertSee('Read the Journal');       // secondary CTA default
     }
 
