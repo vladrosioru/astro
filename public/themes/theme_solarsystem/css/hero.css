@@ -18,7 +18,7 @@
 
 /* Hero text is decorative — no text caret / highlight. Links & buttons keep the pointer. */
 .stage { user-select: none; -webkit-user-select: none; }
-.stage .eyebrow, .stage .title, .stage .lede, .stage .scroll-cue { cursor: default; }
+.stage .title, .stage .lede, .stage .scroll-cue { cursor: default; }
 
 /* Prevent inner-page .hero skin from bleeding into the stage's <main class="hero"> */
 .stage .hero { background: none; }
@@ -192,19 +192,8 @@
   padding: calc(var(--nav-height) + 1.75rem) 24px 0;
 }
 
-.stage .eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 0 0 26px;
-  color: var(--color-primary);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: .42em;
-  text-transform: uppercase;
-}
-.stage .eyebrow .rule { width: 34px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-primary) 70%, transparent)); }
-.stage .eyebrow .rule:last-child { background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 70%, transparent), transparent); }
+/* The eyebrow wordmark moved out of the stage into the nav brand
+   (see nav .nav-eyebrow in skin.css) so it shows on every page. */
 
 .stage .title {
   margin: 0;
@@ -317,7 +306,6 @@
   .stage .cta { display: none; }
   /* phone nav is an in-flow sticky bar (not an overlay) — hero needs no nav offset here */
   .stage .hero { padding-top: 1.5rem; }
-  .stage .eyebrow { letter-spacing: .3em; font-size: 11px; }
   .stage { --solar-scale: 0.72; }
   .stage .solar-wrap { top: 82%; }
 }

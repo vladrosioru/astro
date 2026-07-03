@@ -38,4 +38,24 @@ class PublicPagesTest extends TestCase
     {
         $this->get('/en')->assertSee('/en/contact');
     }
+
+    public function test_services_page_renders_when_enabled(): void
+    {
+        $this->get('/en/services')
+            ->assertOk()
+            ->assertSee('Services');
+    }
+
+    public function test_services_page_404s_when_disabled(): void
+    {
+        $setting = SiteSetting::current();
+        $setting->update(['sections' => ['services' => false] + $setting->sections]);
+
+        $this->get('/en/services')->assertNotFound();
+    }
+
+    public function test_nav_shows_services_link_when_enabled(): void
+    {
+        $this->get('/en')->assertSee('/en/services');
+    }
 }

@@ -116,12 +116,17 @@ rest of the site and so a persisted hero (`SiteSetting.hero`) renders.
 
 ### Navigation — `resources/views/partials/nav.blade.php`
 
-Markup is **2 links · centered logo · 2 links** and is shared site-wide:
+Markup is **2 links · centered brand · 2 links** and is shared site-wide. The
+centered brand stacks the logo over the ASTROTHERAPIA eyebrow wordmark (both link
+Home); the wordmark text comes from `SiteSetting.hero.eyebrow`:
 
 ```html
 <nav><div class="container">
   <ul class="nav-left"> <li><a>…</a></li> … </ul>
-  <a class="nav-logo"><img src="img/logo-nav.png"></a>
+  <div class="nav-brand">
+    <a class="nav-logo"><img src="img/logo-nav.png"></a>
+    <a class="nav-eyebrow"><span class="rule"></span>ASTROTHERAPIA<span class="rule"></span></a>
+  </div>
   <ul class="nav-right"> <li><a>…</a></li> … </ul>
 </div></nav>
 ```
@@ -129,9 +134,11 @@ Markup is **2 links · centered logo · 2 links** and is shared site-wide:
 | Selector | Notes |
 |---|---|
 | `nav` | the bar background / border / sticky appearance |
-| `nav .container` | flex row holding the two link groups + logo |
-| `nav ul`, `nav .nav-left`, `nav .nav-right` | the two equal-width link groups flanking the logo |
-| `nav .nav-logo`, `nav .nav-logo img` | the centered logo link + image sizing |
+| `nav .container` | flex row holding the two link groups + centered brand |
+| `nav ul`, `nav .nav-left`, `nav .nav-right` | the two equal-width link groups flanking the brand |
+| `nav .nav-brand` | centered column that stacks the logo over the eyebrow wordmark |
+| `nav .nav-logo`, `nav .nav-logo img` | the logo link + image sizing |
+| `nav .nav-eyebrow` | the ASTROTHERAPIA wordmark under the logo — style it as a small brand label (it also carries the generic `nav a` style, so override color/size as needed). Its two `.rule` spans are optional decorative flanking lines you may style or leave invisible. **Layout:** it's given `width: 0; overflow: visible` so only the narrow logo sizes the centered brand column (keeping the flanking link groups hugged to the logo); the wider wordmark overflows symmetrically onto its own row, partly *under* the side links. On phones (≤720px) it reverts to `width: auto`, centered under the logo. |
 | `nav a` | idle link style (+ `:hover`) |
 | `.page-home` | body class on the Home page — use it to special-case the Home nav/hero |
 
@@ -144,7 +151,6 @@ Read the hero copy from settings, then emit the conventional classes:
                          \App\Models\SiteSetting::current()->hero ?? []); @endphp
 <section class="stage">
   <div class="container">
-    <p class="eyebrow">{{ $hero['eyebrow'] }}</p>
     <h1 class="title">{{ $hero['headline'] }}</h1>
     <p class="lede">{{ $hero['subhead'] }}</p>
     <div class="actions">
@@ -158,15 +164,15 @@ Read the hero copy from settings, then emit the conventional classes:
 | Selector | Notes |
 |---|---|
 | `.stage` | the hero band (padding, centering, or a full-viewport stage) |
-| `.stage .eyebrow` | small label above the headline |
 | `.stage .title` | the `<h1>` headline |
 | `.stage .lede` | the subhead paragraph |
 | `.stage .actions` | the CTA row |
 | `.btn`, `.btn-primary`, `.btn-ghost` | primary CTA + secondary "ghost" CTA |
 
-Hero data keys come from `SiteSetting::heroDefaults()`: `eyebrow`, `headline`,
-`subhead`, `cta_label`/`cta_url`, `cta2_label`/`cta2_url`. Guard optional keys with
-`@if(!empty(...))`.
+Hero data keys come from `SiteSetting::heroDefaults()`: `headline`, `subhead`,
+`cta_label`/`cta_url`, `cta2_label`/`cta2_url`. Guard optional keys with
+`@if(!empty(...))`. (`eyebrow` is also a hero key, but it's consumed by the shared
+nav's `.nav-eyebrow` wordmark — see Navigation — not emitted by the hero.)
 
 ### Blog listing — `resources/views/blog/index.blade.php`
 

@@ -8,16 +8,23 @@ Status: 🔵 idea · 🟡 planned · 🟢 built
 
 ## Navigation layout
 
-Centered logo/image always links back to Home. Two top-level menu items sit
-to its left, two to its right. **About** and **Consultations** are dropdown
-(multi-level) menus:
+Centered brand always links back to Home: the logo image with the
+**ASTROTHERAPIA** eyebrow wordmark stacked beneath it (both link Home). Two
+top-level menu items sit to its left, two to its right. **About** and
+**Services** are intended as dropdown (multi-level) menus:
 
 ```
-About ▾        Articles        [ LOGO → Home ]        Consultations ▾        Contact
- ├ Concept                                              ├ (service category/item)
- └ About astrology                                      ├ (service category/item)
-                                                         └ ...
+About ▾        Articles      [ LOGO → Home ]      Services ▾        Contact
+ ├ Concept                   ASTROTHERAPIA          ├ (service category/item)
+ └ About astrology            → Home                ├ (service category/item)
+                                                     └ ...
 ```
+
+**Currently built** as flat links (no dropdowns yet):
+`About · Articles  |  [logo + ASTROTHERAPIA]  |  Services · Contact`.
+The old standalone **Home** text link is gone — the centered brand is the link
+Home. The dropdowns for About / Services remain a future step (see open
+questions).
 
 ## Pages
 
@@ -27,8 +34,8 @@ About ▾        Articles        [ LOGO → Home ]        Consultations ▾     
 | 2 | **About** | Nav dropdown (parent) | Top-level menu item; opens a dropdown to its two sub-pages below. Not necessarily a page of its own — see open question. | 🔵 idea |
 | 2a | ↳ **Concept** | Single page | Presentation page about astrology and the idea behind AstroTherapy. | 🟡 planned — maps to the existing `/about` page/route; content already matches this framing |
 | 2b | ↳ **About astrology** | Single page | Presentation page about astrology in general (distinct from the AstroTherapy-specific "Concept" page). | 🔵 idea — no route/controller yet |
-| 3 | **Articles** | Blog listing + post | One page listing articles, blog-style, plus individual article pages. | 🟡 planned — this is just a nav **label** change on the existing Blog feature; no URL/route change |
-| 4 | **Consultations** | Nav dropdown → single page | Listing of astrological services available. The dropdown lists service categories/items; each entry links to a section on one single Consultations page (not separate pages). | 🔵 idea — no route/controller yet; content will be static for now |
+| 3 | **Articles** | Blog listing + post | One page listing articles, blog-style, plus individual article pages. | 🟢 built — the existing Blog feature relabelled **Articles** and served at `/{locale}/articles` (route names stay `blog.*`); legacy `/{locale}/blog` 301-redirects |
+| 4 | **Services** | Nav dropdown → single page | Listing of astrological services available. The dropdown lists service categories/items; each entry links to a section on one single Services page (not separate pages). | 🟡 planned — route + page now exist (`PageController@services`, blank placeholder). Dropdown + static service content still to come |
 | 5 | **Contact** | Single page | Contact form. | 🟢 built |
 
 ## Current implementation vs. target
@@ -38,19 +45,20 @@ About ▾        Articles        [ LOGO → Home ]        Consultations ▾     
 | About ▾ (parent) | *(none)* | *(none)* | New dropdown trigger in nav; see open question on whether it needs its own landing content |
 | ↳ Concept | `/{locale}/about` | `PageController@about` | Move under the About dropdown as "Concept"; content already fits |
 | ↳ About astrology | *(none)* | *(none)* | New route + controller + view needed |
-| Articles | `/{locale}/blog` | `BlogController@index` / `@show` | **Relabel only** — change nav text "Blog" → "Articles", keep `/blog` URL and controller as-is |
-| Consultations ▾ | *(none)* | *(none)* | New page + route + controller needed, plus a dropdown in nav linking to in-page sections. Static content for now (see Roadmap) |
+| Articles | `/{locale}/articles` (+ `/blog` redirect) | `BlogController@index` / `@show` | **Done** — nav label + URL are "Articles"; route names stay `blog.*`, controller/views unchanged. Dropdown not planned for Articles |
+| Services ▾ | `/{locale}/services` | `PageController@services` | Route + blank page **built**. Still needs a dropdown in nav linking to in-page sections and static service content (see Roadmap) |
 | Contact | `/{locale}/contact` | `PageController@contact` | None — matches target |
 
 Current nav order in [nav.blade.php](../resources/views/partials/nav.blade.php)
-is `Home | About  ·  [logo]  ·  Blog | Contact` (simple links, no dropdowns).
-Target order replaces the separate "Home" text link with the logo (already
-the case) and adds dropdown behavior:
-`About ▾ | Articles  ·  [logo]  ·  Consultations ▾ | Contact`.
+is `About · Articles  ·  [logo + ASTROTHERAPIA]  ·  Services · Contact`
+(flat links, no dropdowns). The standalone "Home" text link was removed; the
+centered brand (logo + eyebrow) is the link Home. The remaining step toward the
+target is adding dropdown behavior:
+`About ▾ | Articles  ·  [brand]  ·  Services ▾ | Contact`.
 
 ## Roadmap / future scope
 
-- **Consultations content:** static markup for now. Later, this may grow
+- **Services content:** static markup for now. Later, this may grow
   interactive elements — planners and POST-submitted forms (e.g. booking or
   consultation request flows) — which will likely need a `Service`-style
   model and dedicated controller once that work is scheduled.
@@ -61,10 +69,10 @@ the case) and adds dropdown behavior:
   need to go anywhere (e.g. default to Concept), or is it purely a
   hover/click dropdown trigger with no own URL?
 - **Dropdown implementation:** confirm the multi-level nav (About ▾,
-  Consultations ▾) is built as a CSS/JS hover-or-click dropdown in
+  Services ▾) is built as a CSS/JS hover-or-click dropdown in
   `nav.blade.php`, consistent across themes (see `AUTHORING.md`'s nav
   contract) rather than a per-theme custom widget.
-- **Consultations service list:** what are the actual service
+- **Services list:** what are the actual service
   categories/items to show as dropdown entries and page sections? Needed
   before building the static content.
 

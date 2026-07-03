@@ -3,7 +3,6 @@
 @endphp
 <section class="stage">
     <div class="container">
-        @if (!empty($hero['eyebrow']))<p class="eyebrow">{{ $hero['eyebrow'] }}</p>@endif
         <h1 class="title">{{ $hero['headline'] }}</h1>
         <p class="lede">{{ $hero['subhead'] }}</p>
         <div class="actions">

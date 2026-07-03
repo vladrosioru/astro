@@ -12,9 +12,17 @@ nav .container { display: flex; align-items: center; gap: calc(var(--space-unit)
 nav .nav-left, nav .nav-right { flex: 1 1 0; }
 nav .nav-left { justify-content: flex-end; }
 nav .nav-right { justify-content: flex-start; }
-nav .nav-logo { flex: 0 0 auto; display: flex; align-items: center; line-height: 0; }
+/* Brand = logo + ASTROTHERAPIA eyebrow stacked and centered; it's the fixed
+   center column that the two link groups flank. The eyebrow is width:0 so ONLY
+   the (narrow) logo dictates the column width — the wider wordmark overflows
+   symmetrically onto its own row, partly under the flanking links, while the
+   link groups stay hugged to the logo. */
+nav .nav-brand { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+nav .nav-logo { display: flex; align-items: center; line-height: 0; }
 /* Logo height = 3× the nav-link letters (nav links are 0.8rem). */
 nav .nav-logo img { display: block; height: 2.4rem; width: auto; }
+nav .nav-eyebrow { display: flex; align-items: center; justify-content: center; width: 0; overflow: visible; white-space: nowrap; }
+nav .nav-eyebrow .rule { flex-shrink: 0; }
 .hero { position: relative; padding: calc(var(--space-unit) * 28) calc(var(--space-unit) * 4); text-align: center; overflow: hidden; }
 .hero-inner { position: relative; z-index: 1; max-width: var(--container-width); margin: 0 auto; }
 .hero-cta { display: inline-block; margin-top: calc(var(--space-unit) * 6); padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 8); }
@@ -29,4 +37,7 @@ nav .nav-logo img { display: block; height: 2.4rem; width: auto; }
     nav .container { justify-content: center; gap: calc(var(--space-unit) * 2); }
     nav ul { justify-content: center; flex-wrap: wrap; gap: calc(var(--space-unit) * 3); }
     nav .nav-logo img { height: 1.9rem; }
+    /* Phone: nav wraps and centers, so the wordmark just sits centered under the
+       logo at its natural width (no under-the-links overflow). */
+    nav .nav-eyebrow { width: auto; }
 }

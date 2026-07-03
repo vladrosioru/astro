@@ -29,7 +29,15 @@ Route::prefix('{locale}')
     ->group(function () {
         Route::get('/', [\App\Http\Controllers\PageController::class, 'home'])->name('home');
         Route::get('/about', [\App\Http\Controllers\PageController::class, 'about'])->name('about');
+        Route::get('/services', [\App\Http\Controllers\PageController::class, 'services'])->name('services');
         Route::get('/contact', [\App\Http\Controllers\PageController::class, 'contact'])->name('contact');
-        Route::get('/blog', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
-        Route::get('/blog/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
+
+        // The blog feature is presented as "Articles" (menu label + public URL).
+        // Route names stay blog.* to match BlogController and the blog/ views.
+        Route::get('/articles', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
+        Route::get('/articles/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
+
+        // Back-compat: the feature used to live at /blog.
+        Route::get('/blog', fn (string $locale) => redirect("/{$locale}/articles"));
+        Route::get('/blog/{slug}', fn (string $locale, string $slug) => redirect("/{$locale}/articles/{$slug}"));
     });

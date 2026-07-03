@@ -30,7 +30,9 @@ img.image_resized { height: auto; }
 
 /* Theme skin: appearance only, fully token-driven. */
 h1, h2, h3 { font-family: var(--font-display); color: var(--color-heading); letter-spacing: 0.04em; }
-nav { background: color-mix(in srgb, var(--color-bg) 82%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--color-bg-alt); }
+/* Nav ribbon is transparent on every page (Home and all others alike), so the
+   cosmos backdrop shows straight through it. Any future page inherits this. */
+nav { background: transparent; backdrop-filter: none; border-bottom: 0; }
 nav a { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; text-decoration: none; }
 
 /* CSS starfield (no image asset): layered radial-gradient dots over a dark base. */
@@ -66,10 +68,18 @@ body { background: var(--color-bg); }
 /* Headings use the heading serif; brand uses the display serif. */
 h1, h2, h3 { font-family: var(--font-heading); color: var(--color-heading); letter-spacing: 0.01em; }
 
-/* Nav: transparent overlay on Home, translucent sticky bar elsewhere. */
-.page-home nav { background: transparent; backdrop-filter: none; border-bottom: 0; }
+/* Nav is transparent everywhere (see the base `nav` rule): an absolute overlay
+   on Home, a sticky bar on inner pages — both let the cosmos show through. */
 nav a { color: var(--color-muted); }
 nav a:hover { color: var(--color-accent); }
+
+/* ASTROTHERAPIA eyebrow wordmark under the logo (moved here from .stage .eyebrow)
+   so it rides in the nav on every page. Same size/tracking/rules as the old hero
+   eyebrow; overrides the generic `nav a` link style. */
+nav .nav-eyebrow { display: flex; align-items: center; gap: 12px; color: var(--color-primary); font-size: 12px; font-weight: 500; letter-spacing: .42em; text-transform: uppercase; text-decoration: none; }
+nav .nav-eyebrow:hover { color: var(--color-accent); }
+nav .nav-eyebrow .rule { width: 34px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-primary) 70%, transparent)); }
+nav .nav-eyebrow .rule:last-child { background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 70%, transparent), transparent); }
 
 /* Links + muted text. */
 a { color: var(--color-primary); }
@@ -146,6 +156,7 @@ a:hover { color: var(--color-accent); }
         border-bottom: 1px solid var(--color-bg-alt);
     }
     nav a { font-size: 0.72rem; letter-spacing: 0.1em; }
+    nav .nav-eyebrow { letter-spacing: .3em; font-size: 11px; }
 }
 
 /* Non-selectable UI chrome: labels/headings show no text caret and can't be

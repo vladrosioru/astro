@@ -18,6 +18,13 @@ class PageController extends Controller
         return view('pages.about');
     }
 
+    public function services()
+    {
+        abort_unless(SiteSetting::current()->sectionVisible('services'), 404);
+
+        return view('pages.services');
+    }
+
     public function contact()
     {
         abort_unless(SiteSetting::current()->sectionVisible('contact'), 404);

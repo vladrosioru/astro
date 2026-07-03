@@ -35,13 +35,22 @@ class HeroTest extends TestCase
         $this->assertArrayHasKey('cta2_url', $defaults);
     }
 
-    public function test_home_renders_stage_with_eyebrow_and_secondary_cta(): void
+    public function test_home_renders_stage_with_secondary_cta(): void
     {
         $this->get('/en')
             ->assertOk()
             ->assertSee('class="stage"', false)
-            ->assertSee('AstroTherapia')      // eyebrow default
             ->assertSee('Read the Journal');       // secondary CTA default
+    }
+
+    public function test_nav_shows_eyebrow_wordmark_on_every_page(): void
+    {
+        // The eyebrow moved out of the home hero into the nav brand, so it now
+        // rides under the logo on inner pages too (here /en/contact, no hero).
+        $this->get('/en/contact')
+            ->assertOk()
+            ->assertSee('class="nav-eyebrow"', false)
+            ->assertSee('AstroTherapia');      // eyebrow default
     }
 
     public function test_home_sets_page_home_body_class(): void

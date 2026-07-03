@@ -24,9 +24,6 @@
 
     {{-- hero copy --}}
     <main class="hero">
-        @if (!empty($hero['eyebrow']))
-            <p class="eyebrow"><span class="rule"></span>{{ $hero['eyebrow'] }}<span class="rule"></span></p>
-        @endif
         <h1 class="title">{{ $hero['headline'] }}</h1>
         <p class="lede">{{ $hero['subhead'] }}</p>
         <div class="actions">

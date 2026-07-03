@@ -53,8 +53,8 @@ Defined in [`routes/web.php`](routes/web.php).
 - `/` → redirects to the default locale (`/en`).
 - `/{locale}` group (`locale` constrained to `en|ro`, `setlocale` middleware):
   - `/{locale}` → Home (`PageController@home`)
-  - `/{locale}/about`, `/{locale}/contact`
-  - `/{locale}/blog`, `/{locale}/blog/{slug}`
+  - `/{locale}/about`, `/{locale}/services`, `/{locale}/contact`
+  - `/{locale}/articles`, `/{locale}/articles/{slug}` — the blog feature (`BlogController`), presented as **Articles**; route names stay `blog.*`. Legacy `/{locale}/blog` and `/{locale}/blog/{slug}` **301-redirect** to the `/articles` equivalents.
 - `/admin/login`, `/admin/logout` — session auth (`Admin\AuthController`).
 - `/admin/*` (`admin` middleware) — dashboard, `posts` resource (no `show`), `attachments` upload, and **Themes** (`GET /admin/themes` list + `PATCH /admin/themes` apply).
 
@@ -67,11 +67,11 @@ Middleware aliases are registered in [`bootstrap/app.php`](bootstrap/app.php):
 ## Data model
 
 - **`SiteSetting`** ([`app/Models/SiteSetting.php`](app/Models/SiteSetting.php)) — a **singleton** row (`id = 1`, via `SiteSetting::current()`). JSON columns:
-  - `sections` — visibility toggles (`about`/`blog`/`contact`) read by `sectionVisible()`.
+  - `sections` — visibility toggles (`about`/`blog`/`services`/`contact`) read by `sectionVisible()`. `blog` is the internal key for the Articles feature.
   - `nav`, `contact`, `locales` — site config.
   - `branding` — optional **per-install token overrides** layered on top of the active theme (usually empty; see Theming).
   - `theme` — the active theme pointer (a `theme_<name>` folder under `public/themes/`; defaults to `solarsystem`).
-  - `hero` — Home hero content (`headline`, `subhead`, `cta_label`, `cta_url`, `eyebrow`, `cta2_label`, `cta2_url`), defaulted by `heroDefaults()`.
+  - `hero` — Home hero content (`headline`, `subhead`, `cta_label`, `cta_url`, `eyebrow`, `cta2_label`, `cta2_url`), defaulted by `heroDefaults()`. `eyebrow` is the ASTROTHERAPIA wordmark, now rendered by the nav under the logo (see Nav) rather than inside the hero.
 - **`Post`** + **`PostTranslation`** — a post has one translation per locale (title, slug, excerpt, body, seo_title). Blog reads the translation for the active locale.
 - **`User`** — `is_admin` boolean gates the admin area.
 
@@ -130,8 +130,8 @@ public/themes/theme_solarsystem/views/*.blade.php   (theme::hero, theme::cosmos)
   - `theme_solarsystem/css/hero.css` — the five orbiting planets + sun, vignette, hero copy. **Every selector is scoped under `.stage`** so it never affects inner pages; `@keyframes` are global.
   - `theme_solarsystem/js/solarsystem.js` — generates twinkling stars (into `.twinkle`) and binds mouse parallax to the solar system. **Self-guards** (`if (!.stage) return`), so the parallax is inert on inner pages and safe to load site-wide with `defer`.
   - Markup is `theme_solarsystem/views/hero.blade.php` (rendered on Home as `@includeIf('theme::hero')`); **all copy comes from `SiteSetting.hero`** (no hardcoded text).
-- **Inner pages** (About/Contact/Blog) show the same shared cosmos backdrop and inherit the dark token skin — no orbit animation.
-- **Nav** is one app-level data-driven partial ([`resources/views/partials/nav.blade.php`](resources/views/partials/nav.blade.php)); a `page-home` body class makes it a transparent overlay on Home and a sticky translucent bar elsewhere. The menu is centered as **2 links · logo · 2 links**: the brand is the image [`public/img/logo-nav.png`](public/img/logo-nav.png) rather than a text wordmark.
+- **Inner pages** (About/Articles/Services/Contact) show the same shared cosmos backdrop and inherit the dark token skin — no orbit animation.
+- **Nav** is one app-level data-driven partial ([`resources/views/partials/nav.blade.php`](resources/views/partials/nav.blade.php)); a `page-home` body class makes it an absolute overlay on Home and a sticky bar elsewhere. The ribbon is **transparent on every page** (Home and inner pages alike) so the cosmos shows straight through it — any future page inherits this. The menu is centered as **2 links · brand · 2 links** (`About · Articles` | brand | `Services · Contact`). The centered `.nav-brand` stacks the logo image [`public/img/logo-nav.png`](public/img/logo-nav.png) over the `.nav-eyebrow` ASTROTHERAPIA wordmark (from `SiteSetting.hero.eyebrow`); both link Home.
 
 > Design docs: [`docs/superpowers/specs/2026-06-27-theme-packages-design.md`](docs/superpowers/specs/2026-06-27-theme-packages-design.md) and the matching plan in `docs/superpowers/plans/`.
 
@@ -209,8 +209,8 @@ public/
 resources/views/
   layouts/app.blade.php  master layout (loads theme assets from the manifest)
   partials/              nav (app-level), tokens (:root emitter)
-  pages/                 home (renders theme::hero), about, contact
-  blog/                  index, show
+  pages/                 home (renders theme::hero), about, services, contact
+  blog/                  index, show  (the Articles feature; served at /articles)
   admin/                 dashboard, login, posts/*, themes/index
 routes/web.php
 docs/

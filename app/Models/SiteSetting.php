@@ -25,7 +25,7 @@ class SiteSetting extends Model
     public static function defaults(): array
     {
         return [
-            'sections' => ['about' => true, 'blog' => true, 'contact' => true],
+            'sections' => ['about' => true, 'blog' => true, 'services' => true, 'contact' => true],
             'nav'      => [],
             'contact'  => ['email' => '', 'phone' => '', 'address' => ''],
             'branding' => [],
@@ -44,7 +44,7 @@ class SiteSetting extends Model
             'cta_url'    => '/en/contact',
             'eyebrow'    => 'AstroTherapia',
             'cta2_label' => 'Read the Journal',
-            'cta2_url'   => '/en/blog',
+            'cta2_url'   => '/en/articles',
         ];
     }
 
