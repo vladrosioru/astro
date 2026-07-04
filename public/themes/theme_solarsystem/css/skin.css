@@ -31,9 +31,12 @@ img.image_resized { height: auto; }
 /* Theme skin: appearance only, fully token-driven. */
 h1, h2, h3 { font-family: var(--font-display); color: var(--color-heading); letter-spacing: 0.04em; }
 /* Nav ribbon is transparent on every page (Home and all others alike), so the
-   cosmos backdrop shows straight through it. Any future page inherits this. */
-nav { background: transparent; backdrop-filter: none; border-bottom: 0; }
-nav a { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; text-decoration: none; }
+   cosmos backdrop shows straight through it. Any future page inherits this.
+   Scoped to `body > nav` (a direct child of <body>) so it doesn't affect
+   unrelated <nav> elements nested in page content, e.g. the about-pager
+   pagination widget. */
+body > nav { background: transparent; backdrop-filter: none; border-bottom: 0; }
+body > nav a { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; text-decoration: none; }
 
 /* CSS starfield (no image asset): layered radial-gradient dots over a dark base. */
 .hero {
@@ -68,18 +71,36 @@ body { background: var(--color-bg); }
 /* Headings use the heading serif; brand uses the display serif. */
 h1, h2, h3 { font-family: var(--font-heading); color: var(--color-heading); letter-spacing: 0.01em; }
 
-/* Nav is transparent everywhere (see the base `nav` rule): an absolute overlay
-   on Home, a sticky bar on inner pages — both let the cosmos show through. */
-nav a { color: var(--color-muted); }
-nav a:hover { color: var(--color-accent); }
+/* Nav is transparent everywhere (see the base `nav` rule): a sticky bar on
+   every page, overlaying the stage on Home, both letting the cosmos show
+   through. Scoped to `body > nav` (a direct child of <body>) so these rules
+   don't affect unrelated <nav> elements nested in page content, e.g. the
+   about-pager pagination widget. */
+body > nav a { color: var(--color-muted); }
+body > nav a:hover { color: var(--color-accent); }
 
 /* ASTROTHERAPIA eyebrow wordmark under the logo (moved here from .stage .eyebrow)
    so it rides in the nav on every page. Same size/tracking/rules as the old hero
    eyebrow; overrides the generic `nav a` link style. */
-nav .nav-eyebrow { display: flex; align-items: center; gap: 12px; color: var(--color-primary); font-size: 12px; font-weight: 500; letter-spacing: .42em; text-transform: uppercase; text-decoration: none; }
-nav .nav-eyebrow:hover { color: var(--color-accent); }
-nav .nav-eyebrow .rule { width: 34px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-primary) 70%, transparent)); }
-nav .nav-eyebrow .rule:last-child { background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 70%, transparent), transparent); }
+body > nav .nav-eyebrow { display: flex; align-items: center; gap: 12px; color: var(--color-primary); font-size: 12px; font-weight: 500; letter-spacing: .42em; text-transform: uppercase; text-decoration: none; }
+body > nav .nav-eyebrow:hover { color: var(--color-accent); }
+body > nav .nav-eyebrow .rule { width: 34px; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-primary) 70%, transparent)); }
+body > nav .nav-eyebrow .rule:last-child { background: linear-gradient(90deg, color-mix(in srgb, var(--color-primary) 70%, transparent), transparent); }
+
+/* Phone hamburger: bars use the body text color so they read against either
+   the transparent bar or the dimmed scrim behind it; the "≡" morphs into a
+   "×" when the menu opens, driven by the same checkbox that shows the panel.
+   `#nav-toggle` precedes <nav> in the DOM (see nav.blade.php), so it reaches
+   .nav-toggle-btn's spans via a plain `~` + descendant combinator. */
+body > nav .nav-toggle-btn span { background: var(--color-fg); transition: transform .2s ease, opacity .2s ease; }
+#nav-toggle:checked ~ nav .nav-toggle-btn span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+#nav-toggle:checked ~ nav .nav-toggle-btn span:nth-child(2) { opacity: 0; }
+#nav-toggle:checked ~ nav .nav-toggle-btn span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* Dimming scrim behind the expanded phone menu — same translucent/blur
+   treatment as the Home-nav mobile bar below, so it also doubles as a
+   legible backdrop for the nav's own transparent background. */
+body > nav .nav-scrim { background: color-mix(in srgb, var(--color-bg) 82%, transparent); backdrop-filter: blur(6px); }
 
 /* Links + muted text. */
 a { color: var(--color-primary); }
@@ -150,18 +171,36 @@ a:hover { color: var(--color-accent); }
 /* Phone nav: the Home nav (a transparent overlay on desktop) becomes a readable
    translucent bar; shrink the brand so the wordmark + links fit comfortably. */
 @media (max-width: 720px) {
-    .page-home nav {
+    .page-home > nav {
         background: color-mix(in srgb, var(--color-bg) 88%, transparent);
         backdrop-filter: blur(6px);
         border-bottom: 1px solid var(--color-bg-alt);
     }
-    nav a { font-size: 0.72rem; letter-spacing: 0.1em; }
-    nav .nav-eyebrow { letter-spacing: .3em; font-size: 11px; }
+    body > nav a { font-size: 0.72rem; letter-spacing: 0.1em; }
+    body > nav .nav-eyebrow { letter-spacing: .3em; font-size: 11px; }
+
+    /* Open phone menu: only the size changes for links — same uppercase
+       weight/tracking as the rest of the theme's nav type, just much larger. */
+    #nav-toggle:checked ~ nav .nav-left a,
+    #nav-toggle:checked ~ nav .nav-right a {
+        font-size: 1.35rem;
+    }
+    /* The eyebrow reads as a proper wordmark here: distinctly bigger than the
+       menu items (matching the desktop weight/uppercase), with tracking eased
+       down from the compact-bar value so "ASTROTHERAPIA" still fits the
+       viewport width at this size. The flanking rules stay on, just wider to
+       match — same graphic as the full desktop version. */
+    #nav-toggle:checked ~ nav .nav-eyebrow {
+        font-size: 1.85rem;
+        letter-spacing: 0.02em;
+        gap: 8px;
+    }
+    #nav-toggle:checked ~ nav .nav-eyebrow .rule { width: 28px; }
 }
 
 /* Non-selectable UI chrome: labels/headings show no text caret and can't be
    highlighted; real links/buttons keep the pointer cursor. */
-nav, h1, h2, h3 { user-select: none; -webkit-user-select: none; }
+body > nav, h1, h2, h3 { user-select: none; -webkit-user-select: none; }
 h1, h2, h3 { cursor: default; }
 /* The nav logo is a link, but it's chrome — no drag/select on the image. */
 .nav-logo img { user-select: none; -webkit-user-select: none; -webkit-user-drag: none; }

@@ -118,9 +118,15 @@ rest of the site and so a persisted hero (`SiteSetting.hero`) renders.
 
 Markup is **2 links · centered brand · 2 links** and is shared site-wide. The
 centered brand stacks the logo over the ASTROTHERAPIA eyebrow wordmark (both link
-Home); the wordmark text comes from `SiteSetting.hero.eyebrow`:
+Home); the wordmark text comes from `SiteSetting.hero.eyebrow`. A checkbox +
+two `<label>`s implement a phone hamburger menu with **pure CSS** (the
+"checkbox hack" — no JS). The checkbox is a sibling *before* `<nav>`, not
+nested inside it — this lets CSS restyle `<nav>` itself from the checkbox's
+`:checked` state using a plain `~` sibling combinator, without needing the
+`:has()` relational selector (which isn't supported by every browser):
 
 ```html
+<input type="checkbox" id="nav-toggle" class="nav-toggle-input">
 <nav><div class="container">
   <ul class="nav-left"> <li><a>…</a></li> … </ul>
   <div class="nav-brand">
@@ -128,6 +134,8 @@ Home); the wordmark text comes from `SiteSetting.hero.eyebrow`:
     <a class="nav-eyebrow"><span class="rule"></span>ASTROTHERAPIA<span class="rule"></span></a>
   </div>
   <ul class="nav-right"> <li><a>…</a></li> … </ul>
+  <label for="nav-toggle" class="nav-toggle-btn"><span></span><span></span><span></span></label>
+  <label for="nav-toggle" class="nav-scrim"></label>
 </div></nav>
 ```
 
@@ -139,8 +147,23 @@ Home); the wordmark text comes from `SiteSetting.hero.eyebrow`:
 | `nav .nav-brand` | centered column that stacks the logo over the eyebrow wordmark |
 | `nav .nav-logo`, `nav .nav-logo img` | the logo link + image sizing |
 | `nav .nav-eyebrow` | the ASTROTHERAPIA wordmark under the logo — style it as a small brand label (it also carries the generic `nav a` style, so override color/size as needed). Its two `.rule` spans are optional decorative flanking lines you may style or leave invisible. **Layout:** it's given `width: 0; overflow: visible` so only the narrow logo sizes the centered brand column (keeping the flanking link groups hugged to the logo); the wider wordmark overflows symmetrically onto its own row, partly *under* the side links. On phones (≤720px) it reverts to `width: auto`, centered under the logo. |
+| `#nav-toggle` / `.nav-toggle-input` | the hidden checkbox driving the phone menu's open/closed state, placed *before* `<nav>` in the DOM. Always visually hidden (never `display:none`, so it stays focusable/keyboard-operable) — inert on desktop since nothing reacts to `:checked` there. Reference it by its stable `#nav-toggle` id, not `nav .nav-toggle-input` (it's no longer a descendant of `nav`). |
+| `nav .nav-toggle-btn`, `nav .nav-toggle-btn span` | the "≡" trigger (3 bars) — `display:none` on desktop, shown only under the phone breakpoint. Style the bars' color/thickness; theme CSS typically animates them into a "×" via `#nav-toggle:checked ~ nav .nav-toggle-btn span:nth-child(n)` transforms. |
+| `nav .nav-scrim` | a `<label>` for the same checkbox that dims the page behind the open phone menu — clicking it closes the menu. `display:none` until `:checked`, phone only. Give it a translucent theme-colored background. |
 | `nav a` | idle link style (+ `:hover`) |
 | `.page-home` | body class on the Home page — use it to special-case the Home nav/hero |
+
+**Phone behavior (≤720px, both shipped themes):** only the brand (logo +
+eyebrow) stays visible in the closed bar; `nav .nav-left`/`nav .nav-right` are
+hidden and the "≡" trigger appears on the right. Checking the input (tapping
+the trigger) turns `nav` into a `position: fixed` panel that overlays the page
+(via `#nav-toggle:checked ~ nav` — instead of pushing content down) and
+reflows its children into one column: brand first, then the link groups in
+their original left-to-right order top-to-bottom, with the scrim dimming
+whatever of the page remains visible behind it. A theme is free to restyle
+colors/animation but should preserve this open/closed structure — and the
+"checkbox precedes `<nav>`" DOM order, which the `~` selectors depend on — so
+the pattern stays consistent and broadly browser-compatible across themes.
 
 ### Home hero — `views/hero.blade.php` (you author this)
 

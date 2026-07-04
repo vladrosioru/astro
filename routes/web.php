@@ -31,6 +31,9 @@ Route::prefix('{locale}')
         Route::get('/about', [\App\Http\Controllers\PageController::class, 'about'])->name('about');
         Route::get('/services', [\App\Http\Controllers\PageController::class, 'services'])->name('services');
         Route::get('/contact', [\App\Http\Controllers\PageController::class, 'contact'])->name('contact');
+        Route::post('/contact', [\App\Http\Controllers\PageController::class, 'contactSubmit'])
+            ->middleware('throttle:5,1')
+            ->name('contact.submit');
 
         // The blog feature is presented as "Articles" (menu label + public URL).
         // Route names stay blog.* to match BlogController and the blog/ views.

@@ -54,6 +54,7 @@ Defined in [`routes/web.php`](routes/web.php).
 - `/{locale}` group (`locale` constrained to `en|ro`, `setlocale` middleware):
   - `/{locale}` → Home (`PageController@home`)
   - `/{locale}/about`, `/{locale}/services`, `/{locale}/contact`
+  - `POST /{locale}/contact` (`contact.submit`, `throttle:5,1`) — validates and mails the contact form (`App\Mail\ContactMessage`); a honeypot field plus a render-timestamp trap silently no-op bot submissions
   - `/{locale}/articles`, `/{locale}/articles/{slug}` — the blog feature (`BlogController`), presented as **Articles**; route names stay `blog.*`. Legacy `/{locale}/blog` and `/{locale}/blog/{slug}` **301-redirect** to the `/articles` equivalents.
 - `/admin/login`, `/admin/logout` — session auth (`Admin\AuthController`).
 - `/admin/*` (`admin` middleware) — dashboard, `posts` resource (no `show`), `attachments` upload, and **Themes** (`GET /admin/themes` list + `PATCH /admin/themes` apply).
@@ -132,6 +133,7 @@ public/themes/theme_solarsystem/views/*.blade.php   (theme::hero, theme::cosmos)
   - Markup is `theme_solarsystem/views/hero.blade.php` (rendered on Home as `@includeIf('theme::hero')`); **all copy comes from `SiteSetting.hero`** (no hardcoded text).
 - **Inner pages** (About/Articles/Services/Contact) show the same shared cosmos backdrop and inherit the dark token skin — no orbit animation.
 - **Nav** is one app-level data-driven partial ([`resources/views/partials/nav.blade.php`](resources/views/partials/nav.blade.php)); a `page-home` body class makes it an absolute overlay on Home and a sticky bar elsewhere. The ribbon is **transparent on every page** (Home and inner pages alike) so the cosmos shows straight through it — any future page inherits this. The menu is centered as **2 links · brand · 2 links** (`About · Articles` | brand | `Services · Contact`). The centered `.nav-brand` stacks the logo image [`public/img/logo-nav.png`](public/img/logo-nav.png) over the `.nav-eyebrow` ASTROTHERAPIA wordmark (from `SiteSetting.hero.eyebrow`); both link Home.
+- **Phone nav (≤720px)** collapses the two link groups behind a "≡" hamburger on the right, leaving only the brand visible in the closed bar. It's a pure-CSS "checkbox hack" — no JS: `#nav-toggle` (a checkbox placed *before* `<nav>`, not inside it) plus two `<label>`s. Tapping the trigger checks the input, and `#nav-toggle:checked ~ nav` — a plain sibling combinator, not `:has()`, for maximum browser compatibility — overlays a fixed panel listing About/Articles/Services/Contact in one column under the brand, dimmed by a `.nav-scrim` backdrop that also closes the menu when tapped.
 
 > Design docs: [`docs/superpowers/specs/2026-06-27-theme-packages-design.md`](docs/superpowers/specs/2026-06-27-theme-packages-design.md) and the matching plan in `docs/superpowers/plans/`.
 

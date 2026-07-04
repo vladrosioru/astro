@@ -26,6 +26,12 @@ The old standalone **Home** text link is gone — the centered brand is the link
 Home. The dropdowns for About / Services remain a future step (see open
 questions).
 
+**Phone (≤720px):** the two link groups collapse behind a "≡" hamburger, so
+the closed bar shows only the brand; tapping it opens all four links (About,
+Articles, Services, Contact, in that order) stacked in one column below the
+brand, over a dimming scrim. Pure CSS, no JS — see `AUTHORING.md`'s nav
+contract for the mechanism.
+
 ## Pages
 
 | # | Page | Type | Description | Status |

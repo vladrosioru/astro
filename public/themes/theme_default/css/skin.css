@@ -5,14 +5,46 @@ a { color: var(--color-primary); text-decoration: none; }
 a:hover { color: var(--color-accent); }
 .muted { color: var(--color-muted); }
 
-/* Nav: translucent sticky bar; uppercase, muted idle links. */
-nav { background: color-mix(in srgb, var(--color-bg) 88%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--color-bg-alt); }
-nav a { color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; }
-nav a:hover { color: var(--color-accent); }
+/* Nav: translucent sticky bar; uppercase, muted idle links. Scoped to
+   `body > nav` (a direct child of <body>) so these rules don't affect
+   unrelated <nav> elements nested in page content, e.g. the about-pager
+   pagination widget. */
+body > nav { background: color-mix(in srgb, var(--color-bg) 88%, transparent); backdrop-filter: blur(6px); border-bottom: 1px solid var(--color-bg-alt); }
+body > nav a { color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; }
+body > nav a:hover { color: var(--color-accent); }
 /* ASTROTHERAPIA eyebrow wordmark under the logo (moved here from .stage .eyebrow).
    Plain uppercase text; the flanking .rule spans stay unstyled in this theme. */
-nav .nav-eyebrow { color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.8rem; text-decoration: none; }
-nav .nav-eyebrow:hover { color: var(--color-accent); }
+body > nav .nav-eyebrow { color: var(--color-primary); text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.8rem; text-decoration: none; }
+body > nav .nav-eyebrow:hover { color: var(--color-accent); }
+
+/* Phone hamburger: bars use the body text color; the "≡" morphs into a "×"
+   when the menu opens, driven by the same checkbox that shows the panel.
+   `#nav-toggle` precedes <nav> in the DOM (see nav.blade.php), so it reaches
+   .nav-toggle-btn's spans via a plain `~` + descendant combinator. */
+body > nav .nav-toggle-btn span { background: var(--color-fg); transition: transform .2s ease, opacity .2s ease; }
+#nav-toggle:checked ~ nav .nav-toggle-btn span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+#nav-toggle:checked ~ nav .nav-toggle-btn span:nth-child(2) { opacity: 0; }
+#nav-toggle:checked ~ nav .nav-toggle-btn span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* Dimming scrim behind the expanded phone menu — same translucent/blur
+   treatment as the sticky bar itself, so it also legibly backs the links. */
+body > nav .nav-scrim { background: color-mix(in srgb, var(--color-bg) 88%, transparent); backdrop-filter: blur(6px); }
+
+/* Open phone menu: only the size changes for links — same uppercase
+   weight/tracking as the rest of the theme's nav type, just much larger. */
+@media (max-width: 720px) {
+    #nav-toggle:checked ~ nav .nav-left a,
+    #nav-toggle:checked ~ nav .nav-right a {
+        font-size: 1.35rem;
+    }
+    /* The eyebrow reads as a proper wordmark here: distinctly bigger than the
+       menu items, with tracking eased down from the compact-bar value so
+       "ASTROTHERAPIA" still fits the viewport width at this size. */
+    #nav-toggle:checked ~ nav .nav-eyebrow {
+        font-size: 1.85rem;
+        letter-spacing: 0.02em;
+    }
+}
 
 /* Home hero. */
 .stage .title { font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1.05; max-width: 18em; margin: 0 auto; }

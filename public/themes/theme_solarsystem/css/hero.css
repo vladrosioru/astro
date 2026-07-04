@@ -9,11 +9,11 @@
   position: relative;
   width: 100%;
   height: 100vh;
-  min-height: 680px;
+  min-height: 720px;
   overflow: hidden;
   isolation: isolate;
   background: transparent;   /* shared cosmos backdrop (cosmos.css) shows through */
-  --solar-scale: 1.18;
+  --solar-scale: 0.72;
 }
 
 /* Hero text is decorative — no text caret / highlight. Links & buttons keep the pointer. */
@@ -32,7 +32,8 @@
 .stage .solar-wrap {
   position: absolute;
   left: 50%;
-  top: 78%;
+  /* sun sits centered in the empty gap between the nav and the heading */
+  top: 63px;
   width: 560px;
   height: 560px;
   margin: 0;
@@ -188,8 +189,8 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  /* clear the absolutely-positioned overlay nav (~var(--nav-height) tall) */
-  padding: calc(var(--nav-height) + 1.75rem) 24px 0;
+  /* the nav already occupies its own flow space above .stage — no extra nav-height offset needed here */
+  padding: 127px 24px 0;
 }
 
 /* The eyebrow wordmark moved out of the stage into the nav brand
@@ -296,8 +297,9 @@
 @media (max-width: 1024px) {
   .stage .nav { padding: 28px 36px; }
   .stage .nav-links { gap: 30px; }
-  .stage { --solar-scale: 1.0; }
-  .stage .solar-wrap { top: 80%; }
+  .stage { --solar-scale: 0.6; }
+  .stage .solar-wrap { top: 60px; }
+  .stage .hero { padding-top: 120px; }
 }
 
 @media (max-width: 720px) {
@@ -305,13 +307,15 @@
   .stage .nav-links { gap: 22px; font-size: 12px; }
   .stage .cta { display: none; }
   /* phone nav is an in-flow sticky bar (not an overlay) — hero needs no nav offset here */
-  .stage .hero { padding-top: 1.5rem; }
-  .stage { --solar-scale: 0.72; }
-  .stage .solar-wrap { top: 82%; }
+  .stage { --solar-scale: 0.5; min-height: 680px; }
+  .stage .solar-wrap { top: 20px; }
+  .stage .hero { padding-top: 40px; }
 }
 
 @media (max-width: 460px) {
-  .stage { --solar-scale: 0.52; }
+  .stage { --solar-scale: 0.38; min-height: 640px; }
+  .stage .solar-wrap { top: 15px; }
+  .stage .hero { padding-top: 30px; }
   .stage .actions { gap: 12px; }
   .stage .btn-primary { padding: 13px 24px; }
 }

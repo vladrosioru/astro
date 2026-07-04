@@ -1,0 +1,233 @@
+/* ============================================================
+   Contact page (app-level, pushed via @push('head')). Styled to
+   match the Astrology page's look — token-driven only, no raw
+   colours or fonts, translucent panels over the shared cosmos
+   backdrop.
+   ============================================================ */
+
+.contact { color: var(--color-fg); font-family: var(--font-base); }
+
+/* --- Shell / sections --------------------------------------- */
+.contact-shell {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 calc(var(--space-unit) * 5);
+}
+.contact-section { padding: 0 0 calc(var(--space-unit) * 20); }
+
+/* --- Shared type --------------------------------------------- */
+.contact-eyebrow {
+    margin: 0 0 calc(var(--space-unit) * 3);
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+}
+.contact-h2 {
+    margin: 0 0 calc(var(--space-unit) * 4);
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: clamp(1.8rem, 3.6vw, 2.4rem);
+    line-height: 1.15;
+    color: var(--color-heading);
+    letter-spacing: 0.01em;
+}
+.contact-lede {
+    margin: 0 0 calc(var(--space-unit) * 8);
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--color-muted);
+    max-width: 26rem;
+}
+
+/* --- Title band ------------------------------------------------ */
+.contact-hero {
+    padding: calc(var(--space-unit) * 26) 0 calc(var(--space-unit) * 16);
+    text-align: center;
+}
+.contact-crumb {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: calc(var(--space-unit) * 5);
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+.contact-crumb a { color: var(--color-muted); text-decoration: none; transition: color .25s ease; }
+.contact-crumb a:hover { color: var(--color-accent); }
+.contact-hero__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 1;
+    color: var(--color-heading);
+}
+.contact-hero__sub {
+    max-width: 34rem;
+    margin: calc(var(--space-unit) * 5) auto 0;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+    font-style: italic;
+    font-family: var(--font-heading);
+}
+
+/* --- Info + form grid ------------------------------------------ */
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: calc(var(--space-unit) * 16);
+    align-items: start;
+}
+
+/* --- Contact details ------------------------------------------- */
+.contact-details {
+    margin: 0 0 calc(var(--space-unit) * 8);
+    padding-top: calc(var(--space-unit) * 4);
+    border-top: 1px solid color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
+.contact-details__row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: calc(var(--space-unit) * 4) 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
+.contact-details__row dt {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+}
+.contact-details__row dd {
+    margin: 0;
+    font-size: 1.02rem;
+}
+.contact-details__row a { color: var(--color-fg); text-decoration: none; transition: color .25s ease; }
+.contact-details__row a:hover { color: var(--color-accent); }
+
+/* --- Social icons ------------------------------------------------ */
+.contact-social { display: flex; gap: calc(var(--space-unit) * 3); }
+.contact-social__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+    background: color-mix(in srgb, var(--color-bg-alt) 60%, transparent);
+    color: var(--color-primary);
+    transition: background .25s ease, color .25s ease, border-color .25s ease, transform .25s ease;
+}
+.contact-social__link:hover,
+.contact-social__link:focus-visible {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    border-color: var(--color-primary);
+    transform: translateY(-3px);
+}
+
+/* --- Form -------------------------------------------------------- */
+.contact-alert {
+    margin: 0 0 calc(var(--space-unit) * 5);
+    padding: calc(var(--space-unit) * 4) calc(var(--space-unit) * 5);
+    border-radius: 3px;
+    font-size: 0.92rem;
+    border: 1px solid transparent;
+}
+.contact-alert--success {
+    color: var(--color-heading);
+    background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+    border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+.contact-alert--error {
+    color: var(--color-heading);
+    background: color-mix(in srgb, #ef4444 16%, transparent);
+    border-color: color-mix(in srgb, #ef4444 40%, transparent);
+}
+
+.contact-form {
+    display: grid;
+    gap: calc(var(--space-unit) * 5);
+    padding: calc(var(--space-unit) * 8);
+    background: color-mix(in srgb, var(--color-bg-alt) 55%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 14%, transparent);
+    border-radius: 4px;
+}
+
+/* Honeypot: visually removed from the page but still present in the DOM/tab
+   order-free, so naive bots that fill every field still trip it. */
+.contact-hp {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    left: -9999px;
+}
+
+.contact-field { display: flex; flex-direction: column; gap: 0.5rem; }
+.contact-field label {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+.contact-field input,
+.contact-field textarea {
+    font-family: var(--font-base);
+    font-size: 1rem;
+    color: var(--color-fg);
+    background: var(--color-bg);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
+    border-radius: 3px;
+    padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 4);
+    transition: border-color .25s ease, box-shadow .25s ease;
+}
+.contact-field textarea { resize: vertical; min-height: 8rem; }
+.contact-field input:focus,
+.contact-field textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+
+.contact-btn {
+    justify-self: start;
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 1.05rem 2.6rem;
+    border-radius: 2px;
+    border: 1px solid var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-bg);
+    cursor: pointer;
+    transition: background .3s ease, color .3s ease, border-color .3s ease;
+}
+.contact-btn:hover,
+.contact-btn:focus-visible {
+    background: transparent;
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+}
+
+/* --- Responsive ---------------------------------------------- */
+@media (max-width: 900px) {
+    .contact-grid { grid-template-columns: 1fr; gap: calc(var(--space-unit) * 10); }
+}

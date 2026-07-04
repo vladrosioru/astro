@@ -2,42 +2,122 @@
 * { box-sizing: border-box; }
 body { margin: 0; }
 .container { max-width: var(--container-width); margin: 0 auto; padding: calc(var(--space-unit) * 4); }
-nav ul { display: flex; gap: calc(var(--space-unit) * 4); list-style: none; padding: 0; }
+/* Scoped to `body > nav` (the site nav is a direct child of <body> — see
+   layouts/app.blade.php) rather than the bare `nav` element, so these rules
+   don't leak onto unrelated <nav> elements nested in page content (e.g. the
+   about-pager pagination widget uses a <nav> tag too). */
+body > nav ul { display: flex; gap: calc(var(--space-unit) * 4); list-style: none; padding: 0; margin: 0; }
 
 /* Sticky nav + hero structure (layout only). */
-nav { position: sticky; top: 0; z-index: 10; min-height: var(--nav-height); display: flex; align-items: center; }
-nav .container { display: flex; align-items: center; gap: calc(var(--space-unit) * 6); width: 100%; }
+body > nav { position: sticky; top: 0; z-index: 10; min-height: var(--nav-height); display: flex; align-items: center; }
+body > nav .container { display: flex; align-items: center; gap: calc(var(--space-unit) * 6); width: 100%; }
 /* Centered nav: two equal link groups flank the logo so the logo stays centered.
    Left group hugs the logo from the right, right group from the left. */
-nav .nav-left, nav .nav-right { flex: 1 1 0; }
-nav .nav-left { justify-content: flex-end; }
-nav .nav-right { justify-content: flex-start; }
+body > nav .nav-left, body > nav .nav-right { flex: 1 1 0; }
+body > nav .nav-left { justify-content: flex-end; }
+body > nav .nav-right { justify-content: flex-start; }
 /* Brand = logo + ASTROTHERAPIA eyebrow stacked and centered; it's the fixed
    center column that the two link groups flank. The eyebrow is width:0 so ONLY
    the (narrow) logo dictates the column width — the wider wordmark overflows
    symmetrically onto its own row, partly under the flanking links, while the
    link groups stay hugged to the logo. */
-nav .nav-brand { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-nav .nav-logo { display: flex; align-items: center; line-height: 0; }
+body > nav .nav-brand { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+body > nav .nav-logo { display: flex; align-items: center; line-height: 0; }
 /* Logo height = 3× the nav-link letters (nav links are 0.8rem). */
-nav .nav-logo img { display: block; height: 2.4rem; width: auto; }
-nav .nav-eyebrow { display: flex; align-items: center; justify-content: center; width: 0; overflow: visible; white-space: nowrap; }
-nav .nav-eyebrow .rule { flex-shrink: 0; }
+body > nav .nav-logo img { display: block; height: 2.4rem; width: auto; }
+body > nav .nav-eyebrow { display: flex; align-items: center; justify-content: center; width: 0; overflow: visible; white-space: nowrap; }
+body > nav .nav-eyebrow .rule { flex-shrink: 0; }
+
+/* Hamburger toggle (checkbox-hack, no JS): the checkbox stays visually hidden
+   at every width but remains focusable/keyboard-operable via its label. It's
+   a sibling before <nav> (see nav.blade.php) so `#nav-toggle:checked ~ nav`
+   can restyle the whole nav via a plain sibling combinator — no :has()
+   needed. The "≡" trigger and the collapsible panel only activate under the
+   phone breakpoint below. */
+.nav-toggle-input { position: absolute; width: 1px; height: 1px; margin: -1px; opacity: 0; }
+body > nav .nav-toggle-btn { display: none; flex-direction: column; justify-content: space-between; width: 1.4rem; height: 1rem; cursor: pointer; }
+body > nav .nav-toggle-btn span { display: block; width: 100%; height: 2px; }
+body > nav .nav-scrim { display: none; }
 .hero { position: relative; padding: calc(var(--space-unit) * 28) calc(var(--space-unit) * 4); text-align: center; overflow: hidden; }
 .hero-inner { position: relative; z-index: 1; max-width: var(--container-width); margin: 0 auto; }
 .hero-cta { display: inline-block; margin-top: calc(var(--space-unit) * 6); padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 8); }
 
-/* Solar System: Home nav overlays the stage; inner-page nav is the sticky bar above. */
-.page-home nav { position: absolute; top: 0; left: 0; right: 0; }
+/* Solar System: nav is a sticky bar overlaying the stage on every page,
+   including Home — it stays pinned as the page scrolls past the hero, same
+   as the inner pages. `.page-home > nav` (child combinator) targets only the
+   real site nav (a direct child of <body>), not any <nav> nested deeper in
+   page content (e.g. the about-pager pagination widget). */
+.page-home > nav { position: sticky; top: 0; }
 .page-home { position: relative; }
 
-/* Phone: the Home overlay nav becomes a normal sticky bar; brand + links wrap and center. */
+/* Phone: only the brand (logo + eyebrow) stays visible, centered, with the
+   two link groups collapsed behind a "≡" trigger on the right. */
 @media (max-width: 720px) {
-    .page-home nav { position: sticky; }
-    nav .container { justify-content: center; gap: calc(var(--space-unit) * 2); }
-    nav ul { justify-content: center; flex-wrap: wrap; gap: calc(var(--space-unit) * 3); }
-    nav .nav-logo img { height: 1.9rem; }
-    /* Phone: nav wraps and centers, so the wordmark just sits centered under the
-       logo at its natural width (no under-the-links overflow). */
-    nav .nav-eyebrow { width: auto; }
+    body > nav .nav-logo img { height: 1.9rem; }
+    /* Phone: the wordmark just sits centered under the logo at its natural
+       width (no under-the-links overflow, since the links are hidden here). */
+    body > nav .nav-eyebrow { width: auto; }
+
+    body > nav .container { position: relative; justify-content: center; }
+    body > nav .nav-left, body > nav .nav-right { display: none; }
+    body > nav .nav-toggle-btn {
+        display: flex;
+        position: absolute;
+        right: calc(var(--space-unit) * 4);
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    /* Checked: the bar becomes a fixed, full-width panel that overlays the
+       page (instead of pushing it down) and reflows into a single column —
+       brand first (with room to breathe below the "×"), then all four links
+       tightly stacked in their original left-to-right order, top-to-bottom.
+       `#nav-toggle` is a preceding sibling of <nav> (see nav.blade.php), so a
+       plain `~` sibling combinator reaches <nav> itself here — no :has(). */
+    #nav-toggle:checked ~ nav {
+        position: fixed;
+        inset: 0 0 auto 0;
+        max-height: 100vh;
+        overflow-y: auto;
+    }
+    #nav-toggle:checked ~ nav .container {
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: calc(var(--space-unit) * 2);
+        padding-top: calc(var(--space-unit) * 10);
+        padding-bottom: calc(var(--space-unit) * 8);
+    }
+    #nav-toggle:checked ~ nav .nav-brand { order: -1; margin-bottom: calc(var(--space-unit) * 4); }
+    #nav-toggle:checked ~ nav .nav-left { order: 1; }
+    #nav-toggle:checked ~ nav .nav-right { order: 2; }
+    /* Override the desktop flanking rule's `flex: 1 1 0` — without this the
+       two link columns flex-grow to fill the tall panel, which is what was
+       stretching Articles and Services far apart. */
+    #nav-toggle:checked ~ nav .nav-left,
+    #nav-toggle:checked ~ nav .nav-right {
+        display: flex;
+        flex: 0 0 auto;
+        flex-direction: column;
+        align-items: center;
+        gap: calc(var(--space-unit) * 2);
+    }
+    /* Pin the "×" to the panel's top-right corner — the closed-bar rule above
+       (top: 50%, centered in a short bar) would otherwise vertically center
+       it in the now much-taller expanded panel. */
+    #nav-toggle:checked ~ nav .nav-toggle-btn {
+        top: calc(var(--space-unit) * 5);
+        right: calc(var(--space-unit) * 5);
+        transform: none;
+    }
+
+    /* Dimming scrim behind the expanded panel; it's a <label> for the same
+       checkbox, so tapping it closes the menu. Negative z-index keeps it
+       behind the nav's own (transparent) content within nav's own stacking
+       context — nav's z-index: 10 still keeps the whole thing above the page. */
+    #nav-toggle:checked ~ nav .nav-scrim {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+    }
 }
