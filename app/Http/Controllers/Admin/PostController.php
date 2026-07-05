@@ -40,7 +40,7 @@ class PostController extends Controller
 
     public function update(Request $request, Post $post)
     {
-        $post->update($this->postData($request));
+        $post->update($this->postData($request, $post));
         $this->saveTranslations($post, $request);
 
         return redirect()->route('admin.posts.index');
@@ -53,11 +53,15 @@ class PostController extends Controller
         return redirect()->route('admin.posts.index');
     }
 
-    private function postData(Request $request): array
+    private function postData(Request $request, ?Post $post = null): array
     {
+        $status = $request->input('status', 'draft');
         $data = [
-            'status' => $request->input('status', 'draft'),
-            'published_at' => $request->input('status') === 'published' ? now() : null,
+            'status' => $status,
+            // Keep the original publish timestamp on re-saves so editing a
+            // published post doesn't reorder it in date-sorted listings;
+            // only stamp "now" the first time it becomes published.
+            'published_at' => $status === 'published' ? ($post?->published_at ?? now()) : null,
         ];
 
         $cardImage = $this->cardImageUrl($request);
@@ -86,8 +90,17 @@ class PostController extends Controller
         $image = $manager->decodePath($file->getRealPath());
         $image->cover(1200, 1200);
 
-        $path = 'media/' . Str::uuid() . '.jpg';
-        Storage::disk('public')->put($path, (string) $image->encodeUsingFileExtension('jpg', quality: 82));
+        // Formats that can carry an alpha channel keep it by staying PNG;
+        // re-encoding those to JPEG (no alpha) flattens transparent pixels to
+        // white. Everything else (plain photos) still gets JPEG for size.
+        $keepsAlpha = in_array($file->getMimeType(), ['image/png', 'image/webp', 'image/gif'], true);
+        $extension = $keepsAlpha ? 'png' : 'jpg';
+        $encoded = $keepsAlpha
+            ? $image->encodeUsingFileExtension('png')
+            : $image->encodeUsingFileExtension('jpg', quality: 82);
+
+        $path = 'media/' . Str::uuid() . '.' . $extension;
+        Storage::disk('public')->put($path, (string) $encoded);
 
         // Root-relative URL so the image resolves on any host/port/domain.
         $url = parse_url(Storage::disk('public')->url($path), PHP_URL_PATH);
@@ -114,7 +127,7 @@ class PostController extends Controller
                 [
                     'title' => $title,
                     'slug' => $request->input("{$locale}_slug"),
-                    'excerpt' => $request->input("{$locale}_excerpt"),
+                    'subtitle' => $request->input("{$locale}_subtitle"),
                     'body' => clean($request->input("{$locale}_body", ''), 'blog'),
                     'seo_title' => $request->input("{$locale}_seo_title"),
                     'seo_description' => $request->input("{$locale}_seo_description"),

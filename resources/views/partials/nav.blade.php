@@ -21,9 +21,9 @@
             @if ($setting->sectionVisible('about'))
                 <li><a href="/{{ $locale }}/about">About</a></li>
             @endif
-            {{-- 'blog' is the internal feature key; the menu label + URL are "Articles". --}}
+            {{-- 'blog' is the internal feature key; the menu label + URL are "Journal". --}}
             @if ($setting->sectionVisible('blog'))
-                <li><a href="/{{ $locale }}/articles">Articles</a></li>
+                <li><a href="/{{ $locale }}/journal">Journal</a></li>
             @endif
         </ul>
         <div class="nav-brand">
@@ -36,7 +36,20 @@
         </div>
         <ul class="nav-right">
             @if ($setting->sectionVisible('services'))
-                <li><a href="/{{ $locale }}/services">Services</a></li>
+                {{-- Services keeps its own link; the dropdown is a separate affordance
+                     next to it. Desktop reveals the submenu on hover/focus. Phone gets
+                     a tap-to-expand accordion via the same checkbox-hack pattern as the
+                     main hamburger toggle (input precedes the elements it controls so a
+                     `~` sibling combinator can reach them without :has()). --}}
+                <li class="nav-dropdown">
+                    <a href="/{{ $locale }}/services">Services</a>
+                    <input type="checkbox" id="services-toggle" class="nav-dropdown-toggle-input">
+                    <label for="services-toggle" class="nav-dropdown-btn" aria-label="Toggle Services submenu"></label>
+                    <ul class="nav-dropdown-menu">
+                        <li><a href="about:blank">Natal Chart Analysis</a></li>
+                        <li><a href="about:blank">Relationship Analysis</a></li>
+                    </ul>
+                </li>
             @endif
             @if ($setting->sectionVisible('contact'))
                 <li><a href="/{{ $locale }}/contact">Contact</a></li>

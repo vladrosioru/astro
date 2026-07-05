@@ -1,38 +1,37 @@
 /* ============================================================
    Blog article display area
-   The CKEditor-authored body renders on a clean white "paper"
-   sheet over the shared cosmos backdrop — exactly as the user
-   edits it. The page loads the same ckeditor5.css and wraps the
-   body in `.ck-content`, so all rich-text styling (headings,
-   lists, tables, blockquotes, images, alignment) matches the
-   editor. The cosmic theme is reset OUT of `.ck-content` so the
-   site skin never bleeds into the content.
-   The article <h1> title above the sheet stays themed like the
-   rest of the site (light serif on the cosmos).
+   Token-driven: the article panel and its text match the active
+   theme's palette (same look as the Journal page's cards) rather
+   than reproducing the CKEditor editing surface's black-on-white.
+   The page loads the same ckeditor5.css so structural rich-text
+   rules (lists, tables, spacing) still match the editor; only the
+   colors are re-themed here. This file is app-level (not
+   per-theme) — it works across every theme because it reads the
+   same `var(--token)`s the active theme injects into `:root`.
    ============================================================ */
 
 .article-paper {
   max-width: 48rem;
   margin: calc(var(--space-unit) * 6) auto calc(var(--space-unit) * 12);
   padding: clamp(1.5rem, 4vw, 3.5rem);
-  background: #fff;                         /* CKEditor --ck-color-base-background */
+  background: var(--color-bg-alt);
+  border: 1px solid color-mix(in srgb, var(--color-fg) 12%, transparent);
   border-radius: var(--radius);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, .45);
+  box-shadow: var(--shadow);
 }
 
-/* Content base: match CKEditor's editing surface (dark text, default font). */
 .article-paper .ck-content {
-  color: #333;                             /* CKEditor --ck-color-base-text */
+  color: var(--color-fg);
   font-family: Helvetica, Arial, Tahoma, Verdana, sans-serif; /* --ck-font-face */
   line-height: 1.6;
   -webkit-user-select: text;
   user-select: text;
 }
 
-/* Undo the cosmic theme's global heading styling so article headings render
-   like the editor (dark, readable, selectable) instead of the site skin. */
+/* Undo the cosmic theme's global heading styling (letter-spacing etc.) so
+   article headings keep the editor's structural look, just in theme colors. */
 .article-paper .ck-content :is(h1, h2, h3, h4, h5, h6) {
-  color: #1a1a1a;
+  color: var(--color-heading);
   font-family: inherit;
   letter-spacing: normal;
   -webkit-user-select: text;
@@ -40,6 +39,90 @@
   cursor: text;
 }
 
-/* Links inside the article read as document links, not theme links. */
-.article-paper .ck-content a { color: #1a6dde; }
-.article-paper .ck-content a:hover { color: #0b50b0; }
+.article-paper .ck-content a { color: var(--color-primary); }
+.article-paper .ck-content a:hover { color: var(--color-accent); }
+
+/* The post's own featured image (already square-cropped at upload time),
+   shown above the body text. */
+.article-image {
+  max-width: 48rem;
+  margin: calc(var(--space-unit) * 6) auto 0;
+}
+.article-image img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+/* Footer meta: date + share icons, right-aligned under the article. */
+.article-footer {
+  max-width: 48rem;
+  margin: calc(var(--space-unit) * 4) auto 0;
+  padding: 0 clamp(1.5rem, 4vw, 3.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: calc(var(--space-unit) * 4);
+}
+.article-date {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+.article-share {
+  display: flex;
+  gap: calc(var(--space-unit) * 3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.article-share a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-fg) 20%, transparent);
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: background .2s ease, color .2s ease;
+}
+.article-share a:hover {
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-accent);
+}
+
+/* Previous/next: placeholder entries (not wired to real adjacent posts). */
+.article-adjacent {
+  max-width: 48rem;
+  margin: calc(var(--space-unit) * 8) auto calc(var(--space-unit) * 12);
+  padding: calc(var(--space-unit) * 5) clamp(1.5rem, 4vw, 3.5rem);
+  display: flex;
+  justify-content: space-between;
+  gap: calc(var(--space-unit) * 4);
+  border-top: 1px solid color-mix(in srgb, var(--color-fg) 14%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-fg) 14%, transparent);
+}
+.article-adjacent__link {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-unit) * 1);
+  max-width: 45%;
+  text-decoration: none;
+}
+.article-adjacent__link--next { text-align: right; margin-left: auto; }
+.article-adjacent__eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.article-adjacent__title {
+  font-family: var(--font-heading);
+  color: var(--color-heading);
+}
+.article-adjacent__link:hover .article-adjacent__title { color: var(--color-primary); }

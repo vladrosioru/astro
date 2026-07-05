@@ -1,0 +1,32 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "laravel-serve",
+      "runtimeExecutable": "C:\\Users\\Andrei\\php\\php.exe",
+      "runtimeArgs": ["artisan", "serve"],
+      "port": 8000
+    },
+    {
+      "name": "laravel-serve-preview",
+      "runtimeExecutable": "C:\\Users\\Andrei\\php\\php.exe",
+      "runtimeArgs": ["artisan", "serve", "--port=8001"],
+      "port": 8001,
+      "autoPort": false
+    },
+    {
+      "name": "laravel-serve-preview2",
+      "runtimeExecutable": "C:\\Users\\Andrei\\php\\php.exe",
+      "runtimeArgs": ["artisan", "serve", "--port=8002"],
+      "port": 8002,
+      "autoPort": false
+    },
+    {
+      "name": "laravel-serve-preview3",
+      "runtimeExecutable": "C:\\Users\\Andrei\\php\\php.exe",
+      "runtimeArgs": ["artisan", "serve", "--port=8003"],
+      "port": 8003,
+      "autoPort": false
+    }
+  ]
+}

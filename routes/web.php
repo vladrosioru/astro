@@ -35,12 +35,14 @@ Route::prefix('{locale}')
             ->middleware('throttle:5,1')
             ->name('contact.submit');
 
-        // The blog feature is presented as "Articles" (menu label + public URL).
+        // The blog feature is presented as "Journal" (menu label + public URL).
         // Route names stay blog.* to match BlogController and the blog/ views.
-        Route::get('/articles', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
-        Route::get('/articles/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
+        Route::get('/journal', [\App\Http\Controllers\BlogController::class, 'index'])->name('blog.index');
+        Route::get('/journal/{slug}', [\App\Http\Controllers\BlogController::class, 'show'])->name('blog.show');
 
-        // Back-compat: the feature used to live at /blog.
-        Route::get('/blog', fn (string $locale) => redirect("/{$locale}/articles"));
-        Route::get('/blog/{slug}', fn (string $locale, string $slug) => redirect("/{$locale}/articles/{$slug}"));
+        // Back-compat: the feature used to live at /blog, then /articles.
+        Route::get('/blog', fn (string $locale) => redirect("/{$locale}/journal"));
+        Route::get('/blog/{slug}', fn (string $locale, string $slug) => redirect("/{$locale}/journal/{$slug}"));
+        Route::get('/articles', fn (string $locale) => redirect("/{$locale}/journal"));
+        Route::get('/articles/{slug}', fn (string $locale, string $slug) => redirect("/{$locale}/journal/{$slug}"));
     });

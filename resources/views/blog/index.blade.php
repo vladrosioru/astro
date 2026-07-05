@@ -1,20 +1,15 @@
 @extends('layouts.app')
-@section('title', 'Articles')
+@section('title', 'Journal')
 @section('content')
+    <header class="journal-hero">
+        <h1 class="journal-hero__title">Cosmic Journal</h1>
+    </header>
+
     <div class="container">
-        <h1>Articles</h1>
-        <div class="blog-grid">
-            @foreach ($posts as $post)
+        <div class="blog-grid blog-grid--journal">
+            @foreach ($posts as $i => $post)
                 @php($t = $post->translation($locale))
-                <a class="card{{ $post->featured_image ? ' card--media' : '' }}" href="/{{ $locale }}/articles/{{ $t->slug }}">
-                    @if ($post->featured_image)
-                        <img class="card__media" src="{{ $post->featured_image }}" alt="{{ $t->title }}">
-                    @endif
-                    <div class="card__body">
-                        <h2>{{ $t->title }}</h2>
-                        <p class="muted">{{ $t->excerpt }}</p>
-                    </div>
-                </a>
+                @include('partials.journal-card', ['post' => $post, 'translation' => $t, 'locale' => $locale, 'first' => $i === 0])
             @endforeach
         </div>
     </div>

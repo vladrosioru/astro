@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\ContactMessage;
+use App\Models\Post;
 use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,7 +13,24 @@ class PageController extends Controller
 {
     public function home()
     {
-        return view('pages.home');
+        $locale = app()->getLocale();
+
+        // Same query the Journal page uses — every published post with a
+        // translation for the current locale. The newest post is shown as a
+        // featured card; the rest page through the "From the Journal" carousel.
+        $journalPosts = Post::published()
+            ->with('translations')
+            ->latest('published_at')
+            ->get()
+            ->map(fn (Post $p) => ['post' => $p, 'translation' => $p->translation($locale)])
+            ->filter(fn (array $entry) => $entry['translation'] !== null)
+            ->values();
+
+        return view('pages.home', [
+            'featuredPost' => $journalPosts->first(),
+            'journalPosts' => $journalPosts->slice(1)->filter(fn (array $entry) => $entry['post']->featured_image)->values(),
+            'locale' => $locale,
+        ]);
     }
 
     public function about()

@@ -2,10 +2,20 @@
 <link rel="stylesheet" href="{{ asset('vendor/ckeditor/ckeditor5.css') }}">
 <script src="{{ asset('vendor/ckeditor/ckeditor5.umd.js') }}"></script>
 
+@if ($errors->any())
+    <div class="form-errors">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <p><label>Status
     <select name="status">
-        <option value="draft" @selected(isset($post) && $post->status === 'draft')>Draft</option>
-        <option value="published" @selected(isset($post) && $post->status === 'published')>Published</option>
+        <option value="draft" @selected(old('status', isset($post) ? $post->status : 'draft') === 'draft')>Draft</option>
+        <option value="published" @selected(old('status', isset($post) ? $post->status : 'draft') === 'published')>Published</option>
     </select>
 </label></p>
 
@@ -25,7 +35,7 @@
         <legend>{{ strtoupper($locale) }}</legend>
         <p><label>Title <input name="{{ $locale }}_title" value="{{ old("{$locale}_title", $t($locale)?->title) }}"></label></p>
         <p><label>Slug <input name="{{ $locale }}_slug" value="{{ old("{$locale}_slug", $t($locale)?->slug) }}"></label></p>
-        <p><label>Excerpt <input name="{{ $locale }}_excerpt" value="{{ old("{$locale}_excerpt", $t($locale)?->excerpt) }}"></label></p>
+        <p><label>Subtitle <input name="{{ $locale }}_subtitle" value="{{ old("{$locale}_subtitle", $t($locale)?->subtitle) }}"></label></p>
         <textarea name="{{ $locale }}_body" id="editor_{{ $locale }}">{{ old("{$locale}_body", $t($locale)?->body) }}</textarea>
     </fieldset>
 @endforeach

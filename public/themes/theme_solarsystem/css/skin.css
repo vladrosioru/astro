@@ -30,12 +30,14 @@ img.image_resized { height: auto; }
 
 /* Theme skin: appearance only, fully token-driven. */
 h1, h2, h3 { font-family: var(--font-display); color: var(--color-heading); letter-spacing: 0.04em; }
-/* Nav ribbon is transparent on every page (Home and all others alike), so the
-   cosmos backdrop shows straight through it. Any future page inherits this.
-   Scoped to `body > nav` (a direct child of <body>) so it doesn't affect
-   unrelated <nav> elements nested in page content, e.g. the about-pager
-   pagination widget. */
-body > nav { background: transparent; backdrop-filter: none; border-bottom: 0; }
+/* Nav ribbon is transparent-but-slightly-darker-than-the-page-background on
+   every page and at every width (Home and all others alike, phone and
+   desktop alike) — the cosmos backdrop still shows through, just with a
+   touch of contrast for legibility as content scrolls under the sticky bar.
+   Any future page inherits this. Scoped to `body > nav` (a direct child of
+   <body>) so it doesn't affect unrelated <nav> elements nested in page
+   content, e.g. the about-pager pagination widget. */
+body > nav { background: color-mix(in srgb, var(--color-bg) 35%, transparent); backdrop-filter: blur(4px); border-bottom: 0; }
 body > nav a { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8rem; text-decoration: none; }
 
 /* CSS starfield (no image asset): layered radial-gradient dots over a dark base. */
@@ -102,6 +104,19 @@ body > nav .nav-toggle-btn span { background: var(--color-fg); transition: trans
    legible backdrop for the nav's own transparent background. */
 body > nav .nav-scrim { background: color-mix(in srgb, var(--color-bg) 82%, transparent); backdrop-filter: blur(6px); }
 
+/* Services dropdown: panel picks up the same translucent nav treatment so it
+   reads as part of the ribbon; menu links inherit the generic `body > nav a`
+   type styling above automatically. The caret is a plain glyph (no image
+   asset) that flips on open, phone only (hidden on desktop via structure.css). */
+body > nav .nav-dropdown-menu {
+    background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+    backdrop-filter: blur(6px);
+    border: 1px solid var(--color-bg-alt);
+    border-radius: var(--radius);
+}
+body > nav .nav-dropdown-btn::after { content: '\25be'; color: var(--color-muted); font-size: 1.4rem; display: inline-block; transition: transform .2s ease; }
+.nav-dropdown-toggle-input:checked ~ .nav-dropdown-btn::after { transform: rotate(180deg); color: var(--color-accent); }
+
 /* Links + muted text. */
 a { color: var(--color-primary); }
 a:hover { color: var(--color-accent); }
@@ -166,16 +181,59 @@ a:hover { color: var(--color-accent); }
     overflow: hidden;
 }
 
+/* Journal / Article hero: nebula photo band (cropped from a Hubble-style
+   deep-field image; lives in this theme's own img/) with a dark scrim
+   (--hero-overlay) so the overlay title stays legible. */
+/* Font-size lives on .journal-hero itself (not the title) so structure.css's
+   1em top/bottom padding resolves against the same value the title uses —
+   that's what locks the band height to 3x the title's text size. */
+.journal-hero {
+    background: var(--color-bg) url('../img/breadcrumbs-bg-crop30.jpg') center center / cover no-repeat;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+}
+.journal-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--hero-overlay);
+}
+.journal-hero__title {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    font-size: 1em;
+    line-height: 1;
+    color: var(--color-heading);
+    text-shadow: 0 2px 30px rgba(0, 0, 0, .6), 0 0 60px rgba(20, 40, 80, .5);
+}
+
+/* Journal card teaser: date line, themed title link, first-post emphasis.
+   `.card`/`.card__media`/`.card__body` stay as-is above (the admin Themes
+   picker reuses them unmodified for its own grid). */
+.card__date {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+.card__title a { color: var(--color-heading); text-decoration: none; transition: color .25s ease; }
+.card__title a:hover { color: var(--color-primary); }
+/* Subtitle: the admin-entered short subtitle, right under the title. Same
+   font-family as the article body text (public/css/article.css), italic +
+   bold — distinct from .card__excerpt below, which is a plain body teaser. */
+.card__subtitle { color: var(--color-fg); font-family: Helvetica, Arial, Tahoma, Verdana, sans-serif; font-style: italic; font-weight: 700; }
+.card__excerpt { color: var(--color-fg); }
+.card__ellipsis { white-space: nowrap; font-weight: 500; }
+.card--first { border-width: 2px; border-color: color-mix(in srgb, var(--color-primary) 55%, transparent); }
+/* Meta block: same background as the panel below the image, so it reads as
+   a duplicate of it — a separate block above the image, not over it. */
+.card__meta { background: var(--color-bg-alt); }
+
 .container { color: var(--color-fg); }
 
-/* Phone nav: the Home nav (a transparent overlay on desktop) becomes a readable
-   translucent bar; shrink the brand so the wordmark + links fit comfortably. */
+/* Phone nav: ribbon tint is set above (identical to desktop); shrink the
+   brand so the wordmark + links fit comfortably. */
 @media (max-width: 720px) {
-    .page-home > nav {
-        background: color-mix(in srgb, var(--color-bg) 88%, transparent);
-        backdrop-filter: blur(6px);
-        border-bottom: 1px solid var(--color-bg-alt);
-    }
     body > nav a { font-size: 0.72rem; letter-spacing: 0.1em; }
     body > nav .nav-eyebrow { letter-spacing: .3em; font-size: 11px; }
 

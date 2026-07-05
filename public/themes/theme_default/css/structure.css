@@ -38,9 +38,122 @@ body > nav .nav-toggle-btn { display: none; flex-direction: column; justify-cont
 body > nav .nav-toggle-btn span { display: block; width: 100%; height: 2px; }
 body > nav .nav-scrim { display: none; }
 
+/* Services dropdown: shared geometry only. Reveal mechanics differ by
+   breakpoint (see the two media queries below) so phone's checkbox-driven
+   accordion and desktop's hover reveal never both react to the same trigger
+   — that conflict was what caused the phone submenu to flicker/collapse.
+   The toggle checkbox uses the same always-hidden-but-focusable trick as
+   `.nav-toggle-input` above; its label (the caret button) only becomes
+   visible on phone, where hover has no meaning and tapping drives the
+   accordion instead. */
+body > nav .nav-dropdown { position: relative; display: flex; align-items: center; }
+.nav-dropdown-toggle-input { position: absolute; width: 1px; height: 1px; margin: -1px; opacity: 0; }
+body > nav .nav-dropdown-btn { display: none; }
+/* No margin-top gap between the link and the menu: the menu's box (including
+   padding) sits flush against `.nav-dropdown`'s bottom edge, `padding-top`
+   pushing its *content* down by the same amount the old margin did. A
+   `margin` gap would've left a dead strip the cursor could wander into while
+   moving from "Services" down to the menu — outside both elements' hoverable
+   box, breaking `:hover` before the cursor ever got there. Padding is part of
+   the box, so that strip is now genuinely part of `.nav-dropdown-menu` and
+   keeps it hovered. */
+body > nav .nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    flex-direction: column;
+    list-style: none;
+    margin: 0;
+    padding: calc(var(--space-unit) * 4) calc(var(--space-unit) * 3) calc(var(--space-unit) * 2);
+    gap: calc(var(--space-unit) * 2);
+    white-space: nowrap;
+    z-index: 1;
+}
+
+/* Desktop only: reveal on hover/focus, with a grace period on close so
+   moving the cursor from "Services" down into the submenu (crossing the gap
+   between them) doesn't hide it before you get there. Uses opacity/visibility
+   instead of `display` because `display` can't be transition-delayed. The
+   opacity transition itself is *delayed* 1s (not just visibility/pointer-events)
+   so the menu stays fully, visibly opaque for the whole grace period instead
+   of silently fading to invisible right away while still technically
+   "visible" in the DOM — it only actually fades (a quick .15s dip) once the
+   1s is up, ending in sync with visibility/pointer-events flipping off.
+   Closing only actually happens if the cursor hasn't landed back on
+   `.nav-dropdown` or the menu itself within that window
+   (`.nav-dropdown-menu:hover` below re-triggers it instantly, cancelling the
+   close). */
+@media (min-width: 721px) {
+    body > nav .nav-dropdown-menu {
+        display: flex;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity .15s ease 1s, visibility 0s linear 1.15s, pointer-events 0s linear 1.15s;
+    }
+    body > nav .nav-dropdown:hover .nav-dropdown-menu,
+    body > nav .nav-dropdown:focus-within .nav-dropdown-menu,
+    body > nav .nav-dropdown-menu:hover {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transition: opacity .15s ease;
+    }
+}
+
 /* Home hero stage (layout only): a centered, generously padded band. */
 .stage { text-align: center; padding: calc(var(--space-unit) * 24) calc(var(--space-unit) * 4); }
 .stage .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: calc(var(--space-unit) * 4); margin-top: calc(var(--space-unit) * 6); }
+
+/* Journal / Article hero (layout only): full-bleed band, title centered over
+   whatever background the skin gives it (photo or flat color). */
+/* No fixed/min height: the skin sets this element's own font-size to match
+   the title, and 1em top/bottom padding here means the band is always
+   exactly 1x (top) + 1x (title line) + 1x (bottom) = 3x the title's text
+   size — and stays symmetric top/bottom even when a longer article title
+   wraps to two lines, since the padding doesn't grow with line count. */
+.journal-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1em calc(var(--space-unit) * 4);
+    text-align: center;
+    overflow: hidden;
+}
+.journal-hero__title { position: relative; z-index: 1; margin: 0; max-width: 48rem; }
+
+/* Journal listing: `.blog-grid--journal` is a modifier on top of the base
+   `.blog-grid` (which the admin Themes picker also uses, unmodified, for its
+   3-up grid — see admin/themes/index.blade.php). Scoping every override
+   through `--journal` keeps that admin screen on the original grid layout. */
+/* Compound selector (not just `.blog-grid--journal`) so this beats the base
+   `.blog-grid` grid rule in skin.css on specificity — skin.css loads after
+   structure.css, so equal-specificity rules there would otherwise win. */
+.blog-grid.blog-grid--journal {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--space-unit) * 10);
+    margin-top: calc(var(--space-unit) * 10);
+}
+/* Cap each card short of the full container so the square image doesn't run
+   edge-to-edge on wide screens. */
+.blog-grid--journal .card { max-width: 44rem; margin: 0 auto; width: 100%; }
+.card__media-link { display: block; }
+/* Meta block: date + title + subtitle sit in their own panel above the
+   image (only for cards that have one — text-only cards keep them in
+   .card__body instead), so the image itself renders fully uncropped. */
+.card__meta { padding: calc(var(--space-unit) * 4); }
+.card__meta .card__date { margin: 0 0 calc(var(--space-unit) * 2); }
+.card__meta .card__title { margin: 0 0 calc(var(--space-unit) * 2); }
+.card__meta .card__subtitle:last-child { margin-bottom: 0; }
+.card__date { margin: 0 0 calc(var(--space-unit) * 2); }
+.card__title { margin: 0 0 calc(var(--space-unit) * 4); }
+.card__subtitle { margin: 0 0 calc(var(--space-unit) * 4); }
+.card__excerpt { margin: 0 0 calc(var(--space-unit) * 5); }
+.card__more { margin-top: calc(var(--space-unit) * 1); }
 
 /* Phone: only the brand (logo + eyebrow) stays visible, centered, with the
    two link groups collapsed behind a "≡" trigger on the right. */
@@ -84,7 +197,7 @@ body > nav .nav-scrim { display: none; }
     #nav-toggle:checked ~ nav .nav-right { order: 2; }
     /* Override the desktop flanking rule's `flex: 1 1 0` — without this the
        two link columns flex-grow to fill the tall panel, which is what was
-       stretching Articles and Services far apart. */
+       stretching Journal and Services far apart. */
     #nav-toggle:checked ~ nav .nav-left,
     #nav-toggle:checked ~ nav .nav-right {
         display: flex;
@@ -112,4 +225,36 @@ body > nav .nav-scrim { display: none; }
         inset: 0;
         z-index: -1;
     }
+
+    /* Services dropdown becomes a tap-to-expand accordion row inside the
+       stacked panel. Only the checkbox's `:checked` state controls it here —
+       the desktop hover/focus-within reveal lives entirely inside the
+       `min-width: 721px` query above, so it can never fight with this rule
+       (that conflict, both trying to show/hide the same menu, was what made
+       it flicker and collapse). `!important` is a deliberate belt-and-braces
+       against mobile browsers' "sticky hover" after a tap, which could
+       otherwise re-introduce that same fight. `flex-wrap: wrap` + the
+       submenu's `flex-basis: 100%` pushes it onto its own centered row below
+       "Services" + caret, rather than overlaying the panel like the desktop
+       dropdown does. */
+    body > nav .nav-dropdown { flex-wrap: wrap; justify-content: center; }
+    body > nav .nav-dropdown-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.2rem;
+        height: 2.2rem;
+        margin-left: calc(var(--space-unit) * 1);
+        cursor: pointer;
+    }
+    body > nav .nav-dropdown-menu {
+        display: none !important;
+        position: static;
+        transform: none;
+        flex-basis: 100%;
+        align-items: center;
+        text-align: center;
+        margin: calc(var(--space-unit) * 2) 0 0;
+    }
+    .nav-dropdown-toggle-input:checked ~ .nav-dropdown-menu { display: flex !important; }
 }

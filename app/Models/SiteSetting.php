@@ -41,10 +41,10 @@ class SiteSetting extends Model
             'headline'   => 'Understanding the Why Behind Your Choices',
             'subhead'    => 'When the planets align, so do the patterns within you. Read the map you were born under and move with intention.',
             'cta_label'  => 'Begin Here',
-            'cta_url'    => '/en/contact',
+            'cta_url'    => '/en/services',
             'eyebrow'    => 'AstroTherapia',
             'cta2_label' => 'Read the Journal',
-            'cta2_url'   => '/en/articles',
+            'cta2_url'   => '/en/journal',
         ];
     }
 

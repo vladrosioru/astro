@@ -14,21 +14,21 @@ top-level menu items sit to its left, two to its right. **About** and
 **Services** are intended as dropdown (multi-level) menus:
 
 ```
-About ▾        Articles      [ LOGO → Home ]      Services ▾        Contact
+About ▾        Journal       [ LOGO → Home ]      Services ▾        Contact
  ├ Concept                   ASTROTHERAPIA          ├ (service category/item)
  └ About astrology            → Home                ├ (service category/item)
                                                      └ ...
 ```
 
 **Currently built** as flat links (no dropdowns yet):
-`About · Articles  |  [logo + ASTROTHERAPIA]  |  Services · Contact`.
+`About · Journal  |  [logo + ASTROTHERAPIA]  |  Services · Contact`.
 The old standalone **Home** text link is gone — the centered brand is the link
 Home. The dropdowns for About / Services remain a future step (see open
 questions).
 
 **Phone (≤720px):** the two link groups collapse behind a "≡" hamburger, so
 the closed bar shows only the brand; tapping it opens all four links (About,
-Articles, Services, Contact, in that order) stacked in one column below the
+Journal, Services, Contact, in that order) stacked in one column below the
 brand, over a dimming scrim. Pure CSS, no JS — see `AUTHORING.md`'s nav
 contract for the mechanism.
 
@@ -40,7 +40,7 @@ contract for the mechanism.
 | 2 | **About** | Nav dropdown (parent) | Top-level menu item; opens a dropdown to its two sub-pages below. Not necessarily a page of its own — see open question. | 🔵 idea |
 | 2a | ↳ **Concept** | Single page | Presentation page about astrology and the idea behind AstroTherapy. | 🟡 planned — maps to the existing `/about` page/route; content already matches this framing |
 | 2b | ↳ **About astrology** | Single page | Presentation page about astrology in general (distinct from the AstroTherapy-specific "Concept" page). | 🔵 idea — no route/controller yet |
-| 3 | **Articles** | Blog listing + post | One page listing articles, blog-style, plus individual article pages. | 🟢 built — the existing Blog feature relabelled **Articles** and served at `/{locale}/articles` (route names stay `blog.*`); legacy `/{locale}/blog` 301-redirects |
+| 3 | **Journal** | Blog listing + post | One page listing articles, blog-style, plus individual article pages. | 🟢 built — the existing Blog feature relabelled **Journal** and served at `/{locale}/journal` (route names stay `blog.*`); legacy `/{locale}/blog` and `/{locale}/articles` 301-redirect |
 | 4 | **Services** | Nav dropdown → single page | Listing of astrological services available. The dropdown lists service categories/items; each entry links to a section on one single Services page (not separate pages). | 🟡 planned — route + page now exist (`PageController@services`, blank placeholder). Dropdown + static service content still to come |
 | 5 | **Contact** | Single page | Contact form. | 🟢 built |
 
@@ -51,16 +51,16 @@ contract for the mechanism.
 | About ▾ (parent) | *(none)* | *(none)* | New dropdown trigger in nav; see open question on whether it needs its own landing content |
 | ↳ Concept | `/{locale}/about` | `PageController@about` | Move under the About dropdown as "Concept"; content already fits |
 | ↳ About astrology | *(none)* | *(none)* | New route + controller + view needed |
-| Articles | `/{locale}/articles` (+ `/blog` redirect) | `BlogController@index` / `@show` | **Done** — nav label + URL are "Articles"; route names stay `blog.*`, controller/views unchanged. Dropdown not planned for Articles |
+| Journal | `/{locale}/journal` (+ `/blog`, `/articles` redirects) | `BlogController@index` / `@show` | **Done** — nav label + URL are "Journal"; route names stay `blog.*`, controller/views unchanged. Dropdown not planned for Journal |
 | Services ▾ | `/{locale}/services` | `PageController@services` | Route + blank page **built**. Still needs a dropdown in nav linking to in-page sections and static service content (see Roadmap) |
 | Contact | `/{locale}/contact` | `PageController@contact` | None — matches target |
 
 Current nav order in [nav.blade.php](../resources/views/partials/nav.blade.php)
-is `About · Articles  ·  [logo + ASTROTHERAPIA]  ·  Services · Contact`
+is `About · Journal  ·  [logo + ASTROTHERAPIA]  ·  Services · Contact`
 (flat links, no dropdowns). The standalone "Home" text link was removed; the
 centered brand (logo + eyebrow) is the link Home. The remaining step toward the
 target is adding dropdown behavior:
-`About ▾ | Articles  ·  [brand]  ·  Services ▾ | Contact`.
+`About ▾ | Journal  ·  [brand]  ·  Services ▾ | Contact`.
 
 ## Roadmap / future scope
 

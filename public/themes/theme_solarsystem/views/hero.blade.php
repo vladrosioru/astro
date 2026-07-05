@@ -35,6 +35,4 @@
             @endif
         </div>
     </main>
-
-    <div class="scroll-cue">Scroll<span class="arrow">&darr;</span></div>
 </section>

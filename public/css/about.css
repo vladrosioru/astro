@@ -19,6 +19,15 @@
 .about-center { text-align: center; }
 
 .about-section { padding: calc(var(--space-unit) * 20) 0; }
+/* Directly under the home hero, the hero's own bottom padding already reads
+   as breathing room — stacking the section's full top padding on top of it
+   doubles the gap (very visible on phone). Trim just that seam. */
+.stage + main .about-section:first-child { padding-top: calc(var(--space-unit) * 4); }
+/* Home-only: the About page keeps the classic generous rhythm above, but on
+   the home page every section-to-section gap should read the same as the
+   (already narrowed) hero-to-first-section seam — 36px/18px a side, giving
+   a consistent 72px/36px gap throughout the page. */
+.page-home .about-section { padding: calc(var(--space-unit) * 9) 0; }
 /* Alternating bands read as faint translucent panels floating on the cosmos. */
 .about-section--alt {
     background: color-mix(in srgb, var(--color-bg-alt) 60%, transparent);
@@ -37,6 +46,10 @@
     color: var(--color-primary);
 }
 .about-eyebrow--center { text-align: center; }
+.about-eyebrow a { color: inherit; text-decoration: none; transition: color .2s ease; }
+.about-eyebrow a:hover { color: var(--color-accent); }
+/* "See all the articles" link below the journal carousel/pager. */
+.about-journal-more { margin-top: calc(var(--space-unit) * 10); margin-bottom: 0; }
 
 .about-h2 {
     margin: 0 0 calc(var(--space-unit) * 6);
@@ -150,6 +163,19 @@
     align-items: start;
 }
 .about-split--reverse .about-split__lead { order: 2; }
+/* Home-page-only variant: heading block stacked above the paragraph,
+   instead of the About page's two-column split. display:block makes the
+   grid's `order` a no-op, so the lead (always first in the markup) reads
+   on top for both the "Discover" and "Your Core" sections. Capped to the
+   same 44rem as .blog-grid--journal .card and centered, so it lines up
+   with the "From the Journal" section below it. */
+.about-split--stacked {
+    display: block;
+    max-width: 44rem;
+    margin: 0 auto;
+    text-align: center;
+}
+.about-split--stacked .about-split__lead { margin-bottom: calc(var(--space-unit) * 6); }
 .about-split__body p {
     margin: 0 0 calc(var(--space-unit) * 4);
     font-size: 1.05rem;
@@ -158,11 +184,17 @@
 .about-split__lead .about-h2 { margin-bottom: 0; }
 
 /* --- Reading cards ----------------------------------------- */
+/* Two per page (the newest post is shown separately above, full-size, via
+   the shared Journal card partial) — see data-journal-carousel in js/about.js.
+   Capped to the same 44rem the theme gives `.blog-grid--journal .card` (the
+   featured post above), centered the same way, so the row lines up under it
+   at the same total width instead of stretching to the full shell. */
 .about-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: calc(var(--space-unit) * 7);
-    margin-top: calc(var(--space-unit) * 8);
+    margin: calc(var(--space-unit) * 8) auto 0;
+    max-width: 44rem;
 }
 .about-card {
     display: flex;
@@ -182,23 +214,15 @@
 .about-card__media img {
     display: block;
     width: 100%;
-    height: 220px;
-    object-fit: cover;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
     transition: transform .5s ease;
 }
 .about-card:hover .about-card__media img { transform: scale(1.06); }
 .about-card__body { padding: calc(var(--space-unit) * 6); }
-.about-card__cat {
-    display: inline-block;
-    margin-bottom: calc(var(--space-unit) * 3);
-    font-family: var(--font-display);
-    font-size: 0.62rem;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--color-primary);
-}
 .about-card__title {
-    margin: 0 0 calc(var(--space-unit) * 4);
+    margin: 0 0 calc(var(--space-unit) * 3);
     font-family: var(--font-heading);
     font-weight: 500;
     font-size: 1.35rem;
@@ -206,6 +230,13 @@
 }
 .about-card__title a { color: var(--color-heading); text-decoration: none; transition: color .25s ease; }
 .about-card__title a:hover { color: var(--color-primary); }
+/* Smaller than the title, plain (no link) — the admin-entered subtitle. */
+.about-card__subtitle {
+    margin: 0 0 calc(var(--space-unit) * 3);
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--color-fg);
+}
 .about-card__meta {
     margin: 0;
     font-size: 0.8rem;
@@ -482,12 +513,13 @@
 @media (max-width: 900px) {
     .about-split { grid-template-columns: 1fr; gap: calc(var(--space-unit) * 6); }
     .about-split--reverse .about-split__lead { order: 0; }
-    .about-cards { grid-template-columns: 1fr 1fr; }
     .about-zodiac { grid-template-columns: repeat(4, 1fr); }
     .about-horoscopes { grid-template-columns: 1fr; gap: calc(var(--space-unit) * 8); }
 }
 @media (max-width: 620px) {
     .about-section { padding: calc(var(--space-unit) * 14) 0; }
+    .stage + main .about-section:first-child { padding-top: calc(var(--space-unit) * 3); }
+    .page-home .about-section { padding: calc(var(--space-unit) * 4.5) 0; }
     .about-cards { grid-template-columns: 1fr; }
     .about-zodiac { grid-template-columns: repeat(3, 1fr); }
     .about-testi__arrow--prev { left: -0.5rem; }

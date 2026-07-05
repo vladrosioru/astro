@@ -22,7 +22,7 @@
     "shadow":        { "type": "shadow", "role": "Card elevation", "value": "0 1px 3px rgba(0,0,0,0.1)" },
     "container-width": { "type": "length", "role": "Max content width", "value": "64rem" },
     "nav-height":    { "type": "length", "role": "Nav min height", "value": "4.5rem" },
-    "hero-overlay":  { "type": "color", "role": "Legacy hero scrim", "value": "rgba(0,0,0,0.45)" }
+    "hero-overlay":  { "type": "color", "role": "Journal/article hero photo scrim", "value": "rgba(0,0,0,0.45)" }
   },
   "fonts": [
     { "family": "Jost", "weights": [300,400,500,600], "style": "normal",

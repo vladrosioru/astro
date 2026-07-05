@@ -8,8 +8,9 @@
 .stage {
   position: relative;
   width: 100%;
-  height: 100vh;
-  min-height: 720px;
+  /* No min-height — the solar system is absolutely positioned and doesn't
+     need reserved flow height, so the stage just hugs the hero's own
+     content instead of padding out the gap before the next section. */
   overflow: hidden;
   isolation: isolate;
   background: transparent;   /* shared cosmos backdrop (cosmos.css) shows through */
@@ -18,7 +19,7 @@
 
 /* Hero text is decorative — no text caret / highlight. Links & buttons keep the pointer. */
 .stage { user-select: none; -webkit-user-select: none; }
-.stage .title, .stage .lede, .stage .scroll-cue { cursor: default; }
+.stage .title, .stage .lede { cursor: default; }
 
 /* Prevent inner-page .hero skin from bleeding into the stage's <main class="hero"> */
 .stage .hero { background: none; }
@@ -190,7 +191,7 @@
   align-items: center;
   text-align: center;
   /* the nav already occupies its own flow space above .stage — no extra nav-height offset needed here */
-  padding: 127px 24px 0;
+  padding: 127px 24px 56px;
 }
 
 /* The eyebrow wordmark moved out of the stage into the nav brand
@@ -250,24 +251,6 @@
 }
 .stage .btn-ghost:hover { color: var(--color-accent); }
 
-/* ---------- Scroll cue ----------------------------------- */
-.stage .scroll-cue {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 6;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  color: #6f7a8c;
-  font-size: 10px;
-  letter-spacing: .32em;
-  text-transform: uppercase;
-}
-.stage .scroll-cue .arrow { font-size: 13px; color: var(--color-primary); animation: scrollcue 2.4s ease-in-out infinite; }
-
 /* ============================================================
    Keyframes
    ============================================================ */
@@ -283,12 +266,6 @@
   0%   { transform: rotateZ(0deg)    rotateX(-60deg); }
   50%  { transform: rotateZ(-180deg) rotateX(-60deg); }
   100% { transform: rotateZ(-360deg) rotateX(-60deg); }
-}
-
-@keyframes scrollcue {
-  0%   { opacity: 0; transform: translateY(-6px); }
-  40%  { opacity: 1; }
-  100% { opacity: 0; transform: translateY(8px); }
 }
 
 /* ============================================================
@@ -307,20 +284,23 @@
   .stage .nav-links { gap: 22px; font-size: 12px; }
   .stage .cta { display: none; }
   /* phone nav is an in-flow sticky bar (not an overlay) — hero needs no nav offset here */
-  .stage { --solar-scale: 0.5; min-height: 680px; }
+  /* No min-height here — the solar system is absolutely positioned (doesn't
+     need reserved flow height), so the stage should just hug the hero's own
+     content instead of padding out the gap before the next section. */
+  .stage { --solar-scale: 0.5; }
   .stage .solar-wrap { top: 20px; }
-  .stage .hero { padding-top: 40px; }
+  .stage .hero { padding-top: 40px; padding-bottom: 32px; }
 }
 
 @media (max-width: 460px) {
-  .stage { --solar-scale: 0.38; min-height: 640px; }
+  .stage { --solar-scale: 0.38; }
   .stage .solar-wrap { top: 15px; }
-  .stage .hero { padding-top: 30px; }
+  .stage .hero { padding-top: 30px; padding-bottom: 24px; }
   .stage .actions { gap: 12px; }
   .stage .btn-primary { padding: 13px 24px; }
 }
 
 /* Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
-  .stage .scroll-cue .arrow, .stage .orbit, .stage .planet { animation: none !important; }
+  .stage .orbit, .stage .planet { animation: none !important; }
 }

@@ -22,8 +22,17 @@ class AttachmentController extends Controller
         $image = $manager->decodePath($uploaded->getRealPath());
         $image->scaleDown(width: 1600);
 
-        $path = 'media/' . Str::uuid() . '.jpg';
-        Storage::disk('public')->put($path, (string) $image->encodeUsingFileExtension('jpg', quality: 82));
+        // Formats that can carry an alpha channel keep it by staying PNG;
+        // re-encoding those to JPEG (no alpha) flattens transparent pixels to
+        // white. Everything else (plain photos) still gets JPEG for size.
+        $keepsAlpha = in_array($uploaded->getMimeType(), ['image/png', 'image/webp', 'image/gif'], true);
+        $extension = $keepsAlpha ? 'png' : 'jpg';
+        $encoded = $keepsAlpha
+            ? $image->encodeUsingFileExtension('png')
+            : $image->encodeUsingFileExtension('jpg', quality: 82);
+
+        $path = 'media/' . Str::uuid() . '.' . $extension;
+        Storage::disk('public')->put($path, (string) $encoded);
 
         // Store a root-relative URL (e.g. /storage/media/uuid.jpg) so embedded
         // images resolve on any host/port/domain — never bake in APP_URL.
