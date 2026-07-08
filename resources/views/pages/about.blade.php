@@ -9,6 +9,7 @@
 
 @php
     $locale = app()->getLocale();
+    $contactVisible = \App\Models\SiteSetting::current()->sectionVisible('contact');
 
     $faqs = [
         ['q' => 'Is this the same as reading my horoscope?',
@@ -126,9 +127,11 @@
                     that's usually a good sign it's time to have it out loud. Book a session, and let's
                     find out what your chart has been trying to tell you.</p>
             </div>
-            <p class="about-manifesto__cta">
-                <a class="about-btn about-btn--sm" href="/{{ $locale }}/contact">Book a Session</a>
-            </p>
+            @if ($contactVisible)
+                <p class="about-manifesto__cta">
+                    <a class="about-btn about-btn--sm" href="/{{ $locale }}/contact">Book a Session</a>
+                </p>
+            @endif
         </div>
     </section>
 
@@ -155,7 +158,9 @@
                     see the pattern clearly, you get to choose what to do with it.</p>
                 <p>That's the real change. Not a prediction. A clearer view of yourself — one you can
                     actually use.</p>
-                <a class="about-btn about-btn--sm" href="/{{ $locale }}/contact">Schedule Your Session</a>
+                @if ($contactVisible)
+                    <a class="about-btn about-btn--sm" href="/{{ $locale }}/contact">Schedule Your Session</a>
+                @endif
             </div>
         </div>
     </section>
