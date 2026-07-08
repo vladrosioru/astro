@@ -10,11 +10,14 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
+    inputs:
+      deploy_prod:
+        description: 'After dev, also deploy to production (requires approval)'
+        type: boolean
+        default: false
 
-# Never run two deploys of the same branch at once.
-concurrency:
-  group: cicd-${{ github.ref }}
-  cancel-in-progress: false
+# No workflow-level concurrency: a run parked at the prod approval gate must not
+# block new dev runs. Each deploy job serializes on its own environment instead.
 
 permissions:
   contents: read
@@ -103,6 +106,10 @@ jobs:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: dev
+    # Serialize dev deploys; a newer push cancels an in-flight older one.
+    concurrency:
+      group: deploy-dev
+      cancel-in-progress: true
     outputs:
       url: ${{ vars.APP_URL }}
     steps:
@@ -180,9 +187,14 @@ jobs:
   #    reviewer rule -> this job is the manual approval gate before prod.
   deploy_prd:
     needs: test_dev
-    if: github.event_name != 'pull_request'
+    # Prod never runs on a plain push — only when you manually dispatch with
+    # deploy_prod=true. Keeps pushes from parking at the approval gate.
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_prod
     runs-on: ubuntu-latest
     environment: production
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
     outputs:
       url: ${{ vars.APP_URL }}
     steps:
