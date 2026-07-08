@@ -2,6 +2,29 @@
 
 Persistent rules for working in this repository. Follow them on every change.
 
+## Test-driven development
+
+**No production code without a failing test first.** Every feature, bug fix,
+and behavior change starts with a test that fails, then the minimal code to
+pass it (see the `superpowers:test-driven-development` skill for the full
+discipline). Repo-specific points:
+
+1. **Red.** Add one PHPUnit test in `tests/Feature` or `tests/Unit` for the
+   single behavior you're adding or fixing. Run it scoped
+   (`php artisan test --filter=test_name`) and confirm it fails for the
+   expected reason, not a typo or setup error.
+2. **Green.** Write the minimal code to pass, then run the **full** suite
+   (`php artisan test`) — a new test passing must not break unrelated
+   coverage. This repo has cross-cutting state (`SiteSetting.sections`
+   visibility toggles, the active theme, locale) that many tests assert
+   against from different angles — e.g. a section being disabled must hold
+   for its route (404), its nav link, and any in-page CTAs that link to it.
+3. **Refactor** only once green, without changing behavior.
+
+Bug fixes always get a regression test that reproduces the bug before the fix
+lands. Exceptions (throwaway prototypes, generated code, config-only changes)
+— ask before skipping.
+
 ## Documentation upkeep
 
 1. **Keep each theme's manifest in sync.** Themes are self-contained packages
