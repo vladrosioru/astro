@@ -87,8 +87,10 @@ jobs:
         with:
           composer-options: "--no-dev --optimize-autoloader"
       - name: Create release tarball
+        # Write outside the working tree so tar never archives its own growing
+        # output (avoids "file changed as we read it", tar exit 1).
         run: |
-          tar -czf app-build.tar.gz \
+          tar -czf "$RUNNER_TEMP/app-build.tar.gz" \
             --exclude='./.git' \
             --exclude='./.github' \
             --exclude='./tests' \
@@ -98,12 +100,11 @@ jobs:
             --exclude='./database/database.sqlite' \
             --exclude='./.env' \
             --exclude='./.env.*' \
-            --exclude='./app-build.tar.gz' \
             .
       - uses: actions/upload-artifact@v4
         with:
           name: app-build
-          path: app-build.tar.gz
+          path: ${{ runner.temp }}/app-build.tar.gz
           retention-days: 5
 
   # 5. Deploy to Dev (dev.<domain>, HTTPS). Secrets/vars from the `dev` env.
