@@ -1,3 +1,11 @@
+# cPanel/EasyApache PHP selector. The subdomain's PHP version is applied via a
+# handler in the docroot .htaccess, which this file overwrites on every deploy —
+# so pin it here (in the repo) instead of via MultiPHP Manager. Keep the version
+# in sync with the CI PHP_VERSION in .github/workflows/cicd.yml.
+<IfModule mime_module>
+    AddHandler application/x-httpd-ea-php84 .php .php8 .phtml
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

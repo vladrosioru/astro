@@ -137,6 +137,7 @@ jobs:
         run: |
           up() { curl -sS --ssl-reqd --ftp-create-dirs -T "$1" "ftp://${FTP_HOST}/$2" --user "${FTP_USER}:${FTP_PASS}"; }
           up "$RUNNER_TEMP/app.env" ".env"
+          up "public/.htaccess"     "public/.htaccess"
           up "public/extract.php"   "public/extract.php"
           up "app.zip"              "app.zip"
       - name: Extract on server, then migrate + cache + storage:link
@@ -213,6 +214,7 @@ jobs:
         run: |
           up() { curl -sS --ssl-reqd --ftp-create-dirs -T "$1" "ftp://${FTP_HOST}/$2" --user "${FTP_USER}:${FTP_PASS}"; }
           up "$RUNNER_TEMP/app.env" ".env"
+          up "public/.htaccess"     "public/.htaccess"
           up "public/extract.php"   "public/extract.php"
           up "app.zip"              "app.zip"
       - name: Extract on server, then migrate + cache + storage:link

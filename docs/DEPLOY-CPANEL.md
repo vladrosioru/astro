@@ -143,6 +143,13 @@ extraction only overlays files). See `config/filesystems.php`.
   the cert is issued for (e.g. `server20.romania-webhosting.com`), not the
   `ftp.<domain>` alias. To see the cert's names:
   `openssl s_client -connect HOST:21 -starttls ftp </dev/null 2>/dev/null | openssl x509 -noout -subject -ext subjectAltName`.
+- **Site 500 with `requires a PHP version >= X` though MultiPHP is set right** →
+  the docroot PHP handler was overwritten by the deploy. cPanel applies the
+  (sub)domain PHP version via a handler in the docroot `.htaccess`; our deploy
+  replaces `public/.htaccess`, so the version is **pinned in the repo**
+  (`AddHandler application/x-httpd-ea-phpNN` at the top of `public/.htaccess`).
+  Keep it in sync with the CI `PHP_VERSION`. Check the real web PHP with a
+  one-line `phpver.php` (`<?php echo PHP_VERSION;`).
 - **Deploy hook returns 500** → almost always wrong DB secrets; `migrate`
   can't connect. Check `DB_*` on that environment.
 - **`extract.php` 500 "zip extension not available"** → enable `zip` in the
