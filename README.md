@@ -8,7 +8,7 @@ A reusable, multilingual marketing-site + blog template built on **Laravel 12**,
 
 | Area | Choice |
 |---|---|
-| Framework | Laravel 12 (PHP 8.2+; developed on 8.3) |
+| Framework | Laravel 12 (PHP 8.3+; CI + deploy on 8.4) |
 | Database | MySQL in production; SQLite for local dev & tests |
 | Front-end build | **None** — plain CSS + vanilla JS served from `public/`. No Vite/Tailwind/npm. |
 | Rich text | CKEditor 5 (self-hosted GPL build) + HTMLPurifier sanitisation |
@@ -22,7 +22,7 @@ A reusable, multilingual marketing-site + blog template built on **Laravel 12**,
 
 ## Quick start (local)
 
-Requires PHP 8.2+ and Composer.
+Requires PHP 8.3+ and Composer.
 
 ```bash
 composer install

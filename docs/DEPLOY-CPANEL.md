@@ -36,9 +36,11 @@ Do everything below **twice** — once for the dev subdomain, once for prod —
 with separate databases and separate app directories.
 
 1. **PHP version & extensions** — cPanel → *MultiPHP Manager*: set the
-   (sub)domain to **PHP 8.2+**. In *Select PHP Version → Extensions* enable:
-   `pdo_mysql`, `mysqli`, `gd` (Intervention Image needs it), `mbstring`,
-   `openssl`, `fileinfo`, `curl`, `intl`, `bcmath`.
+   (sub)domain to **PHP 8.4** (match CI; Laravel 12 supports 8.2–8.4, and
+   `intervention/image` needs ≥ 8.3). Extensions are per-version, so in
+   *Select PHP Version → Extensions* for 8.4 enable: `pdo_mysql`, `mysqli`,
+   `gd` (Intervention Image needs it), `mbstring`, `openssl`, `fileinfo`,
+   `curl`, `intl`, `bcmath`, `zip` (server-side unzip).
 
 2. **MySQL database** — cPanel → *MySQL Databases*: create a database and a
    user, then **add the user to the database with ALL PRIVILEGES**. cPanel
