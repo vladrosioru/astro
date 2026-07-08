@@ -77,7 +77,7 @@ Set these on **each** environment (dev values on `dev`, prod values on
 
 | Name | Kind | Example / notes |
 |---|---|---|
-| `FTP_HOST` | secret | e.g. `ftp.martinism.ro` (cPanel → FTP Accounts → *Configure FTP Client*) |
+| `FTP_HOST` | secret | the **server hostname** whose TLS cert matches, e.g. `server20.romania-webhosting.com` — not the `ftp.<domain>` alias cPanel shows (that fails FTPS cert validation) |
 | `FTP_USERNAME` | secret | a **dedicated FTP account scoped to the app dir** (e.g. `deploy_dev@astrotherapia.com`) |
 | `FTP_PASSWORD` | secret | that account's password |
 | `APP_URL` | variable | `https://astrotherapia.com` (prod) / `https://dev.astrotherapia.com` (dev) |
@@ -136,14 +136,17 @@ the docroot in `config/filesystems.php`.
 
 ## Troubleshooting
 
+- **Upload fails `curl (60) SSL: no alternative certificate subject name`** →
+  `FTP_HOST` doesn't match the FTPS server's TLS cert. Use the server hostname
+  the cert is issued for (e.g. `server20.romania-webhosting.com`), not the
+  `ftp.<domain>` alias. To see the cert's names:
+  `openssl s_client -connect HOST:21 -starttls ftp </dev/null 2>/dev/null | openssl x509 -noout -subject -ext subjectAltName`.
 - **Deploy hook returns 500** → almost always wrong DB secrets; `migrate`
   can't connect. Check `DB_*` on that environment.
+- **`extract.php` 500 "zip extension not available"** → enable `zip` in the
+  cPanel PHP extension list for the (sub)domain.
 - **Smoke test fails at "did not come up"** → the (sub)domain docroot isn't
   pointed at `public/`, or DNS/SSL for the subdomain isn't ready yet.
-- **`vendor/autoload.php` not found on server** → the build/upload didn't
-  complete; re-run the job (the first upload can time out — it resumes).
 - **Rollback** → re-run an earlier green workflow run to re-promote that
   artifact (artifacts are retained 5 days), or restore from a File Manager
   backup.
-
-[`SamKirkland/FTP-Deploy-Action`]: https://github.com/SamKirkland/FTP-Deploy-Action
