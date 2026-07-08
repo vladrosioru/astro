@@ -10,11 +10,11 @@ class SiteSetting extends Model
 
     protected $casts = [
         'sections' => 'array',
-        'nav'      => 'array',
-        'contact'  => 'array',
+        'nav' => 'array',
+        'contact' => 'array',
         'branding' => 'array',
-        'locales'  => 'array',
-        'hero'     => 'array',
+        'locales' => 'array',
+        'hero' => 'array',
     ];
 
     public static function current(): self
@@ -26,25 +26,25 @@ class SiteSetting extends Model
     {
         return [
             'sections' => ['about' => true, 'blog' => true, 'services' => true, 'contact' => true],
-            'nav'      => [],
-            'contact'  => ['email' => '', 'phone' => '', 'address' => ''],
+            'nav' => [],
+            'contact' => ['email' => '', 'phone' => '', 'address' => ''],
             'branding' => [],
-            'theme'    => 'solarsystem',
-            'locales'  => ['default' => 'en', 'supported' => ['en', 'ro']],
-            'hero'     => self::heroDefaults(),
+            'theme' => 'solarsystem',
+            'locales' => ['default' => 'en', 'supported' => ['en', 'ro']],
+            'hero' => self::heroDefaults(),
         ];
     }
 
     public static function heroDefaults(): array
     {
         return [
-            'headline'   => 'Understanding the Why Behind Your Choices',
-            'subhead'    => 'When the planets align, so do the patterns within you. Read the map you were born under and move with intention.',
-            'cta_label'  => 'Begin Here',
-            'cta_url'    => '/en/services',
-            'eyebrow'    => 'AstroTherapia',
+            'headline' => 'Understanding the Why Behind Your Choices',
+            'subhead' => 'When the planets align, so do the patterns within you. Read the map you were born under and move with intention.',
+            'cta_label' => 'Begin Here',
+            'cta_url' => '/en/services',
+            'eyebrow' => 'AstroTherapia',
             'cta2_label' => 'Read the Journal',
-            'cta2_url'   => '/en/journal',
+            'cta2_url' => '/en/journal',
         ];
     }
 

@@ -36,7 +36,7 @@ class ThemeRenderingTest extends TestCase
         // switch, or a previous theme's palette overrides the new theme's tokens
         // (the bug: a dark Solar System branding painted the light default dark).
         SiteSetting::current()->update([
-            'theme'    => 'solarsystem',
+            'theme' => 'solarsystem',
             'branding' => ['color-bg' => '#05060c', 'color-fg' => '#aab6c8'],
         ]);
 
@@ -54,7 +54,7 @@ class ThemeRenderingTest extends TestCase
         // Re-applying the active theme is a no-op switch: deliberate per-theme
         // branding customizations must be preserved.
         SiteSetting::current()->update([
-            'theme'    => 'default',
+            'theme' => 'default',
             'branding' => ['color-primary' => '#abcdef'],
         ]);
 
@@ -69,7 +69,7 @@ class ThemeRenderingTest extends TestCase
         // not 500 the home page: the hero merges heroDefaults() for missing keys.
         SiteSetting::current()->update([
             'theme' => 'default',
-            'hero'  => ['headline' => 'Partial Headline', 'subhead' => 'Just two keys'],
+            'hero' => ['headline' => 'Partial Headline', 'subhead' => 'Just two keys'],
         ]);
 
         $this->get('/en')

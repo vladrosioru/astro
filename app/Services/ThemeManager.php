@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class ThemeManager
 {
     private ?array $manifestCache = null;
+
     private ?string $activeCache = null;
 
     public function active(): string
@@ -35,7 +36,7 @@ class ThemeManager
             return $this->manifestCache;
         }
 
-        $path = $this->dir($this->active()) . '/theme.json';
+        $path = $this->dir($this->active()).'/theme.json';
         $data = is_file($path) ? json_decode(file_get_contents($path), true) : null;
 
         if (! is_array($data)) {
@@ -74,7 +75,7 @@ class ThemeManager
     public function jsAssets(): array
     {
         return array_map(fn ($js) => [
-            'url'   => asset($this->rel($js['src'])),
+            'url' => asset($this->rel($js['src'])),
             'defer' => (bool) ($js['defer'] ?? false),
             'async' => (bool) ($js['async'] ?? false),
         ], $this->manifest()['assets']['js'] ?? []);
@@ -82,7 +83,7 @@ class ThemeManager
 
     public function viewsPath(): ?string
     {
-        $path = $this->dir($this->active()) . '/views';
+        $path = $this->dir($this->active()).'/views';
 
         return is_dir($path) ? $path : null;
     }
@@ -93,19 +94,19 @@ class ThemeManager
         $active = $this->active();
         $out = [];
 
-        foreach (glob(public_path(config('theme.path') . '/theme_*'), GLOB_ONLYDIR) as $dir) {
-            $m = json_decode(@file_get_contents($dir . '/theme.json'), true) ?: [];
+        foreach (glob(public_path(config('theme.path').'/theme_*'), GLOB_ONLYDIR) as $dir) {
+            $m = json_decode(@file_get_contents($dir.'/theme.json'), true) ?: [];
             // The folder name is authoritative: it is what active() and the
             // Rule::in() allow-list compare against, so derive the name from it.
             $name = preg_replace('/^theme_/', '', basename($dir));
             $out[] = [
-                'name'        => $name,
-                'title'       => $m['title'] ?? ucfirst($name),
+                'name' => $name,
+                'title' => $m['title'] ?? ucfirst($name),
                 'description' => $m['description'] ?? '',
-                'screenshot'  => isset($m['screenshot'])
-                    ? asset(config('theme.path') . "/theme_{$name}/" . $m['screenshot'])
+                'screenshot' => isset($m['screenshot'])
+                    ? asset(config('theme.path')."/theme_{$name}/".$m['screenshot'])
                     : null,
-                'active'      => $name === $active,
+                'active' => $name === $active,
             ];
         }
 
@@ -114,11 +115,11 @@ class ThemeManager
 
     private function dir(string $name): string
     {
-        return public_path(config('theme.path') . '/theme_' . $name);
+        return public_path(config('theme.path').'/theme_'.$name);
     }
 
     private function rel(string $assetRelativeToTheme): string
     {
-        return config('theme.path') . '/theme_' . $this->active() . '/' . ltrim($assetRelativeToTheme, '/');
+        return config('theme.path').'/theme_'.$this->active().'/'.ltrim($assetRelativeToTheme, '/');
     }
 }

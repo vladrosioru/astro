@@ -59,8 +59,8 @@ class PageController extends Controller
         abort_unless(SiteSetting::current()->sectionVisible('contact'), 404);
 
         $data = $request->validate([
-            'name'    => ['required', 'string', 'max:120'],
-            'email'   => ['required', 'email', 'max:190'],
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:190'],
             'subject' => ['nullable', 'string', 'max:150'],
             'message' => ['required', 'string', 'max:5000'],
         ]);

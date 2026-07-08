@@ -86,7 +86,7 @@ class PostController extends Controller
 
         validator(['card_image' => $file], ['card_image' => ['image', 'max:8192']])->validate();
 
-        $manager = new ImageManager(new Driver());
+        $manager = new ImageManager(new Driver);
         $image = $manager->decodePath($file->getRealPath());
         $image->cover(1200, 1200);
 
@@ -99,7 +99,7 @@ class PostController extends Controller
             ? $image->encodeUsingFileExtension('png')
             : $image->encodeUsingFileExtension('jpg', quality: 82);
 
-        $path = 'media/' . Str::uuid() . '.' . $extension;
+        $path = 'media/'.Str::uuid().'.'.$extension;
         Storage::disk('public')->put($path, (string) $encoded);
 
         // Root-relative URL so the image resolves on any host/port/domain.

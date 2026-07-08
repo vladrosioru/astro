@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Foundation\Application;
+
 /**
  * One-shot post-deploy hook.
  *
@@ -19,7 +22,6 @@
  * Lives in public/ (the web docroot). Safe to leave in place: with no valid
  * token it returns 403 and touches nothing.
  */
-
 $appRoot = dirname(__DIR__);
 
 /** Read a single key from a .env file without booting the framework. */
@@ -70,11 +72,11 @@ define('LARAVEL_START', microtime(true));
 
 require $appRoot.'/vendor/autoload.php';
 
-/** @var \Illuminate\Foundation\Application $app */
+/** @var Application $app */
 $app = require_once $appRoot.'/bootstrap/app.php';
 
-/** @var \Illuminate\Contracts\Console\Kernel $kernel */
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+/** @var Kernel $kernel */
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
 /**
@@ -89,7 +91,7 @@ $run = function (string $command, array $params = [], bool $fatal = true) use ($
         if ($status !== 0 && $fatal) {
             http_response_code(500);
         }
-    } catch (\Throwable $e) {
+    } catch (Throwable $e) {
         echo 'ERROR: '.$e->getMessage()."\n";
         if ($fatal) {
             http_response_code(500);

@@ -11,7 +11,7 @@ class ThemeJsonContractTest extends TestCase
         $configTokenNames = array_keys(config('tokens.defaults'));
 
         foreach (glob(public_path('themes/theme_*'), GLOB_ONLYDIR) as $dir) {
-            $manifestPath = $dir . '/theme.json';
+            $manifestPath = $dir.'/theme.json';
             $this->assertFileExists($manifestPath, "Missing theme.json in $dir");
 
             $m = json_decode(file_get_contents($manifestPath), true);

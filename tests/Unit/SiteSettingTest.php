@@ -38,6 +38,6 @@ class SiteSettingTest extends TestCase
 
     public function test_current_has_default_theme_pointer(): void
     {
-        $this->assertSame('solarsystem', \App\Models\SiteSetting::current()->theme);
+        $this->assertSame('solarsystem', SiteSetting::current()->theme);
     }
 }

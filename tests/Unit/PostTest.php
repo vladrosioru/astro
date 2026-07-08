@@ -3,7 +3,6 @@
 namespace Tests\Unit;
 
 use App\Models\Post;
-use App\Models\PostTranslation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

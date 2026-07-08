@@ -19,7 +19,7 @@ class StyleTokensTest extends TestCase
 
     public function test_branding_overrides_a_theme_token(): void
     {
-        \App\Models\SiteSetting::current()->update(['branding' => ['color-primary' => '#ff0000']]);
+        SiteSetting::current()->update(['branding' => ['color-primary' => '#ff0000']]);
         $html = view('partials.tokens')->render();
         $this->assertStringContainsString('--color-primary: #ff0000', $html);
         $this->assertStringNotContainsString('--color-primary: #9dc1e6', $html);

@@ -18,7 +18,7 @@ class AttachmentController extends Controller
         abort_if($uploaded === null, 422, 'No file provided.');
         validator(['file' => $uploaded], ['file' => ['required', 'image', 'max:8192']])->validate();
 
-        $manager = new ImageManager(new Driver());
+        $manager = new ImageManager(new Driver);
         $image = $manager->decodePath($uploaded->getRealPath());
         $image->scaleDown(width: 1600);
 
@@ -31,7 +31,7 @@ class AttachmentController extends Controller
             ? $image->encodeUsingFileExtension('png')
             : $image->encodeUsingFileExtension('jpg', quality: 82);
 
-        $path = 'media/' . Str::uuid() . '.' . $extension;
+        $path = 'media/'.Str::uuid().'.'.$extension;
         Storage::disk('public')->put($path, (string) $encoded);
 
         // Store a root-relative URL (e.g. /storage/media/uuid.jpg) so embedded

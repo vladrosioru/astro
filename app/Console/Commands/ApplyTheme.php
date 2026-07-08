@@ -18,7 +18,7 @@ class ApplyTheme extends Command
         $names = array_column(app('theme.manager')->available(), 'name');
 
         if (! in_array($name, $names, true)) {
-            $this->error("Unknown theme: {$name}. Available: " . implode(', ', $names));
+            $this->error("Unknown theme: {$name}. Available: ".implode(', ', $names));
 
             return self::FAILURE;
         }
