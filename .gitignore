@@ -23,3 +23,6 @@ yarn-error.log
 /.zed
 /.superpowers
 .claude/settings.local.json
+
+# Local-only secret sheets (deploy credentials) — never commit
+docs/*.local.md

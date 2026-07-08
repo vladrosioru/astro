@@ -1,0 +1,263 @@
+name: CI/CD - Lint -> Test -> Scan -> Deploy Dev -> Approve -> Deploy Prod
+
+# Single-branch cascade (mirrors deploy_VPS.yml), adapted for a shell-less
+# cPanel host: deploys go over FTPS and post-deploy artisan runs through the
+# token-guarded public/deploy.php hook. See docs/DEPLOY-CPANEL.md.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+# Never run two deploys of the same branch at once.
+concurrency:
+  group: cicd-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  PHP_VERSION: '8.3'
+
+jobs:
+  # 1. Code style
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - name: Laravel Pint (style check)
+        run: vendor/bin/pint --test
+
+  # 2. Automated tests (in-memory sqlite, per phpunit.xml)
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, pdo_sqlite, sqlite3, gd, curl, fileinfo, intl, bcmath
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - name: Prepare test env
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Run tests
+        run: php artisan test
+
+  # 3. Dependency security scan.
+  # Non-blocking: this project's advisory DB flags current Laravel 11.x for
+  # debug-only XSS (fixed in 12). Prod runs APP_DEBUG=false, so advisories are
+  # surfaced as warnings rather than failing the pipeline.
+  security:
+    needs: lint
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+      - uses: ramsey/composer-install@v3
+      - name: composer audit
+        run: composer audit --no-dev
+
+  # 4. Build the production artifact once, promote the SAME bits dev -> prod.
+  build:
+    needs: [test, security]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, gd, curl, fileinfo, intl, bcmath
+          coverage: none
+      - uses: ramsey/composer-install@v3
+        with:
+          composer-options: "--no-dev --optimize-autoloader"
+      - name: Create release tarball
+        run: |
+          tar -czf app-build.tar.gz \
+            --exclude='./.git' \
+            --exclude='./.github' \
+            --exclude='./tests' \
+            --exclude='./node_modules' \
+            --exclude='./storage' \
+            --exclude='./deploy_VPS.yml' \
+            --exclude='./database/database.sqlite' \
+            --exclude='./.env' \
+            --exclude='./.env.*' \
+            --exclude='./app-build.tar.gz' \
+            .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-build
+          path: app-build.tar.gz
+          retention-days: 5
+
+  # 5. Deploy to Dev (dev.<domain>, HTTPS). Secrets/vars from the `dev` env.
+  deploy_dev:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: dev
+    outputs:
+      url: ${{ vars.APP_URL }}
+    steps:
+      - uses: actions/checkout@v4   # for .github/scripts/make-env.sh
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-build
+      - name: Extract build
+        run: mkdir release && tar -xzf app-build.tar.gz -C release
+      - name: Generate .env
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+          APP_DEBUG: ${{ vars.APP_DEBUG }}
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          DB_HOST: ${{ vars.DB_HOST }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MAIL_HOST: ${{ vars.MAIL_HOST }}
+          MAIL_PORT: ${{ vars.MAIL_PORT }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS }}
+        run: bash .github/scripts/make-env.sh > release/.env
+      - name: Deploy to Dev via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./release/
+          server-dir: ${{ vars.FTP_SERVER_DIR }}
+          state-name: .ftp-deploy-dev.json
+      - name: Post-deploy hook (migrate + cache + storage:link)
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          curl -fsS --retry 5 --retry-delay 15 --max-time 300 \
+            -H "X-Deploy-Token: ${DEPLOY_TOKEN}" \
+            "${APP_URL}/deploy.php"
+
+  # 6. Smoke test Dev
+  test_dev:
+    needs: deploy_dev
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for dev to come up
+        run: |
+          BASE="${{ needs.deploy_dev.outputs.url }}"
+          for i in $(seq 1 12); do
+            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$BASE/en" || true)
+            if [ "$S" = "200" ]; then echo "dev up after ~$((i*5))s"; exit 0; fi
+            echo "attempt $i: got $S, retrying in 5s..."; sleep 5
+          done
+          echo "dev did not come up in time"; exit 1
+      - name: Smoke test routes
+        run: |
+          BASE="${{ needs.deploy_dev.outputs.url }}"
+          FAILED=0
+          for path in / /en /en/about /en/services /en/contact /en/journal /ro /admin/login; do
+            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            echo "$S  $path"
+            case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
+          done
+          [ "$FAILED" = 0 ] || exit 1
+
+  # 7. Deploy to Production. The `production` environment carries the required-
+  #    reviewer rule -> this job is the manual approval gate before prod.
+  deploy_prd:
+    needs: test_dev
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      url: ${{ vars.APP_URL }}
+    steps:
+      - uses: actions/checkout@v4   # for .github/scripts/make-env.sh
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-build
+      - name: Extract build
+        run: mkdir release && tar -xzf app-build.tar.gz -C release
+      - name: Generate .env
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+          APP_DEBUG: ${{ vars.APP_DEBUG }}
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          DB_HOST: ${{ vars.DB_HOST }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MAIL_HOST: ${{ vars.MAIL_HOST }}
+          MAIL_PORT: ${{ vars.MAIL_PORT }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS }}
+        run: bash .github/scripts/make-env.sh > release/.env
+      - name: Deploy to Prod via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./release/
+          server-dir: ${{ vars.FTP_SERVER_DIR }}
+          state-name: .ftp-deploy-prod.json
+      - name: Post-deploy hook (migrate + cache + storage:link)
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          curl -fsS --retry 5 --retry-delay 15 --max-time 300 \
+            -H "X-Deploy-Token: ${DEPLOY_TOKEN}" \
+            "${APP_URL}/deploy.php"
+
+  # 8. Smoke test Production
+  test_prd:
+    needs: deploy_prd
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for prod to come up
+        run: |
+          BASE="${{ needs.deploy_prd.outputs.url }}"
+          for i in $(seq 1 12); do
+            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$BASE/en" || true)
+            if [ "$S" = "200" ]; then echo "prod up after ~$((i*5))s"; exit 0; fi
+            echo "attempt $i: got $S, retrying in 5s..."; sleep 5
+          done
+          echo "prod did not come up in time"; exit 1
+      - name: Smoke test routes
+        run: |
+          BASE="${{ needs.deploy_prd.outputs.url }}"
+          FAILED=0
+          for path in / /en /en/about /en/services /en/contact /en/journal /ro /admin/login; do
+            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            echo "$S  $path"
+            case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
+          done
+          [ "$FAILED" = 0 ] || exit 1

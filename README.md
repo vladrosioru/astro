@@ -232,16 +232,30 @@ PHPUnit, configured by [`phpunit.xml`](phpunit.xml) to run against an **in-memor
 
 ## Deployment (cPanel)
 
-Target is shared hosting with no build step:
+Target is shared cPanel hosting with **no build step and no SSH** (File
+Manager / FTP only).
 
-1. Upload the app; point the web root at `public/`.
+**Automated (recommended):** [`.github/workflows/cicd.yml`](.github/workflows/cicd.yml)
+is a single-branch cascade off `master` —
+`lint → test → security → build → deploy_dev → test_dev → [approve] → deploy_prd → test_prd`.
+It builds the production app in CI, uploads it over **FTPS**, and runs
+post-deploy `artisan` (migrate, cache, `storage:link`) through the
+token-guarded [`public/deploy.php`](public/deploy.php) hook. Dev and prod are
+separate cPanel subdomains/databases; the `production` GitHub environment's
+required-reviewer rule is the manual approval gate. Full setup — cPanel
+prerequisites, GitHub environments, secrets/variables — is in
+[`docs/DEPLOY-CPANEL.md`](docs/DEPLOY-CPANEL.md).
+
+**Manual (fallback):**
+
+1. Upload the app; point the (sub)domain web root at `public/`.
 2. `composer install --no-dev --optimize-autoloader`.
 3. Configure `.env` for MySQL; `APP_DEBUG=false`; `php artisan key:generate` if needed.
 4. `php artisan migrate --force`.
 5. `php artisan storage:link` (or replicate the symlink) for uploaded images.
 6. Apply the theme: `php artisan app:apply-theme solarsystem`.
 
-No `npm`/Vite step is required or expected. (A full deployment plan is in `docs/superpowers/plans/2026-06-25-…-deployment.md`.)
+No `npm`/Vite step is required or expected.
 
 ---
 
