@@ -36,5 +36,5 @@
     "css": ["css/fonts.css", "css/structure.css", "css/cosmos.css", "css/skin.css", "css/hero.css"],
     "js": [{ "src": "js/solarsystem.js", "defer": true }]
   },
-  "views": { "namespace": "theme", "hero": "hero", "cosmos": "cosmos" }
+  "views": { "namespace": "theme", "hero": "hero", "cosmos": "cosmos", "solar-motif": "solar-motif" }
 }

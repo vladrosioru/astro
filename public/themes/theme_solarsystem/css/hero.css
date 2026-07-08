@@ -118,6 +118,23 @@
   z-index: 4;
 }
 
+/* ---------- Motif (compact reuse — see views/solar-motif.blade.php) ------ */
+/* No hero/nav content sits inside .stage--motif, so unlike the real hero
+   (which hugs its <main class="hero"> flow height) this needs an explicit
+   height for the absolutely-positioned .solar-wrap to have room in. */
+/* Compound selector (not just `.stage--motif`) so the --solar-scale override
+   always beats the viewport-keyed `.stage { --solar-scale: … }` rules below,
+   regardless of source order at a given breakpoint. */
+.stage.stage--motif {
+  height: 300px;
+  --solar-scale: 0.5;
+}
+.stage--motif .solar-wrap { top: 50%; }
+
+@media (max-width: 720px) {
+  .stage.stage--motif { height: 220px; --solar-scale: 0.34; }
+}
+
 /* ---------- Vignette ------------------------------------- */
 .stage .vignette {
   position: absolute;

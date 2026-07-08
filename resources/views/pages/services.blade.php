@@ -4,69 +4,62 @@
 
 @push('head')
     <link rel="stylesheet" href="{{ asset('css/about.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/services.css') }}">
     <script src="{{ asset('js/about.js') }}" defer></script>
+    <script src="{{ asset('js/services.js') }}" defer></script>
 @endpush
 
 @php
-    // Static reproduction of the mystik astrology demo, re-skinned in the local
-    // Solar System theme. All would-be internal links point to about:blank (this
-    // is a single static page — no child pages are created). Images were copied
-    // from the reference into public/img/about.
+    // Adapted from the mystik "Our Services" reference, re-skinned in the
+    // local Solar System theme. Hero, section rhythm, buttons and the
+    // testimonials carousel reuse the About page's about.css/about.js
+    // (about-hero, about-section, about-testi, etc.); services.css/js add
+    // only the category tabs and the service card grid.
     $img = fn ($f) => asset('img/about/' . $f);
+    $locale = app()->getLocale();
 
-    $readings = [
-        ['img' => 'image-74-copyright-min-370x240.jpg', 'cat' => 'Astrology',
-         'title' => 'A Libra Season Meditation to Collaborate, Cooperate & Co-Create', 'date' => 'Mar 25, 2019'],
-        ['img' => 'image-19-copyright-min-370x240.jpg', 'cat' => 'Tarot',
-         'title' => 'Ace Cards in Tarot', 'date' => 'Mar 25, 2019'],
-        ['img' => 'image-59-copyright-min-370x240.jpg', 'cat' => 'Astrology',
-         'title' => 'Supermoon Equinox 2019', 'date' => 'Mar 25, 2019'],
+    $categories = [
+        'astrology' => 'Astrology',
+        'tarot'     => 'Tarotscopes',
+        'energy'    => 'Energy Healing',
     ];
 
-    $faqs = [
-        ['q' => 'Which Sun sign am I?',
-         'a' => 'Your Sun sign is set by your date of birth. The zodiac runs Aries (Mar 21–Apr 19), Taurus (Apr 20–May 20), Gemini (May 21–Jun 20) and on through Pisces. Find the range your birthday falls in and that is your Sun sign.'],
-        ['q' => 'Is there a 13th zodiac sign?',
-         'a' => 'You may have heard about Ophiuchus, the “serpent bearer”. Western astrology has always worked with twelve signs tied to the seasons rather than the exact backdrop of constellations, so the familiar twelve-sign zodiac stays intact.'],
-        ['q' => 'Why does my Sun sign sometimes change?',
-         'a' => 'Your Sun sign is always determined by your date of birth — it never really changes. Confusion happens on the cusp dates, because the Sun crosses from one sign to the next at a slightly different time each year.'],
-        ['q' => 'What is a “rising sign”?',
-         'a' => 'Your rising sign, or ascendant, is the zodiac sign that was climbing over the eastern horizon at the exact moment you were born. It colours your outward manner and the first impression you make on the world.'],
-        ['q' => 'What is a twin flame?',
-         'a' => 'A twin flame is thought of as a mirror soul — an intense connection that reflects your own strengths and shadows back at you. Astrology can help you read the chart patterns such a bond tends to share.'],
-    ];
+    $services = [
+        ['id' => 'natal-chart-analysis', 'cat' => 'astrology', 'glyph' => '☉', 'title' => 'Natal Chart Analysis',
+         'desc' => "A full read of your birth chart — Sun, Moon, rising sign and the placements between them — decoded into a clear picture of your personality, strengths and blind spots."],
+        ['id' => 'progressions-solar-returns', 'cat' => 'astrology', 'glyph' => '⟳', 'title' => 'Progressions & Solar Returns',
+         'desc' => "Your birth chart advanced to today, plus a fresh chart cast for your solar return, showing how the current sky is moving through your life right now."],
+        ['id' => 'relationship-analysis', 'cat' => 'astrology', 'glyph' => '♡', 'title' => 'Relationship Analysis',
+         'desc' => "A comparison of two charts — synastry and composite — to see where you naturally align with a partner, friend or family member, and where the friction comes from."],
+        ['id' => 'elective-horary-charts', 'cat' => 'astrology', 'glyph' => '◔', 'title' => 'Elective & Horary Charts',
+         'desc' => "Elective astrology times a decision — a launch, a move, a signature — for a favourable sky. Horary answers a specific question by reading the chart cast for the moment you asked it."],
+        ['id' => 'daily-horoscope', 'cat' => 'astrology', 'glyph' => '☀', 'title' => 'Daily Horoscope',
+         'desc' => "A short daily forecast for your Sun sign, keyed to the Moon and the day's fastest-moving transits, so you know where today's sky is pulling you."],
+        ['id' => 'astro-travel', 'cat' => 'astrology', 'glyph' => '✦', 'title' => 'Astro Travel',
+         'desc' => "An astrocartography reading that maps your chart onto the globe, showing which cities and regions light up specific parts of your life — useful before a move, a relocation, or a big trip."],
+        ['id' => 'yearly-horoscope', 'cat' => 'astrology', 'glyph' => '✧', 'title' => 'Yearly Horoscope',
+         'desc' => "A year-ahead forecast across love, work and growth, built from the major transits and returns crossing your chart over the next twelve months."],
+        ['id' => 'childs-horoscope', 'cat' => 'astrology', 'glyph' => '☾', 'title' => "Child's Horoscope",
+         'desc' => "A gentle first reading of your child's birth chart, translated into plain, age-appropriate guidance for temperament, learning style and what they need from you."],
 
-    $signs = [
-        ['name' => 'Aries',       'glyph' => '♈', 'dates' => 'Mar 21 – Apr 19'],
-        ['name' => 'Taurus',      'glyph' => '♉', 'dates' => 'Apr 20 – May 20'],
-        ['name' => 'Gemini',      'glyph' => '♊', 'dates' => 'May 21 – Jun 20'],
-        ['name' => 'Cancer',      'glyph' => '♋', 'dates' => 'Jun 21 – Jul 22'],
-        ['name' => 'Leo',         'glyph' => '♌', 'dates' => 'Jul 23 – Aug 22'],
-        ['name' => 'Virgo',       'glyph' => '♍', 'dates' => 'Aug 23 – Sep 22'],
-        ['name' => 'Libra',       'glyph' => '♎', 'dates' => 'Sep 23 – Oct 22'],
-        ['name' => 'Scorpio',     'glyph' => '♏', 'dates' => 'Oct 23 – Nov 21'],
-        ['name' => 'Sagittarius', 'glyph' => '♐', 'dates' => 'Nov 22 – Dec 21'],
-        ['name' => 'Capricorn',   'glyph' => '♑', 'dates' => 'Dec 22 – Jan 19'],
-        ['name' => 'Aquarius',    'glyph' => '♒', 'dates' => 'Jan 20 – Feb 18'],
-        ['name' => 'Pisces',      'glyph' => '♓', 'dates' => 'Feb 19 – Mar 20'],
-    ];
+        ['id' => 'single-card-draw', 'cat' => 'tarot', 'glyph' => '✦', 'title' => 'Single Card Draw',
+         'desc' => "One card, one clear answer — quick guidance for a question that's been sitting with you."],
+        ['id' => 'three-card-spread', 'cat' => 'tarot', 'glyph' => '❖', 'title' => 'Three-Card Spread',
+         'desc' => "Past, present and future laid out side by side, so you can see where a situation has been and where it's actually heading."],
+        ['id' => 'love-relationship-tarot', 'cat' => 'tarot', 'glyph' => '♡', 'title' => 'Love & Relationship Tarot',
+         'desc' => "A spread built around one relationship — what's really going on beneath the surface, and what the cards suggest you do next."],
+        ['id' => 'full-life-reading', 'cat' => 'tarot', 'glyph' => '◈', 'title' => 'Full Life Reading',
+         'desc' => "A longer, ten-card spread across love, work and personal growth, for when there's more than one question on your mind."],
 
-    $horoscopes = [
-        'Aries' => "You're in the middle of a terrific yearly transition. You have a great deal of physical energy, Aries. You have an action-oriented mind ready to tackle anything. The key to making the most of this fortunate period is communication. Right now you have multitasking abilities that you can put to good use once you connect with others and understand exactly what needs to be done.",
-        'Taurus' => "Try not to get too caught up in any potential conflicts brewing around you, Taurus. Your job lies in calming things down and bringing a more practical perspective to the situation. If you get tangled in the action phase of endeavors without first thinking about what it is that you're doing, you may confuse things more. Step back from the fire instead of throwing yourself into it headfirst.",
-        'Gemini' => "This is a great time to move forward on a writing project, Gemini. Any large, long-term project involving communication, film, or long-distance travel is begging you to take action. Don't delay. You have a strong force urging you to move forward. Look ahead with a positive attitude instead of thinking of all the reasons why these projects won't pan out the way you want them to.",
-        'Cancer' => "This is an expansive time for you. You can make great progress on your goals, Cancer. The key is to clear up any miscommunication or dishonesty before you move forward with a clear conscience. Don't even bother trying to make progress before you've cleared up past cobwebs. Keeping everything on a light, flexible track will help you work more efficiently.",
-        'Leo' => "Your engine is revved and ready, Leo. You have a full tank of gas. Unfortunately, you may feel like there's a large obstacle in your way. Perhaps this obstacle is your mental attitude and inability to make confident decisions. You may become so scattered at times that you can't effectively move forward on anything. Don't beat yourself up over it. The answers will come when you need them.",
-        'Virgo' => "No one likes rejection, but no one likes rejection less than you, Virgo. You may hesitate to take risks in the unknown. Keep in mind that by playing it safe, you deprive yourself of the very adventure that could turn your life around. There's an energetic, expansive feeling in the air encouraging you to take that leap of faith. This energy may feel foreign to you, but it's time to embrace it.",
-        'Libra' => "Be flexible in your communication, Libra, and doors will open to you that you didn't even know were there. There's a tremendous amount of physical energy at your disposal. Don't waste it. By being rigid about your ways and insisting on doing things only according to your philosophy, you deprive yourself of the spontaneous adventures that give life the spice and variety you love.",
-        'Scorpio' => "You may be in a difficult position, Scorpio. You want to explode into a new way of life yet feel stuck. Perhaps you feel chained to your current routine. You may feel like you're indeed making progress in the world, but you long for a giant release – like a trap door opening – that allows you to make a leap into the great beyond. This door is always open.",
-        'Sagittarius' => "You're getting support for and confidence from one aspect of your life and physical energy from another. Even though the two areas may be in a point of conflict, Sagittarius, you have the ability to take the positive aspects from each and fuse them together to create something new or solve a problem. Pool your resources and shift into high gear. The sky's the limit.",
-        'Capricorn' => "Success will come to you when you work with the energies at hand. Go with the flow of the situation instead of trying to undermine or manipulate it. There's a tremendous force at work. Perhaps all it needs is a bit of direction to align it with your goals. State your intentions openly instead of working behind the scenes. You will receive support from others when you do.",
-        'Aquarius' => "You may end up in some arguments, Aquarius. Your nature is expansive and generous, but if others take advantage of this good nature, your mood quickly turns to anger and detachment. Conflict is often a natural part of a relationship. Use it as a learning experience instead of blowing it out of proportion and turning it into a larger issue than it needs to be.",
-        'Pisces' => "You may be confused about asking for help, Pisces. Your usual resources could be occupied with issues and conflicts that have nothing to do with you. You may then offer to help others. By doing this, you've put someone else's needs above your own. Although this may feel good to you on some level, it's also a way to avoid the problems that you need to deal with.",
+        ['id' => 'reiki-session', 'cat' => 'energy', 'glyph' => '✧', 'title' => 'Reiki Session',
+         'desc' => "Gentle, hands-on (or remote) energy work to release tension, calm the nervous system and restore balance."],
+        ['id' => 'chakra-balancing', 'cat' => 'energy', 'glyph' => '☉', 'title' => 'Chakra Balancing',
+         'desc' => "A guided session to locate blocked or overactive chakras and bring your seven energy centres back into balance."],
+        ['id' => 'crystal-healing', 'cat' => 'energy', 'glyph' => '◇', 'title' => 'Crystal Healing',
+         'desc' => "Specific stones placed on or around the body to support a particular area of healing or a stated intention."],
+        ['id' => 'cord-cutting-clearing', 'cat' => 'energy', 'glyph' => '⟡', 'title' => 'Cord-Cutting & Clearing',
+         'desc' => "A closing ritual to release old attachments and energetic ties that no longer serve you, clearing space for what's next."],
     ];
-
-    $signMeta = collect($signs)->keyBy('name');
 
     $testimonials = [
         ['img' => 'image-22-copyright-min-90x90.jpg', 'name' => 'Jenna Mackenzie', 'city' => 'Milan',
@@ -81,150 +74,40 @@
 @endphp
 
 @section('content')
-<main class="about">
+<main class="about services">
 
     {{-- Title band --------------------------------------------------------- --}}
     <header class="about-hero">
         <div class="about-shell">
             <nav class="about-crumb" aria-label="Breadcrumb">
-                <a href="about:blank">Home</a><span aria-hidden="true">›</span><span>Services</span>
+                <a href="/{{ $locale }}">Home</a><span aria-hidden="true">›</span><span>Services</span>
             </nav>
-            <h1 class="about-hero__title">Services</h1>
-            <p class="about-hero__sub">The study of how the distant lights above us mirror the story unfolding within.</p>
-            <a class="about-btn" href="about:blank">Begin Here</a>
+            <h1 class="about-hero__title">Our Services</h1>
+            <p class="about-hero__sub">Astrology, tarot and energy work — ways to read the sky and the self, chosen to fit the question you're carrying.</p>
+            <a class="about-btn" href="/{{ $locale }}/contact">Book a Session</a>
         </div>
     </header>
 
-    {{-- What is astrology --------------------------------------------------- --}}
-    <section class="about-section">
-        <div class="about-shell about-split">
-            <div class="about-split__lead">
-                <p class="about-eyebrow">Discover</p>
-                <h2 class="about-h2">What Is Astrology?</h2>
-            </div>
-            <div class="about-split__body">
-                <p>Astrology is the study of the influence that distant cosmic objects, usually stars and
-                    planets, have on human lives. The position of the Sun, Moon and planets at the moment
-                    of your birth is said to shape your personality, your relationships and the tides of
-                    your fortune.</p>
-                <p>Far from cold prediction, a chart is a map — a way of reading your own patterns back to
-                    you so you can move through the world with a little more self-knowledge and a little
-                    more grace.</p>
-                <a class="about-link" href="about:blank">Learn More <span aria-hidden="true">→</span></a>
-            </div>
-        </div>
-    </section>
-
-    {{-- Sun sign meaning ---------------------------------------------------- --}}
-    <section class="about-section about-section--alt">
-        <div class="about-shell about-split about-split--reverse">
-            <div class="about-split__lead">
-                <p class="about-eyebrow">Your Core</p>
-                <h2 class="about-h2">The Meaning of the Sun Sign</h2>
-            </div>
-            <div class="about-split__body">
-                <p>Your Sun sign describes your basic nature and the personality traits that remain
-                    constant through the ups and downs of life. It is your core identity — the steady
-                    flame at the centre of the chart, and the way you instinctively present yourself to
-                    the world.</p>
-                <p>Understanding it is the first doorway into astrology, and the foundation everything else
-                    in your chart is read against.</p>
-                <a class="about-btn about-btn--sm" href="about:blank">Schedule Your Session</a>
-            </div>
-        </div>
-    </section>
-
-    {{-- Astrological readings + pagination ---------------------------------- --}}
+    {{-- Service categories + card grid ---------------------------------------- --}}
     <section class="about-section">
         <div class="about-shell">
-            <p class="about-eyebrow about-eyebrow--center">From the Journal</p>
-            <h2 class="about-h2 about-h2--center">Astrological Readings</h2>
-            <div class="about-cards">
-                @foreach ($readings as $r)
-                    <article class="about-card">
-                        <a class="about-card__media" href="about:blank">
-                            <img src="{{ $img($r['img']) }}" alt="{{ $r['title'] }}" loading="lazy" width="370" height="240">
-                        </a>
-                        <div class="about-card__body">
-                            <span class="about-card__cat">{{ $r['cat'] }}</span>
-                            <h3 class="about-card__title"><a href="about:blank">{{ $r['title'] }}</a></h3>
-                            <p class="about-card__meta">{{ $r['date'] }} · 0 Comments</p>
-                        </div>
-                    </article>
+            <p class="about-eyebrow about-eyebrow--center">What We Offer</p>
+            <h2 class="about-h2 about-h2--center">Readings & Sessions</h2>
+            <p class="about-lede about-center">Every reading starts with a conversation about what you actually want to know. Browse by category below, or book a session and we'll work out the right fit together.</p>
+
+            <div class="svc-tabs" data-svc-tabs role="tablist">
+                @foreach ($categories as $key => $label)
+                    <button type="button" class="svc-tab @if($loop->first) is-active @endif" data-svc-tab="{{ $key }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
                 @endforeach
             </div>
 
-            {{-- Numbered pager. On the reference these page through more posts; here
-                 every target is a static about:blank (no child pages are created). --}}
-            <nav class="about-pager" aria-label="Readings pagination">
-                <a class="about-pager__link is-active" href="about:blank" aria-current="page">1</a>
-                <a class="about-pager__link" href="about:blank">2</a>
-                <a class="about-pager__link" href="about:blank">3</a>
-                <span class="about-pager__gap">…</span>
-                <a class="about-pager__link about-pager__link--next" href="about:blank" aria-label="Next page">→</a>
-            </nav>
-        </div>
-    </section>
-
-    {{-- FAQ ----------------------------------------------------------------- --}}
-    <section class="about-section about-section--alt">
-        <div class="about-shell about-shell--narrow">
-            <p class="about-eyebrow about-eyebrow--center">Good to Know</p>
-            <h2 class="about-h2 about-h2--center">Frequently Asked Questions</h2>
-            <div class="about-faq">
-                @foreach ($faqs as $i => $f)
-                    <details class="about-faq__item" @if($i === 0) open @endif>
-                        <summary class="about-faq__q">{{ $f['q'] }}</summary>
-                        <div class="about-faq__a"><p>{{ $f['a'] }}</p></div>
-                    </details>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    {{-- Zodiac signs grid --------------------------------------------------- --}}
-    <section class="about-section">
-        <div class="about-shell">
-            <p class="about-eyebrow about-eyebrow--center">The Wheel</p>
-            <h2 class="about-h2 about-h2--center">The Twelve Zodiac Signs</h2>
-            <div class="about-zodiac">
-                @foreach ($signs as $s)
-                    <a class="about-sign" href="#horo-{{ Str::lower($s['name']) }}">
-                        <span class="about-sign__glyph" aria-hidden="true">{{ $s['glyph'] }}&#xFE0E;</span>
-                        <span class="about-sign__name">{{ $s['name'] }}</span>
-                        <span class="about-sign__dates">{{ $s['dates'] }}</span>
-                    </a>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    {{-- Daily horoscope intro ----------------------------------------------- --}}
-    <section class="about-section about-section--alt">
-        <div class="about-shell about-shell--narrow about-center">
-            <p class="about-eyebrow about-eyebrow--center">Today</p>
-            <h2 class="about-h2 about-h2--center">What's Your Sign? Read Your Daily Horoscope</h2>
-            <p class="about-lede">The planets are always moving, and so is your story. Read today's forecast for
-                your sign below — then book a session to go deeper than the daily sky.</p>
-            <a class="about-btn" href="about:blank">Schedule Your Session</a>
-        </div>
-    </section>
-
-    {{-- 12 horoscope forecasts ---------------------------------------------- --}}
-    <section class="about-section">
-        <div class="about-shell">
-            <div class="about-horoscopes">
-                @foreach ($horoscopes as $name => $text)
-                    @php $meta = $signMeta[$name]; @endphp
-                    <article class="about-horo" id="horo-{{ Str::lower($name) }}">
-                        <div class="about-horo__head">
-                            <span class="about-horo__glyph" aria-hidden="true">{{ $meta['glyph'] }}&#xFE0E;</span>
-                            <div>
-                                <h3 class="about-horo__name">{{ $name }}</h3>
-                                <p class="about-horo__dates">{{ $meta['dates'] }}</p>
-                            </div>
-                        </div>
-                        <p class="about-horo__text">{{ $text }}</p>
+            <div class="svc-grid" data-svc-grid>
+                @foreach ($services as $s)
+                    <article class="svc-card" id="{{ $s['id'] }}" data-svc-cat="{{ $s['cat'] }}" @if($s['cat'] !== 'astrology') hidden @endif>
+                        <span class="svc-card__icon" aria-hidden="true">{{ $s['glyph'] }}&#xFE0E;</span>
+                        <p class="svc-card__cat">{{ $categories[$s['cat']] }}</p>
+                        <h3 class="svc-card__title">{{ $s['title'] }}</h3>
+                        <p class="svc-card__desc">{{ $s['desc'] }}</p>
                     </article>
                 @endforeach
             </div>

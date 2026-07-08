@@ -183,6 +183,47 @@
 }
 .about-split__lead .about-h2 { margin-bottom: 0; }
 
+/* --- Manifesto (Discover) full-width long-form article ------ */
+.about-manifesto__body p {
+    margin: 0 0 calc(var(--space-unit) * 4);
+    font-size: 1.05rem;
+    line-height: 1.75;
+}
+.about-manifesto__cta { margin: calc(var(--space-unit) * 4) 0 0; text-align: center; }
+
+/* --- Top graphic — Option 1: mini natal-chart wheel ---------- */
+/* Static (a chart is a fixed moment, not a spinner) — appearance only,
+   token-driven, no raw colours (see file header). */
+.about-chart-motif {
+    display: flex;
+    justify-content: center;
+    padding: calc(var(--space-unit) * 14) 0 calc(var(--space-unit) * 4);
+}
+.about-chart-motif__svg {
+    width: clamp(180px, 26vw, 240px);
+    height: auto;
+    overflow: visible;
+}
+.about-chart-motif__ring { fill: none; stroke: var(--color-primary); }
+.about-chart-motif__ring--outer { stroke-opacity: 0.45; }
+.about-chart-motif__ring--inner { stroke-opacity: 0.22; }
+.about-chart-motif__spoke { stroke: var(--color-primary); stroke-opacity: 0.3; }
+.about-chart-motif__aspect { fill: none; stroke: var(--color-accent); stroke-opacity: 0.35; stroke-width: 1; }
+.about-chart-motif__glyph {
+    fill: var(--color-heading);
+    font-family: var(--font-display);
+    font-size: 13px;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    opacity: 0.85;
+}
+.about-chart-motif__sun {
+    fill: var(--color-primary);
+    filter: drop-shadow(0 0 6px var(--color-primary));
+}
+/* Tighten the seam into the manifesto's own generous top padding. */
+.about-chart-motif + .about-section { padding-top: calc(var(--space-unit) * 6); }
+
 /* --- Reading cards ----------------------------------------- */
 /* Two per page (the newest post is shown separately above, full-size, via
    the shared Journal card partial) — see data-journal-carousel in js/about.js.

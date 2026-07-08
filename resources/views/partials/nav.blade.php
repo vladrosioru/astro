@@ -46,8 +46,8 @@
                     <input type="checkbox" id="services-toggle" class="nav-dropdown-toggle-input">
                     <label for="services-toggle" class="nav-dropdown-btn" aria-label="Toggle Services submenu"></label>
                     <ul class="nav-dropdown-menu">
-                        <li><a href="about:blank">Natal Chart Analysis</a></li>
-                        <li><a href="about:blank">Relationship Analysis</a></li>
+                        <li><a href="/{{ $locale }}/services#natal-chart-analysis">Natal Chart Analysis</a></li>
+                        <li><a href="/{{ $locale }}/services#relationship-analysis">Relationship Analysis</a></li>
                     </ul>
                 </li>
             @endif
