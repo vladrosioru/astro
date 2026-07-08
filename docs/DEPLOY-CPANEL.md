@@ -111,14 +111,14 @@ artifact to prod and smoke-testing it.
 - **Migrations run every deploy** (`migrate --force`, additive). Content is
   entered through the admin panel on the live site.
 
-## Storage symlink
+## Uploaded images (no symlink)
 
-Admin image uploads are written to `storage/app/public` and served at
-`/storage/...`, which needs the `public/storage` symlink. The deploy hook runs
-`php artisan storage:link` for you (non-fatal). Most CloudLinux/cPanel hosts
-allow `symlink()`. If yours doesn't and uploaded images 404, either ask the
-host to enable it, or point the `public` disk directly at a real folder under
-the docroot in `config/filesystems.php`.
+This host disables `symlink()`/`exec()`, so `php artisan storage:link` fails.
+Instead the generated `.env` sets **`PUBLIC_DISK_IN_DOCROOT=true`**, which makes
+the `public` filesystem disk write to a real `public/storage` folder (created by
+`deploy.php`) that Apache serves directly at `/storage/...` — no symlink needed.
+Uploads there persist across deploys (the folder is not in `app.zip`, and
+extraction only overlays files). See `config/filesystems.php`.
 
 ## Security notes
 

@@ -42,6 +42,9 @@ QUEUE_CONNECTION=database
 FILESYSTEM_DISK=local
 BROADCAST_CONNECTION=log
 
+# Shared host disables symlink()/exec(); serve uploads from a real public/storage
+PUBLIC_DISK_IN_DOCROOT=true
+
 # Post-deploy hook auth (public/deploy.php)
 DEPLOY_TOKEN=${DEPLOY_TOKEN:?DEPLOY_TOKEN is required}
 

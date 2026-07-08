@@ -63,6 +63,9 @@ foreach ([
     'storage/framework/cache/data', 'storage/framework/sessions',
     'storage/framework/views', 'storage/framework/testing',
     'storage/logs', 'bootstrap/cache',
+    // With PUBLIC_DISK_IN_DOCROOT=true the public disk serves from here (no
+    // symlink), so it must exist and be writable.
+    'public/storage',
 ] as $dir) {
     @mkdir($appRoot.'/'.$dir, 0775, true);
 }
@@ -100,7 +103,8 @@ $run = function (string $command, array $params = [], bool $fatal = true) use ($
 };
 
 $run('migrate', ['--force' => true]);      // fatal: bad DB config must fail the deploy
-$run('storage:link', [], false);           // non-fatal: link may exist or symlink() be restricted
+// No storage:link: this host disables symlink()/exec(); the public disk serves
+// from the real public/storage folder (PUBLIC_DISK_IN_DOCROOT) created above.
 $run('config:cache');
 $run('route:cache');
 $run('view:cache');

@@ -252,7 +252,9 @@ prerequisites, GitHub environments, secrets/variables — is in
 2. `composer install --no-dev --optimize-autoloader`.
 3. Configure `.env` for MySQL; `APP_DEBUG=false`; `php artisan key:generate` if needed.
 4. `php artisan migrate --force`.
-5. `php artisan storage:link` (or replicate the symlink) for uploaded images.
+5. `php artisan storage:link` for uploaded images — or, on hosts that disable
+   `symlink()`/`exec()`, set `PUBLIC_DISK_IN_DOCROOT=true` so the `public` disk
+   serves from a real `public/storage` folder (no symlink needed).
 6. Apply the theme: `php artisan app:apply-theme solarsystem`.
 
 No `npm`/Vite step is required or expected.

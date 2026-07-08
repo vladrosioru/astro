@@ -40,7 +40,14 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            // On shared hosts that disable symlink()/exec(), `storage:link` can't
+            // create public/storage. Setting PUBLIC_DISK_IN_DOCROOT=true makes
+            // this disk write to a real public/storage folder (served directly),
+            // removing the symlink requirement. Defaults to the standard path so
+            // local dev/tests are unchanged.
+            'root' => env('PUBLIC_DISK_IN_DOCROOT', false)
+                ? public_path('storage')
+                : storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,
