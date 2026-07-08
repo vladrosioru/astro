@@ -3,10 +3,18 @@
 This site deploys to shared cPanel hosting via GitHub Actions. The host offers
 **no SSH** — only File Manager / FTP — so the pipeline:
 
-1. builds the production app in CI (`composer install --no-dev`),
-2. uploads it over **FTPS** ([`SamKirkland/FTP-Deploy-Action`]),
-3. runs the post-deploy `artisan` steps by calling a token-guarded web hook,
-   [`public/deploy.php`](../public/deploy.php) (migrate, cache, storage:link).
+1. builds the production app in CI (`composer install --no-dev`) into a single
+   `app.zip` ([`.github/scripts/make-archive.php`](../.github/scripts/make-archive.php)),
+2. uploads three files over **FTPS** with `curl` — `app.zip`, the generated
+   `.env`, and a bootstrap [`public/extract.php`](../public/extract.php) —
+   instead of syncing thousands of `vendor/` files individually (much faster),
+3. calls token-guarded web hooks: `extract.php` unzips `app.zip` server-side,
+   then [`public/deploy.php`](../public/deploy.php) runs `artisan`
+   (migrate, cache, `storage:link`).
+
+The server `.env` and `storage/` are never in the archive, so they survive
+every deploy. Extraction overlays files (it does not delete files removed from
+the repo).
 
 The workflow is [`.github/workflows/cicd.yml`](../.github/workflows/cicd.yml).
 It is a single-branch cascade off `master`:
@@ -69,10 +77,9 @@ Set these on **each** environment (dev values on `dev`, prod values on
 
 | Name | Kind | Example / notes |
 |---|---|---|
-| `FTP_HOST` | secret | `server20.romania-webhosting.com` |
-| `FTP_USERNAME` | secret | cPanel or FTP-account user |
+| `FTP_HOST` | secret | e.g. `ftp.martinism.ro` (cPanel → FTP Accounts → *Configure FTP Client*) |
+| `FTP_USERNAME` | secret | a **dedicated FTP account scoped to the app dir** (e.g. `deploy_dev@astrotherapia.com`) |
 | `FTP_PASSWORD` | secret | that account's password |
-| `FTP_SERVER_DIR` | variable | app dir, home-relative, trailing slash — `astrotherapia_prod/` |
 | `APP_URL` | variable | `https://astrotherapia.com` (prod) / `https://dev.astrotherapia.com` (dev) |
 | `APP_DEBUG` | variable | `false` on prod, `true` on dev |
 | `APP_KEY` | secret | `base64:...` from `php artisan key:generate --show` (one per env) |
@@ -97,10 +104,10 @@ scans, builds one artifact, deploys it to dev, smoke-tests dev, then **waits
 for your approval** on the `production` environment before deploying the same
 artifact to prod and smoke-testing it.
 
-- **First run is slow.** The initial FTPS upload pushes all of `vendor/`
-  (thousands of files). Later runs are incremental — the action keeps a
-  per-environment state file (`.ftp-deploy-dev.json` / `.ftp-deploy-prod.json`)
-  on the server and only sends changed files.
+- **Every deploy uploads one `app.zip`** (~30 MB, a single FTPS transfer of a
+  minute or two) plus the small `.env` and `extract.php`. `extract.php` unzips
+  it on the server. No per-file syncing — deploy time is roughly constant
+  regardless of how much of `vendor/` changed.
 - **Migrations run every deploy** (`migrate --force`, additive). Content is
   entered through the admin panel on the live site.
 
@@ -115,13 +122,15 @@ the docroot in `config/filesystems.php`.
 
 ## Security notes
 
-- Transfer is **FTPS** (encrypted). Plain FTP would send credentials and
-  `.env` in the clear — do not switch `protocol` to `ftp`.
+- Transfer is **FTPS** (`curl --ssl-reqd`, encrypted). Never drop to plain FTP —
+  it would send the FTP credentials and `.env` in the clear.
 - `.env` is generated in CI and is **git-ignored** (`.env`, `.env.*`); it is
-  never committed and never placed in `public/`.
-- `public/deploy.php` requires the `DEPLOY_TOKEN` in the `X-Deploy-Token`
-  header (`hash_equals`). With no valid token it returns 403 and does nothing;
-  it is safe to leave deployed.
+  never committed, and it is uploaded to the app root (above `public/`), not
+  into the web-served docroot.
+- Both `public/extract.php` and `public/deploy.php` require the `DEPLOY_TOKEN`
+  in the `X-Deploy-Token` header (`hash_equals`). With no valid token they
+  return 403 and do nothing; safe to leave deployed. `extract.php` only ever
+  unzips the CI-built `app.zip`.
 - Keep the app directory **outside** `public_html` so source/`.env` is never
   web-served.
 

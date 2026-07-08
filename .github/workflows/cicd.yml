@@ -81,30 +81,20 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
-          extensions: mbstring, gd, curl, fileinfo, intl, bcmath
+          extensions: mbstring, gd, zip, curl, fileinfo, intl, bcmath
           coverage: none
       - uses: ramsey/composer-install@v3
         with:
           composer-options: "--no-dev --optimize-autoloader"
-      - name: Create release tarball
-        # Write outside the working tree so tar never archives its own growing
-        # output (avoids "file changed as we read it", tar exit 1).
-        run: |
-          tar -czf "$RUNNER_TEMP/app-build.tar.gz" \
-            --exclude='./.git' \
-            --exclude='./.github' \
-            --exclude='./tests' \
-            --exclude='./node_modules' \
-            --exclude='./storage' \
-            --exclude='./deploy_VPS.yml' \
-            --exclude='./database/database.sqlite' \
-            --exclude='./.env' \
-            --exclude='./.env.*' \
-            .
+      - name: Create release archive
+        # One zip, built outside the working tree. Uploaded as a single file
+        # over FTPS and unzipped server-side by public/extract.php — far faster
+        # than syncing thousands of vendor/ files individually.
+        run: php .github/scripts/make-archive.php "$RUNNER_TEMP/app.zip"
       - uses: actions/upload-artifact@v4
         with:
           name: app-build
-          path: ${{ runner.temp }}/app-build.tar.gz
+          path: ${{ runner.temp }}/app.zip
           retention-days: 5
 
   # 5. Deploy to Dev (dev.<domain>, HTTPS). Secrets/vars from the `dev` env.
@@ -116,12 +106,10 @@ jobs:
     outputs:
       url: ${{ vars.APP_URL }}
     steps:
-      - uses: actions/checkout@v4   # for .github/scripts/make-env.sh
+      - uses: actions/checkout@v4   # for make-env.sh + public/extract.php
       - uses: actions/download-artifact@v4
         with:
-          name: app-build
-      - name: Extract build
-        run: mkdir release && tar -xzf app-build.tar.gz -C release
+          name: app-build          # -> app.zip in the workspace
       - name: Generate .env
         env:
           APP_URL: ${{ vars.APP_URL }}
@@ -137,26 +125,29 @@ jobs:
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS }}
-        run: bash .github/scripts/make-env.sh > release/.env
-      - name: Deploy to Dev via FTPS
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          local-dir: ./release/
-          server-dir: ${{ vars.FTP_SERVER_DIR }}
-          state-name: .ftp-deploy-dev.json
-      - name: Post-deploy hook (migrate + cache + storage:link)
+        run: bash .github/scripts/make-env.sh > "$RUNNER_TEMP/app.env"
+      - name: Upload over FTPS (env + bootstrap extractor + one archive)
+        # Explicit FTPS (--ssl-reqd). The FTP account is scoped to the app dir,
+        # so paths are relative to it: .env and app.zip sit at the app root
+        # (above the public/ docroot); extract.php goes into public/.
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          up() { curl -sS --ssl-reqd --ftp-create-dirs -T "$1" "ftp://${FTP_HOST}/$2" --user "${FTP_USER}:${FTP_PASS}"; }
+          up "$RUNNER_TEMP/app.env" ".env"
+          up "public/extract.php"   "public/extract.php"
+          up "app.zip"              "app.zip"
+      - name: Extract on server, then migrate + cache + storage:link
         env:
           APP_URL: ${{ vars.APP_URL }}
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: |
+          curl -fsS --retry 3 --retry-delay 10 --max-time 600 \
+            -H "X-Deploy-Token: ${DEPLOY_TOKEN}" "${APP_URL}/extract.php"
           curl -fsS --retry 5 --retry-delay 15 --max-time 300 \
-            -H "X-Deploy-Token: ${DEPLOY_TOKEN}" \
-            "${APP_URL}/deploy.php"
+            -H "X-Deploy-Token: ${DEPLOY_TOKEN}" "${APP_URL}/deploy.php"
 
   # 6. Smoke test Dev
   test_dev:
@@ -194,12 +185,10 @@ jobs:
     outputs:
       url: ${{ vars.APP_URL }}
     steps:
-      - uses: actions/checkout@v4   # for .github/scripts/make-env.sh
+      - uses: actions/checkout@v4   # for make-env.sh + public/extract.php
       - uses: actions/download-artifact@v4
         with:
-          name: app-build
-      - name: Extract build
-        run: mkdir release && tar -xzf app-build.tar.gz -C release
+          name: app-build          # -> app.zip in the workspace
       - name: Generate .env
         env:
           APP_URL: ${{ vars.APP_URL }}
@@ -215,26 +204,26 @@ jobs:
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS }}
-        run: bash .github/scripts/make-env.sh > release/.env
-      - name: Deploy to Prod via FTPS
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          local-dir: ./release/
-          server-dir: ${{ vars.FTP_SERVER_DIR }}
-          state-name: .ftp-deploy-prod.json
-      - name: Post-deploy hook (migrate + cache + storage:link)
+        run: bash .github/scripts/make-env.sh > "$RUNNER_TEMP/app.env"
+      - name: Upload over FTPS (env + bootstrap extractor + one archive)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          up() { curl -sS --ssl-reqd --ftp-create-dirs -T "$1" "ftp://${FTP_HOST}/$2" --user "${FTP_USER}:${FTP_PASS}"; }
+          up "$RUNNER_TEMP/app.env" ".env"
+          up "public/extract.php"   "public/extract.php"
+          up "app.zip"              "app.zip"
+      - name: Extract on server, then migrate + cache + storage:link
         env:
           APP_URL: ${{ vars.APP_URL }}
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: |
+          curl -fsS --retry 3 --retry-delay 10 --max-time 600 \
+            -H "X-Deploy-Token: ${DEPLOY_TOKEN}" "${APP_URL}/extract.php"
           curl -fsS --retry 5 --retry-delay 15 --max-time 300 \
-            -H "X-Deploy-Token: ${DEPLOY_TOKEN}" \
-            "${APP_URL}/deploy.php"
+            -H "X-Deploy-Token: ${DEPLOY_TOKEN}" "${APP_URL}/deploy.php"
 
   # 8. Smoke test Production
   test_prd:
