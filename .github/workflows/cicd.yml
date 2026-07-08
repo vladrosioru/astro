@@ -55,14 +55,13 @@ jobs:
       - name: Run tests
         run: php artisan test
 
-  # 3. Dependency security scan.
-  # Non-blocking: this project's advisory DB flags current Laravel 11.x for
-  # debug-only XSS (fixed in 12). Prod runs APP_DEBUG=false, so advisories are
-  # surfaced as warnings rather than failing the pipeline.
+  # 3. Dependency security scan (blocking gate on production dependencies).
+  # If a new advisory lands, this fails the pipeline: upgrade the package, or
+  # if you must accept it, add its advisory ID to composer.json `config.audit.ignore`
+  # with a written reason.
   security:
     needs: lint
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2

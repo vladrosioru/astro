@@ -1,6 +1,6 @@
 # Reusable Site Template
 
-A reusable, multilingual marketing-site + blog template built on **Laravel 11**, designed to deploy to **cPanel shared hosting** with **no Node build step**. Theming is driven entirely by a CSS **design-token contract**, so the whole look can be re-skinned (or swapped per client) without touching markup.
+A reusable, multilingual marketing-site + blog template built on **Laravel 12**, designed to deploy to **cPanel shared hosting** with **no Node build step**. Theming is driven entirely by a CSS **design-token contract**, so the whole look can be re-skinned (or swapped per client) without touching markup.
 
 ---
 
@@ -8,7 +8,7 @@ A reusable, multilingual marketing-site + blog template built on **Laravel 11**,
 
 | Area | Choice |
 |---|---|
-| Framework | Laravel 11 (PHP 8.2+; developed on 8.3) |
+| Framework | Laravel 12 (PHP 8.2+; developed on 8.3) |
 | Database | MySQL in production; SQLite for local dev & tests |
 | Front-end build | **None** — plain CSS + vanilla JS served from `public/`. No Vite/Tailwind/npm. |
 | Rich text | CKEditor 5 (self-hosted GPL build) + HTMLPurifier sanitisation |
