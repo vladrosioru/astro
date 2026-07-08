@@ -37,11 +37,15 @@ class SkinCssTest extends TestCase
         $this->assertStringContainsString('var(--color-heading)', $css);
     }
 
-    public function test_skin_defines_home_nav_overlay(): void
+    public function test_skin_defines_transparent_nav_ribbon(): void
     {
         $css = file_get_contents(public_path('themes/theme_solarsystem/css/skin.css'));
 
-        $this->assertStringContainsString('.page-home nav', $css);
+        // The nav is a translucent ribbon scoped to `body > nav` (this replaced
+        // the earlier home-only `.page-home nav` overlay in the nav restructure).
+        // It must overlay the page with a semi-transparent background.
+        $this->assertStringContainsString('body > nav', $css);
+        $this->assertMatchesRegularExpression('/body > nav\s*\{[^}]*transparent/', $css);
     }
 
     public function test_skin_defines_blog_card_grid(): void
