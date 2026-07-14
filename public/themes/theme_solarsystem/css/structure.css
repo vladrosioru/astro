@@ -48,6 +48,11 @@ body > nav .nav-scrim { display: none; }
    visible on phone, where hover has no meaning and tapping drives the
    accordion instead. */
 body > nav .nav-dropdown { position: relative; display: flex; align-items: center; }
+/* `display: contents` on desktop: the wrapper adds no box of its own, so `<a>`
+   and the toggle/caret keep acting as if they were `.nav-dropdown`'s direct
+   flex children (unchanged desktop layout). Phone overrides this to a real,
+   positioned box — see the phone media query below. */
+body > nav .nav-dropdown-head { display: contents; }
 .nav-dropdown-toggle-input { position: absolute; width: 1px; height: 1px; margin: -1px; opacity: 0; }
 body > nav .nav-dropdown-btn { display: none; }
 /* No margin-top gap between the link and the menu: the menu's box (including
@@ -250,14 +255,28 @@ body > nav .nav-dropdown-menu {
        submenu's `flex-basis: 100%` pushes it onto its own centered row below
        "Services" + caret, rather than overlaying the panel like the desktop
        dropdown does. */
+    /* The caret is taken out of flow (absolute) so it doesn't add its own
+       width to the centering calculation below — otherwise "Services" sits
+       off-center compared to the other (plain-text) menu items, shifted left
+       by roughly half the caret's width. It's anchored to `.nav-dropdown-head`
+       (the label-only wrapper), not `.nav-dropdown` itself — `.nav-dropdown`
+       grows wide once the submenu opens (its links are wider than "Services"
+       and share the row via flex-wrap), and anchoring to that growing box
+       pushed the caret off the right edge of the screen once expanded. The
+       head wrapper's own width is just the label text, so it — and the caret
+       pinned to it — stay put regardless of whether the submenu is open. */
     body > nav .nav-dropdown { flex-wrap: wrap; justify-content: center; }
+    body > nav .nav-dropdown-head { display: inline-flex; align-items: center; position: relative; }
     body > nav .nav-dropdown-btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         width: 2.2rem;
         height: 2.2rem;
-        margin-left: calc(var(--space-unit) * 1);
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
         cursor: pointer;
     }
     body > nav .nav-dropdown-menu {

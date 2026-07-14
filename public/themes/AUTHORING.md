@@ -136,9 +136,11 @@ nested inside it — this lets CSS restyle `<nav>` itself from the checkbox's
   <ul class="nav-right">
     <li><a>…</a></li>
     <li class="nav-dropdown">
-      <a>Services</a>
+      <span class="nav-dropdown-head">
+        <a>Services</a>
+        <label for="services-toggle" class="nav-dropdown-btn"></label>
+      </span>
       <input type="checkbox" id="services-toggle" class="nav-dropdown-toggle-input">
-      <label for="services-toggle" class="nav-dropdown-btn"></label>
       <ul class="nav-dropdown-menu"> <li><a>…</a></li> … </ul>
     </li>
   </ul>
@@ -153,7 +155,8 @@ nested inside it — this lets CSS restyle `<nav>` itself from the checkbox's
 | `nav .container` | flex row holding the two link groups + centered brand |
 | `nav ul`, `nav .nav-left`, `nav .nav-right` | the two equal-width link groups flanking the brand |
 | `nav .nav-dropdown` | a `nav-right` item (currently Services) that also carries a submenu. `position: relative`; desktop shows `.nav-dropdown-menu` on `:hover`/`:focus-within`. The parent link (`nav .nav-dropdown > a`) stays a normal, independently clickable link — the dropdown is an additional affordance, not a replacement for it. |
-| `#services-toggle` / `.nav-dropdown-toggle-input` | same always-hidden-but-focusable checkbox trick as `.nav-toggle-input`, scoped to one `.nav-dropdown`. Inert on desktop (nothing reacts to `:checked` there); on phone it's what the caret button toggles. |
+| `nav .nav-dropdown-head` | wraps just the label `<a>` + caret `<label>` (not the menu). Desktop: `display: contents` — adds no box, so the two act as `.nav-dropdown`'s direct flex children exactly as before this wrapper existed. Phone: a real `position: relative` box sized to the label text only, so the caret (absolutely positioned off it, not off `.nav-dropdown`) stays pinned next to "Services" and on-screen — anchoring to `.nav-dropdown` itself instead breaks once the submenu opens, since that box grows to fit the (wider) submenu links and drags an edge-anchored caret off-screen with it. |
+| `#services-toggle` / `.nav-dropdown-toggle-input` | same always-hidden-but-focusable checkbox trick as `.nav-toggle-input`, scoped to one `.nav-dropdown`. A direct child of `.nav-dropdown` (sibling of `.nav-dropdown-menu`, *not* nested inside `.nav-dropdown-head`) — the `.nav-dropdown-toggle-input:checked ~ .nav-dropdown-menu` reveal rule is a sibling combinator and needs them sharing the same parent. Inert on desktop (nothing reacts to `:checked` there); on phone it's what the caret button toggles. |
 | `nav .nav-dropdown-btn` | the caret/expand control for the submenu — `display: none` on desktop (hover already reveals the menu there), shown only under the phone breakpoint since touch has no hover state. Style it (e.g. a rotating `▾` glyph) and flip it via `.nav-dropdown-toggle-input:checked ~ .nav-dropdown-btn`. |
 | `nav .nav-dropdown-menu` | the submenu itself — `display: none` by default. Desktop (`min-width: 721px`): an absolutely positioned panel (`top: 100%`, `margin: 0` — no gap) shown via the parent's `:hover`/`:focus-within` (or the menu's own `:hover`, so the cursor can rest on it). Use `padding-top` (not `margin-top`) to put visual space between the link and the menu's text — `margin` sits outside the box and isn't hoverable, so it creates a dead strip the cursor can wander into while moving from the link down to the menu, breaking `:hover` before it arrives; `padding` is part of the box, so that same strip stays hoverable and keeps the menu open through the transit. Reveal should also use `opacity`/`visibility`/`pointer-events` (not `display`, which can't be transition-delayed) with a close-side `transition-delay` (shipped themes use 1s) as a second line of defense for pointer paths the zero-gap trick doesn't cover (e.g. moving off through the sides). Put the delay on the `opacity` transition too, not just `visibility`/`pointer-events` — otherwise the menu fades to invisible on its normal (short) duration immediately, while remaining merely *technically* "visible" underneath, which looks and feels identical to no delay at all. Phone (`max-width: 720px`): laid out in normal flow (`position: static`, full width) so it pushes the stacked panel down instead of overlaying it, shown purely via `.nav-dropdown-toggle-input:checked ~ .nav-dropdown-menu` — do **not** also let hover/focus-within reveal it at this width, or the two triggers fight and the accordion flickers/collapses. Its `<a>` items inherit the generic `nav a` styling. |
 | `nav .nav-brand` | centered column that stacks the logo over the eyebrow wordmark |

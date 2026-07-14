@@ -42,9 +42,16 @@
                      main hamburger toggle (input precedes the elements it controls so a
                      `~` sibling combinator can reach them without :has()). --}}
                 <li class="nav-dropdown">
-                    <a href="/{{ $locale }}/services">Services</a>
+                    {{-- Wraps just the label + caret (not the menu) so the caret can be
+                         pinned to the label's own width on phone — see structure.css.
+                         The checkbox stays a direct sibling of the menu (not nested in
+                         the wrapper) since the `~` sibling combinator below needs them
+                         sharing the same parent to reach the menu on :checked. --}}
+                    <span class="nav-dropdown-head">
+                        <a href="/{{ $locale }}/services">Services</a>
+                        <label for="services-toggle" class="nav-dropdown-btn" aria-label="Toggle Services submenu"></label>
+                    </span>
                     <input type="checkbox" id="services-toggle" class="nav-dropdown-toggle-input">
-                    <label for="services-toggle" class="nav-dropdown-btn" aria-label="Toggle Services submenu"></label>
                     <ul class="nav-dropdown-menu">
                         <li><a href="/{{ $locale }}/services#natal-chart-analysis">Natal Chart Analysis</a></li>
                         <li><a href="/{{ $locale }}/services#relationship-analysis">Relationship Analysis</a></li>
