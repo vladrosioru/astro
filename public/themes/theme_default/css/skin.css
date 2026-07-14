@@ -58,6 +58,12 @@ body > nav .nav-dropdown-btn::after { content: '\25be'; color: var(--color-muted
     }
 }
 
+/* Phone readability: hero lede paragraph +60% (see structure.css for the
+   matching bump on other phone-copy elements). */
+@media (max-width: 720px) {
+    .stage .lede { font-size: 1.92rem; }
+}
+
 /* Home hero. */
 .stage .title { font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1.05; max-width: 18em; margin: 0 auto; }
 .stage .lede { color: var(--color-muted); font-size: 1.2rem; max-width: 32rem; margin: calc(var(--space-unit) * 4) auto 0; }

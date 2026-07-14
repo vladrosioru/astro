@@ -566,3 +566,15 @@
     .about-testi__arrow--prev { left: -0.5rem; }
     .about-testi__arrow--next { right: -0.5rem; }
 }
+
+/* Phone readability: body-copy paragraphs +60% over their desktop size
+   (titles/eyebrows/buttons/meta labels are left as-is). */
+@media (max-width: 720px) {
+    .about-lede { font-size: 1.73rem; }
+    .about-hero__sub { font-size: 1.84rem; }
+    .about-split__body p { font-size: 1.68rem; }
+    .about-manifesto__body p { font-size: 1.68rem; }
+    .about-faq__a p { font-size: 1.6rem; }
+    .about-horo__text { font-size: 1.6rem; }
+    .about-testi__quote { font-size: 1.84rem; }
+}

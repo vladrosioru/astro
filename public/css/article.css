@@ -126,3 +126,8 @@
   color: var(--color-heading);
 }
 .article-adjacent__link:hover .article-adjacent__title { color: var(--color-primary); }
+
+/* Phone readability: article body copy +60% over the inherited base size. */
+@media (max-width: 720px) {
+  .article-paper .ck-content { font-size: 1.6rem; }
+}

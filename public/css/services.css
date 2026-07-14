@@ -103,3 +103,8 @@
     .svc-grid { grid-template-columns: 1fr; }
     .svc-tabs { gap: calc(var(--space-unit) * 2); }
 }
+
+/* Phone readability: card description body copy +60% over its desktop size. */
+@media (max-width: 720px) {
+    .svc-card__desc { font-size: 1.47rem; }
+}

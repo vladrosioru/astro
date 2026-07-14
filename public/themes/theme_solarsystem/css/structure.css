@@ -166,6 +166,11 @@ body > nav .nav-dropdown-menu {
 /* Phone: only the brand (logo + eyebrow) stays visible, centered, with the
    two link groups collapsed behind a "≡" trigger on the right. */
 @media (max-width: 720px) {
+    /* Phone readability: body-copy paragraph text reads too small at the
+       desktop-derived sizes below, so it's bumped +60% here (mirrored across
+       every phone-copy element in the other theme/page CSS files). */
+    .card__excerpt { font-size: 1.6rem; }
+
     body > nav .nav-logo img { height: 1.9rem; }
     /* Phone: the wordmark just sits centered under the logo at its natural
        width (no under-the-links overflow, since the links are hidden here). */

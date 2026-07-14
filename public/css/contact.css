@@ -231,3 +231,9 @@
 @media (max-width: 900px) {
     .contact-grid { grid-template-columns: 1fr; gap: calc(var(--space-unit) * 10); }
 }
+
+/* Phone readability: lede/subhead body copy +60% over their desktop size. */
+@media (max-width: 720px) {
+    .contact-lede { font-size: 1.68rem; }
+    .contact-hero__sub { font-size: 1.84rem; }
+}
