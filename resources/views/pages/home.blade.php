@@ -4,7 +4,7 @@
 @section('body_class', 'page-home')
 
 @push('head')
-    <link rel="stylesheet" href="{{ asset('css/about.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('css/about.css') }}">
     <script src="{{ asset('js/about.js') }}" defer></script>
 @endpush
 

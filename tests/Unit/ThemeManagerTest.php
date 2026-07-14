@@ -33,8 +33,8 @@ class ThemeManagerTest extends TestCase
     public function test_css_urls_are_ordered_theme_urls(): void
     {
         $urls = (new ThemeManager)->cssUrls();
-        $this->assertSame('http://localhost/themes/theme_solarsystem/css/fonts.css', $urls[0]);
-        $this->assertStringEndsWith('/themes/theme_solarsystem/css/hero.css', end($urls));
+        $this->assertStringStartsWith('http://localhost/themes/theme_solarsystem/css/fonts.css?v=', $urls[0]);
+        $this->assertMatchesRegularExpression('#/themes/theme_solarsystem/css/hero\.css\?v=\d+$#', end($urls));
     }
 
     public function test_missing_theme_folder_falls_back_to_default_pointer(): void

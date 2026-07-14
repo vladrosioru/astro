@@ -10,7 +10,7 @@
 
 @push('head')
     <link rel="stylesheet" href="{{ asset('vendor/ckeditor/ckeditor5.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/article.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('css/article.css') }}">
     <script src="{{ asset('js/article-share.js') }}" defer></script>
 
     @if ($ogDescription)

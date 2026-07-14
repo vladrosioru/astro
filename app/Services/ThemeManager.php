@@ -62,11 +62,11 @@ class ThemeManager
         return array_merge($defaults, array_filter($themeValues, fn ($v) => $v !== null), $branding);
     }
 
-    /** @return array<string> ordered absolute CSS URLs */
+    /** @return array<string> ordered absolute CSS URLs, cache-busted by mtime */
     public function cssUrls(): array
     {
         return array_map(
-            fn ($rel) => asset($this->rel($rel)),
+            fn ($rel) => versioned_asset($this->rel($rel)),
             $this->manifest()['assets']['css'] ?? []
         );
     }

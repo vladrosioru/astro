@@ -21,6 +21,6 @@ class HeroSolarsystemCssTest extends TestCase
     public function test_active_theme_manifest_loads_stage_stylesheet(): void
     {
         $css = app('theme.manager')->cssUrls();
-        $this->assertNotEmpty(array_filter($css, fn ($u) => str_ends_with($u, '/css/hero.css')));
+        $this->assertNotEmpty(array_filter($css, fn ($u) => str_contains($u, '/css/hero.css?v=')));
     }
 }

@@ -3,7 +3,7 @@
 @section('title', 'Contact — ' . config('app.name'))
 
 @push('head')
-    <link rel="stylesheet" href="{{ asset('css/contact.css') }}">
+    <link rel="stylesheet" href="{{ versioned_asset('css/contact.css') }}">
 @endpush
 
 @section('content')
