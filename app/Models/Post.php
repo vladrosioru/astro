@@ -10,7 +10,10 @@ class Post extends Model
 {
     protected $guarded = [];
 
-    protected $casts = ['published_at' => 'datetime'];
+    protected $casts = [
+        'published_at' => 'datetime',
+        'first_published_at' => 'datetime',
+    ];
 
     public function translations(): HasMany
     {

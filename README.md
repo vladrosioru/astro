@@ -73,7 +73,7 @@ Middleware aliases are registered in [`bootstrap/app.php`](bootstrap/app.php):
   - `branding` — optional **per-install token overrides** layered on top of the active theme (usually empty; see Theming).
   - `theme` — the active theme pointer (a `theme_<name>` folder under `public/themes/`; defaults to `solarsystem`).
   - `hero` — Home hero content (`headline`, `subhead`, `cta_label`, `cta_url`, `eyebrow`, `cta2_label`, `cta2_url`), defaulted by `heroDefaults()`. `eyebrow` is the ASTROTHERAPIA wordmark, now rendered by the nav under the logo (see Nav) rather than inside the hero.
-- **`Post`** + **`PostTranslation`** — a post has one translation per locale (title, slug, excerpt, body, seo_title). Blog reads the translation for the active locale.
+- **`Post`** + **`PostTranslation`** — a post has one translation per locale (title, slug, excerpt, body, seo_title). Blog reads the translation for the active locale. A translation's `slug` is auto-derived from its title (`PostTranslation::uniqueSlug()`, unique per locale, `-###` suffix on collision) and is never editable in the admin form; it's immutable once saved, with one exception — an admin "regenerate from title" checkbox is available only while the post has never been published (`Post.first_published_at` is null). Once a post has ever gone live, its slugs lock permanently, even if it's later unpublished, so published URLs never break.
 - **`User`** — `is_admin` boolean gates the admin area.
 
 ---

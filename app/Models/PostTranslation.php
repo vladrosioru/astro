@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class PostTranslation extends Model
 {
@@ -12,6 +13,25 @@ class PostTranslation extends Model
     public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class);
+    }
+
+    // Slugs are unique per locale (matching the `unique(['locale', 'slug'])`
+    // DB index and the /{locale}/journal/{slug} routing), not globally.
+    public static function uniqueSlug(string $title, string $locale, ?int $ignoreId = null): string
+    {
+        $base = Str::slug($title) ?: 'post';
+        $slug = $base;
+
+        while (
+            static::where('locale', $locale)
+                ->where('slug', $slug)
+                ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $slug = $base.'-'.random_int(100, 999);
+        }
+
+        return $slug;
     }
 
     /**

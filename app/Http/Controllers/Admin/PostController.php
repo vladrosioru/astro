@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Models\Post;
+use App\Models\PostTranslation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -62,6 +63,10 @@ class PostController extends Controller
             // published post doesn't reorder it in date-sorted listings;
             // only stamp "now" the first time it becomes published.
             'published_at' => $status === 'published' ? ($post?->published_at ?? now()) : null,
+            // Unlike published_at (which resets to null when unpublished),
+            // this is set once and never cleared again — it's the permanent
+            // "has this post ever gone live" flag that locks slug regeneration.
+            'first_published_at' => $post?->first_published_at ?? ($status === 'published' ? now() : null),
         ];
 
         $cardImage = $this->cardImageUrl($request);
@@ -117,16 +122,30 @@ class PostController extends Controller
 
     private function saveTranslations(Post $post, Request $request): void
     {
+        // Slugs are never trusted from the request: they're auto-derived
+        // from the title and, once a translation exists, kept untouched
+        // unless the caller both requests regeneration and the post has
+        // never been published (enforced here, not just hidden in the UI).
+        $canRegenerate = is_null($post->first_published_at) && $post->status !== 'published';
+
         foreach ($this->locales as $locale) {
             $title = $request->input("{$locale}_title");
             if (! $title) {
                 continue;
             }
+
+            $existing = $post->translations()->where('locale', $locale)->first();
+            $regenerate = $canRegenerate && $request->boolean("{$locale}_regenerate_slug");
+
+            $slug = ($existing && ! $regenerate)
+                ? $existing->slug
+                : PostTranslation::uniqueSlug($title, $locale, $existing?->id);
+
             $post->translations()->updateOrCreate(
                 ['locale' => $locale],
                 [
                     'title' => $title,
-                    'slug' => $request->input("{$locale}_slug"),
+                    'slug' => $slug,
                     'subtitle' => $request->input("{$locale}_subtitle"),
                     'body' => clean($request->input("{$locale}_body", ''), 'blog'),
                     'seo_title' => $request->input("{$locale}_seo_title"),

@@ -44,4 +44,50 @@ class AdminPostFormTest extends TestCase
             ->assertSee('src="/storage/media/pic.jpg"', false)
             ->assertSee('name="remove_card_image"', false);
     }
+
+    public function test_create_form_slug_field_is_not_editable(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $response = $this->actingAs($admin)->get('/admin/posts/create')->assertOk();
+
+        $response->assertDontSee('name="en_slug"', false);
+        $response->assertDontSee('name="ro_slug"', false);
+    }
+
+    public function test_edit_form_shows_regenerate_checkbox_while_never_published(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $post = Post::create(['status' => 'draft']);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Test', 'slug' => 'test']);
+
+        $this->actingAs($admin)->get(route('admin.posts.edit', $post))
+            ->assertOk()
+            ->assertSee('name="en_regenerate_slug"', false);
+    }
+
+    public function test_edit_form_hides_regenerate_checkbox_once_ever_published(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $post = Post::create(['status' => 'draft', 'first_published_at' => now()->subDay()]);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Test', 'slug' => 'test']);
+
+        $this->actingAs($admin)->get(route('admin.posts.edit', $post))
+            ->assertOk()
+            ->assertDontSee('name="en_regenerate_slug"', false);
+    }
+
+    public function test_edit_form_hides_regenerate_checkbox_for_a_currently_published_legacy_post_with_null_first_published_at(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        // Simulates a post published before `first_published_at` existed:
+        // status is published but the backfill column is still null.
+        $post = Post::create(['status' => 'published', 'published_at' => now()]);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Test', 'slug' => 'test']);
+
+        $this->actingAs($admin)->get(route('admin.posts.edit', $post))
+            ->assertOk()
+            ->assertDontSee('name="en_regenerate_slug"', false)
+            ->assertSee('Locked (this post has been published)');
+    }
 }
