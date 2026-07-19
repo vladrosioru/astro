@@ -131,7 +131,7 @@ class PublicPagesTest extends TestCase
 
         $response->assertOk()
             ->assertDontSee('Daily Horoscope')
-            ->assertDontSee("Child&#039;s Horoscope", false);
+            ->assertDontSee('Child&#039;s Horoscope', false);
 
         $this->assertSame(6, substr_count($content, 'data-svc-cat="astrology"'));
         $this->assertStringNotContainsString('svc-card__cat', $content);
