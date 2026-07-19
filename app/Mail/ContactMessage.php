@@ -14,7 +14,7 @@ class ContactMessage extends Mailable
 
     public function build(): self
     {
-        return $this->subject('New contact message — '.config('app.name'))
+        return $this->subject($this->data['subject'] ?: 'New contact message — '.config('app.name'))
             ->replyTo($this->data['email'], $this->data['name'])
             ->view('emails.contact');
     }

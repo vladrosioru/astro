@@ -164,7 +164,9 @@ Fonts are self-hosted WOFF2 **inside each theme package** (e.g. `public/themes/t
 
 ## CSS / asset layering
 
-`layouts/app.blade.php` loads, in order: inline `:root` tokens (`partials/tokens`, sourced from `ThemeManager::tokens()`) → the active theme's `assets.css` looped from the manifest (`ThemeManager::cssUrls()`, in declared order — typically `fonts.css` → `structure.css` → `cosmos.css` → `skin.css` → `hero.css`) → `@stack('head')`, then renders the theme's backdrop via `@includeIf('theme::cosmos')` and loops the manifest's `assets.js` (`ThemeManager::jsAssets()`, honouring each item's `defer`/`async`). Page-specific stylesheets are still pushed via `@push('head')` (the blog article loads `ckeditor5.css` + the app-level `public/css/article.css`). Within a theme, keep the **structure (layout) vs. skin (appearance)** split: positional rules in `structure.css`, anything visual in `skin.css` using tokens.
+`layouts/app.blade.php` loads, in order: inline `:root` tokens (`partials/tokens`, sourced from `ThemeManager::tokens()`) → the active theme's `assets.css` looped from the manifest (`ThemeManager::cssUrls()`, in declared order — typically `fonts.css` → `structure.css` → `cosmos.css` → `skin.css` → `hero.css`) → the app-level `public/css/back-to-top.css` (linked directly in the layout, not pushed, since it's needed on every page) → `@stack('head')`, then renders the theme's backdrop via `@includeIf('theme::cosmos')` and loops the manifest's `assets.js` (`ThemeManager::jsAssets()`, honouring each item's `defer`/`async`). Page-specific stylesheets are still pushed via `@push('head')` (the blog article loads `ckeditor5.css` + the app-level `public/css/article.css`). Within a theme, keep the **structure (layout) vs. skin (appearance)** split: positional rules in `structure.css`, anything visual in `skin.css` using tokens.
+
+The floating **"back to top"** button (`partials/back-to-top.blade.php`, included alongside the footer — public pages only) is another app-level, fully `var(--token)`-driven component like `article.css`: `public/css/back-to-top.css` styles it and `public/js/back-to-top.js` toggles its visibility on scroll and smooth-scrolls to top on click. No theme needs to touch either file for it to match its palette.
 
 ---
 
@@ -207,11 +209,13 @@ public/
     theme_solarsystem/   theme.json, css/, js/, fonts/, views/, .htaccess
     theme_default/        theme.json, css/, views/, .htaccess (light base)
   css/article.css        app-level blog "paper" (not themed)
+  css/back-to-top.css    app-level floating "back to top" button (not themed)
+  js/back-to-top.js      scroll-triggered show/hide + smooth-scroll for the back-to-top button
   vendor/ckeditor/       self-hosted CKEditor 5 (GPL "sh" build)
   fonts/                 retired mystik WOFF2 (pending repackage)
 resources/views/
   layouts/app.blade.php  master layout (loads theme assets from the manifest)
-  partials/              nav, footer (app-level, public pages only), tokens (:root emitter)
+  partials/              nav, footer, back-to-top (app-level, public pages only), tokens (:root emitter)
   pages/                 home (renders theme::hero), about, services, contact
   blog/                  index, show  (the Journal feature; served at /journal)
   admin/                 dashboard, login, posts/*, themes/index

@@ -28,6 +28,10 @@
    (already narrowed) hero-to-first-section seam — 36px/18px a side, giving
    a consistent 72px/36px gap throughout the page. */
 .page-home .about-section { padding: calc(var(--space-unit) * 9) 0; }
+/* About-only: match Home's tighter section rhythm (36px/18px a side). */
+.page-about .about-section { padding: calc(var(--space-unit) * 9) 0; }
+/* Services-only: same tighter section rhythm as Home/About. */
+.page-services .about-section { padding: calc(var(--space-unit) * 9) 0; }
 /* Alternating bands read as faint translucent panels floating on the cosmos. */
 .about-section--alt {
     background: color-mix(in srgb, var(--color-bg-alt) 60%, transparent);
@@ -123,6 +127,17 @@
     padding: calc(var(--space-unit) * 26) 0 calc(var(--space-unit) * 16);
     text-align: center;
 }
+/* Services-only: matches Contact's tighter hero band so the title sits much
+   higher on the page instead of About's tall default. */
+.page-services .about-hero {
+    padding: calc(var(--space-unit) * 8) 0 calc(var(--space-unit) * 3);
+}
+/* Services-only: trim the seam between the hero's lede paragraph and the
+   tab bar so it reads as a small aesthetic gap, not the section's full top
+   padding stacking on top of the hero's own bottom padding. */
+.page-services .about-hero + .about-section {
+    padding-top: calc(var(--space-unit) * 3);
+}
 .about-crumb {
     display: flex;
     justify-content: center;
@@ -197,10 +212,10 @@
 .about-chart-motif {
     display: flex;
     justify-content: center;
-    padding: calc(var(--space-unit) * 14) 0 calc(var(--space-unit) * 4);
+    padding: calc(var(--space-unit) * 5) 0;
 }
 .about-chart-motif__svg {
-    width: clamp(180px, 26vw, 240px);
+    width: clamp(90px, 13vw, 120px);
     height: auto;
     overflow: visible;
 }
@@ -222,7 +237,7 @@
     filter: drop-shadow(0 0 6px var(--color-primary));
 }
 /* Tighten the seam into the manifesto's own generous top padding. */
-.about-chart-motif + .about-section { padding-top: calc(var(--space-unit) * 6); }
+.about-chart-motif + .about-section { padding-top: calc(var(--space-unit) * 5); }
 
 /* --- Reading cards ----------------------------------------- */
 /* Two per page (the newest post is shown separately above, full-size, via
@@ -561,6 +576,7 @@
     .about-section { padding: calc(var(--space-unit) * 14) 0; }
     .stage + main .about-section:first-child { padding-top: calc(var(--space-unit) * 3); }
     .page-home .about-section { padding: calc(var(--space-unit) * 4.5) 0; }
+    .page-about .about-section { padding: calc(var(--space-unit) * 4.5) 0; }
     .about-cards { grid-template-columns: 1fr; }
     .about-zodiac { grid-template-columns: repeat(3, 1fr); }
     .about-testi__arrow--prev { left: -0.5rem; }

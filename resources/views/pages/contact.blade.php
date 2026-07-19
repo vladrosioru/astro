@@ -12,9 +12,6 @@
     {{-- Title band --------------------------------------------------------- --}}
     <header class="contact-hero">
         <div class="contact-shell">
-            <nav class="contact-crumb" aria-label="Breadcrumb">
-                <a href="about:blank">Home</a><span aria-hidden="true">›</span><span>Contact</span>
-            </nav>
             <h1 class="contact-hero__title">Contact</h1>
             <p class="contact-hero__sub">Questions about a reading, a session, or the site itself — send a note
                 and I'll get back to you.</p>
@@ -28,7 +25,7 @@
             <div class="contact-info">
                 <p class="contact-eyebrow">Get In Touch</p>
                 <h2 class="contact-h2">Reach Out</h2>
-                <p class="contact-lede">Prefer email or a quick message? Either works — or find me on social.</p>
+                <p class="contact-lede">Prefer e-mail or a quick message? Either works — or find us on social.</p>
 
                 <dl class="contact-details">
                     @if (!empty($contact['email']))
@@ -48,7 +45,7 @@
                 {{-- No physical address is published; Facebook/Instagram stand in for
                      it. Links are placeholders (about:blank) until real pages exist. --}}
                 <div class="contact-social">
-                    <a class="contact-social__link" href="about:blank" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+                    <a class="contact-social__link" href="https://www.facebook.com/astrotherapia.ro" aria-label="Facebook" target="_blank" rel="noopener noreferrer" data-fb-page="astrotherapia.ro">
                         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M13.5 21v-8.5h2.9l.4-3.4h-3.3V7c0-.9.3-1.6 1.7-1.6h1.8V2.3C16.7 2.2 15.6 2 14.3 2c-2.7 0-4.6 1.7-4.6 4.7v2.4H6.8v3.4h2.9V21h3.8z"/></svg>
                     </a>
                     <a class="contact-social__link" href="about:blank" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
@@ -61,7 +58,7 @@
                 @if (session('contact_status') === 'sent')
                     <p class="contact-alert contact-alert--success" role="status">Thanks — your message is on its
                         way. I'll reply as soon as I can.</p>
-                @endif
+                @else
                 @if ($errors->any())
                     <p class="contact-alert contact-alert--error" role="alert">{{ $errors->first() }}</p>
                 @endif
@@ -78,25 +75,33 @@
                         <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
                     </div>
 
-                    <div class="contact-field">
+                    <div class="contact-field @error('name') contact-field--invalid @enderror">
                         <label for="name">Name</label>
                         <input type="text" id="name" name="name" value="{{ old('name') }}" required maxlength="120">
+                        @error('name') <span class="contact-field__error">{{ $message }}</span> @enderror
                     </div>
-                    <div class="contact-field">
+                    <div class="contact-field @error('email') contact-field--invalid @enderror">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" value="{{ old('email') }}" required maxlength="190">
+                        @error('email') <span class="contact-field__error">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="contact-field">
+                        <label for="phone">Phone</label>
+                        <input type="tel" id="phone" name="phone" value="{{ old('phone') }}" maxlength="30">
                     </div>
                     <div class="contact-field">
                         <label for="subject">Subject</label>
                         <input type="text" id="subject" name="subject" value="{{ old('subject') }}" maxlength="150">
                     </div>
-                    <div class="contact-field">
+                    <div class="contact-field @error('message') contact-field--invalid @enderror">
                         <label for="message">Message</label>
                         <textarea id="message" name="message" rows="6" required maxlength="5000">{{ old('message') }}</textarea>
+                        @error('message') <span class="contact-field__error">{{ $message }}</span> @enderror
                     </div>
 
                     <button type="submit" class="contact-btn">Send Message</button>
                 </form>
+                @endif
             </div>
 
         </div>

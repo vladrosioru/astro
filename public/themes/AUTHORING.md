@@ -379,7 +379,7 @@ Declared under `theme.json` → `views` (with `"namespace": "theme"`):
 |---|---|---|
 | `hero` | `theme::hero` in `pages/home.blade.php` | **Home only.** Provide it for a Home hero. |
 | `cosmos` | `@includeIf('theme::cosmos')` in the layout | **Every page**, behind all content. Optional — a fixed full-viewport backdrop (see `theme_solarsystem`). Omit it for a flat background. |
-| `solar-motif` | `@includeIf('theme::solar-motif')` in `pages/about.blade.php` | **About only**, as a section divider. Optional — a compact, non-interactive reuse of the Home hero's motif with no title/copy (see `theme_solarsystem`). Omit it to leave that spot empty. |
+| `solar-motif` | not currently included by any core view | Optional — a compact, non-interactive reuse of the Home hero's motif with no title/copy (see `theme_solarsystem`). Previously used as a divider on `pages/about.blade.php`; that include was removed. Provide it if a theme wants to reuse the slot elsewhere via `@includeIf('theme::solar-motif')`. |
 
 > Reserved / not yet wired: the schema also accepts a `views.nav` slot and a
 > top-level `page_home_class`, but the app currently always renders the shared

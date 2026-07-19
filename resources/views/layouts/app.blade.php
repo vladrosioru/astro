@@ -8,6 +8,7 @@
     @foreach (app('theme.manager')->cssUrls() as $href)
         <link rel="stylesheet" href="{{ $href }}">
     @endforeach
+    <link rel="stylesheet" href="{{ versioned_asset('css/back-to-top.css') }}">
     @stack('head')
 </head>
 <body class="@yield('body_class')">
@@ -16,6 +17,7 @@
     @yield('content')
     @unless(request()->routeIs('admin.*'))
         @include('partials.footer')
+        @include('partials.back-to-top')
     @endunless
     @foreach (app('theme.manager')->jsAssets() as $js)
         <script src="{{ $js['url'] }}" @if($js['defer'])defer @endif @if($js['async'])async @endif></script>

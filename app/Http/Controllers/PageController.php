@@ -60,9 +60,14 @@ class PageController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:190'],
+            // The 'email' rule alone accepts addresses without a real TLD
+            // (e.g. "test@test"); the regex additionally requires one.
+            'email' => ['required', 'email', 'regex:/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/', 'max:190'],
+            'phone' => ['nullable', 'string', 'max:30'],
             'subject' => ['nullable', 'string', 'max:150'],
             'message' => ['required', 'string', 'max:5000'],
+        ], [
+            'email.regex' => 'The email field must be a valid email address.',
         ]);
 
         // Honeypot ('website') and a render-timestamp trap: both are invisible to
@@ -75,7 +80,7 @@ class PageController extends Controller
             return back()->with('contact_status', 'sent');
         }
 
-        Mail::to(config('mail.from.address'))->send(new ContactMessage($data));
+        Mail::to('office@astrotherapia.com')->send(new ContactMessage($data));
 
         return back()->with('contact_status', 'sent');
     }

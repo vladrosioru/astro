@@ -40,9 +40,14 @@
 }
 
 /* --- Service card grid --------------------------------------- */
+/* 3 columns, each sized as if the row still had 4 (card width stays what it
+   was before the column count changed), so cards keep their original
+   proportions. The row is then narrower than the shell and centered via
+   justify-content, never exceeding the shell width other sections use. */
 .svc-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, calc((100% - (var(--space-unit) * 21)) / 4));
+    justify-content: center;
     gap: calc(var(--space-unit) * 7);
 }
 .svc-card {

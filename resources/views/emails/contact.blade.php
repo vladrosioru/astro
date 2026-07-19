@@ -1,7 +1,11 @@
-<p><strong>Name:</strong> {{ $data['name'] }}</p>
-<p><strong>Email:</strong> {{ $data['email'] }}</p>
-@if (!empty($data['subject']))
-    <p><strong>Subject:</strong> {{ $data['subject'] }}</p>
+<p>
+Name: {{ $data['name'] }}<br>
+Email: {{ $data['email'] }}<br>
+@if (!empty($data['phone']))
+Phone: {{ $data['phone'] }}<br>
 @endif
-<p><strong>Message:</strong></p>
-<p>{{ $data['message'] }}</p>
+@if (!empty($data['subject']))
+Subject: {{ $data['subject'] }}<br>
+@endif
+Message: {{ $data['message'] }}
+</p>

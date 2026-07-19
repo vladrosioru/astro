@@ -44,7 +44,7 @@
 
 /* --- Title band ------------------------------------------------ */
 .contact-hero {
-    padding: calc(var(--space-unit) * 26) 0 calc(var(--space-unit) * 16);
+    padding: calc(var(--space-unit) * 8) 0 calc(var(--space-unit) * 12);
     text-align: center;
 }
 .contact-crumb {
@@ -176,6 +176,10 @@
 }
 
 .contact-field { display: flex; flex-direction: column; gap: 0.5rem; }
+.contact-field__error {
+    font-size: 0.82rem;
+    color: #ef4444;
+}
 .contact-field label {
     font-family: var(--font-display);
     font-size: 0.7rem;
@@ -201,6 +205,10 @@
     outline: none;
     border-color: var(--color-primary);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+.contact-field--invalid input,
+.contact-field--invalid textarea {
+    border-color: #ef4444;
 }
 
 .contact-btn {

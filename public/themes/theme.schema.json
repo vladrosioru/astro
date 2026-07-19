@@ -99,7 +99,7 @@
         "namespace": { "type": "string", "description": "Blade namespace for the theme's views. Must be 'theme'." },
         "hero": { "type": "string", "description": "View name (without .blade.php) for the Home hero, rendered as theme::hero on the Home page." },
         "cosmos": { "type": "string", "description": "View name for an optional site-wide backdrop, rendered as theme::cosmos behind every page. Omit for a flat background." },
-        "solar-motif": { "type": "string", "description": "View name for an optional compact, non-interactive reuse of the Home hero's motif (no title/copy), rendered as theme::solar-motif via @includeIf on pages/about.blade.php. Omit to leave that spot empty." },
+        "solar-motif": { "type": "string", "description": "View name for an optional compact, non-interactive reuse of the Home hero's motif (no title/copy), rendered as theme::solar-motif via @includeIf. Not currently included by any core view. Omit to leave that spot empty." },
         "nav": { "type": "string", "description": "RESERVED — not yet consumed. The layout always renders the shared resources/views/partials/nav.blade.php; this slot does not currently override it." }
       }
     }

@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Astrology — ' . config('app.name'))
+@section('body_class', 'page-about')
 
 @push('head')
     <link rel="stylesheet" href="{{ versioned_asset('css/about.css') }}">
@@ -35,12 +36,14 @@
     {{-- Top graphic — Option 1: mini natal-chart wheel (static SVG, token-driven). --}}
     <section class="about-chart-motif" aria-hidden="true">
         <svg class="about-chart-motif__svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            {{-- Cardinal square: Aries–Cancer–Libra–Capricorn --}}
-            <polygon class="about-chart-motif__aspect" points="120,52 188,120 120,188 52,120" />
             {{-- Fire trine: Aries–Leo–Sagittarius --}}
             <polygon class="about-chart-motif__aspect" points="120,52 179,154 61,154" />
+            {{-- Earth trine: Taurus–Virgo–Capricorn --}}
+            <polygon class="about-chart-motif__aspect" points="154,61 154,179 52,120" />
             {{-- Air trine: Gemini–Libra–Aquarius --}}
             <polygon class="about-chart-motif__aspect" points="179,86 120,188 61,86" />
+            {{-- Water trine: Cancer–Scorpio–Pisces --}}
+            <polygon class="about-chart-motif__aspect" points="188,120 86,179 86,61" />
 
             <circle class="about-chart-motif__ring about-chart-motif__ring--inner" cx="120" cy="120" r="68" />
             <circle class="about-chart-motif__ring about-chart-motif__ring--outer" cx="120" cy="120" r="100" />
@@ -127,16 +130,8 @@
                     that's usually a good sign it's time to have it out loud. Book a session, and let's
                     find out what your chart has been trying to tell you.</p>
             </div>
-            @if ($contactVisible)
-                <p class="about-manifesto__cta">
-                    <a class="about-btn about-btn--sm" href="/{{ $locale }}/contact">Book a Session</a>
-                </p>
-            @endif
         </div>
     </section>
-
-    {{-- Divider graphic — Option 3: compact reuse of the Home hero's solar-system motif. --}}
-    @includeIf('theme::solar-motif')
 
     {{-- Astrology intro: how a birth chart works + why it matters ----------- --}}
     <section class="about-section about-section--alt">
@@ -158,9 +153,6 @@
                     see the pattern clearly, you get to choose what to do with it.</p>
                 <p>That's the real change. Not a prediction. A clearer view of yourself — one you can
                     actually use.</p>
-                @if ($contactVisible)
-                    <a class="about-btn about-btn--sm" href="/{{ $locale }}/contact">Schedule Your Session</a>
-                @endif
             </div>
         </div>
     </section>
@@ -178,6 +170,11 @@
                     </details>
                 @endforeach
             </div>
+            @if ($contactVisible)
+                <p class="about-manifesto__cta">
+                    <a class="about-btn about-btn--sm" href="/{{ $locale }}/contact">Schedule Your Session</a>
+                </p>
+            @endif
         </div>
     </section>
 
