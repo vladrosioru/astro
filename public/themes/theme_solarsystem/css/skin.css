@@ -262,3 +262,23 @@ body > nav, h1, h2, h3 { user-select: none; -webkit-user-select: none; }
 h1, h2, h3 { cursor: default; }
 /* The nav logo is a link, but it's chrome — no drag/select on the image. */
 .nav-logo img { user-select: none; -webkit-user-select: none; -webkit-user-drag: none; }
+
+/* Site footer: darker-than-page band, gold hairline separates it. */
+body > .site-footer {
+    background: var(--color-footer-bg);
+    color: var(--color-footer-fg);
+    border-top: 1px solid var(--color-gold);
+}
+body > .site-footer .site-footer__quote { font-family: var(--font-heading); font-style: italic; }
+body > .site-footer a { color: var(--color-footer-fg); }
+body > .site-footer a:hover { color: var(--color-gold); }
+body > .site-footer .site-footer__social {
+    color: var(--color-primary);
+    border: 1px solid color-mix(in srgb, var(--color-footer-fg) 20%, transparent);
+    border-radius: 999px;
+    transition: background .2s ease, color .2s ease;
+}
+body > .site-footer .site-footer__social:hover {
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    color: var(--color-accent);
+}

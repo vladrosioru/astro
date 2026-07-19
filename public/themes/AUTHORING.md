@@ -180,6 +180,35 @@ colors/animation but should preserve this open/closed structure — and the
 "checkbox precedes `<nav>`" DOM order, which the `~` selectors depend on — so
 the pattern stays consistent and broadly browser-compatible across themes.
 
+### Site footer — `resources/views/partials/footer.blade.php`
+
+Shared site-wide (public pages only — the admin panel doesn't render it), a
+simple centered block below `@yield('content')`:
+
+```html
+<footer class="site-footer">
+  <div class="container">
+    <p class="site-footer__quote">"Every man and every woman is a Star"</p>
+    <p class="site-footer__copyright">AstroTherapia © 2024</p>
+    <p class="site-footer__contact"><a>Contact Us</a></p>
+    <a class="site-footer__social" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+      <svg>…</svg>
+    </a>
+  </div>
+</footer>
+```
+
+| Selector | Notes |
+|---|---|
+| `.site-footer` | the footer band — background/color (should read darker than the page body) plus a `border-top` using `--color-gold` as the hairline separating it from the page above |
+| `.site-footer .container` | centers and stacks the footer content (layout in `structure.css`) |
+| `.site-footer__quote`, `.site-footer__copyright`, `.site-footer__contact` | the three centered text lines |
+| `.site-footer__social` | the Facebook icon link — inline `currentColor` SVG, styled as a 2.25rem circular badge (border + border-radius in `skin.css`, sizing in `structure.css`) matching the share-icon badges on article pages (`.article-share a` in `public/css/article.css`); icon color uses `--color-primary` (hover `--color-accent`), not `--color-gold`, to match the article-share icons |
+
+`.site-footer__contact` is omitted entirely when the Contact section is
+disabled (`SiteSetting.sections.contact`), matching the nav's own Contact
+link visibility rule.
+
 ### Home hero — `views/hero.blade.php` (you author this)
 
 Read the hero copy from settings, then emit the conventional classes:

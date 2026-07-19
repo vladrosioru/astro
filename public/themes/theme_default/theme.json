@@ -20,7 +20,10 @@
     "shadow":          { "type": "shadow",     "role": "Card elevation",                        "value": "0 1px 3px rgba(0,0,0,0.1)" },
     "container-width": { "type": "length",     "role": "Max content width",                     "value": "64rem" },
     "nav-height":      { "type": "length",     "role": "Nav min height",                        "value": "4rem" },
-    "hero-overlay":    { "type": "color",      "role": "Journal/article hero scrim (unused — flat hero background)", "value": "rgba(0,0,0,0)" }
+    "hero-overlay":    { "type": "color",      "role": "Journal/article hero scrim (unused — flat hero background)", "value": "rgba(0,0,0,0)" },
+    "color-footer-bg": { "type": "color",      "role": "Footer background, darker than page background",  "value": "#14141a" },
+    "color-footer-fg": { "type": "color",      "role": "Footer text color",                                "value": "#e6e6ea" },
+    "color-gold":      { "type": "color",      "role": "Footer top hairline / brand gold accent",          "value": "#c9a227" }
   },
   "assets": {
     "css": ["css/structure.css", "css/skin.css"]

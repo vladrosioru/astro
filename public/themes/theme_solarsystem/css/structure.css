@@ -290,3 +290,23 @@ body > nav .nav-dropdown-menu {
     }
     .nav-dropdown-toggle-input:checked ~ .nav-dropdown-menu { display: flex !important; }
 }
+
+/* Site footer (layout only). Direct child of <body> — see layouts/app.blade.php. */
+body > .site-footer .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--space-unit) * 2);
+    padding-top: calc(var(--space-unit) * 8);
+    padding-bottom: calc(var(--space-unit) * 8);
+    text-align: center;
+    position: relative;
+}
+body > .site-footer p { margin: 0; }
+body > .site-footer .site-footer__social {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+}

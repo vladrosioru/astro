@@ -20,5 +20,8 @@ return [
         'container-width' => '64rem',
         'nav-height' => '4rem',
         'hero-overlay' => 'rgba(0,0,0,0)',
+        'color-footer-bg' => '#14141a',
+        'color-footer-fg' => '#e6e6ea',
+        'color-gold' => '#c9a227',
     ],
 ];

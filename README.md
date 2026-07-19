@@ -211,7 +211,7 @@ public/
   fonts/                 retired mystik WOFF2 (pending repackage)
 resources/views/
   layouts/app.blade.php  master layout (loads theme assets from the manifest)
-  partials/              nav (app-level), tokens (:root emitter)
+  partials/              nav, footer (app-level, public pages only), tokens (:root emitter)
   pages/                 home (renders theme::hero), about, services, contact
   blog/                  index, show  (the Journal feature; served at /journal)
   admin/                 dashboard, login, posts/*, themes/index

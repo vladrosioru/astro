@@ -14,6 +14,9 @@
     @includeIf('theme::cosmos')
     @include('partials.nav')
     @yield('content')
+    @unless(request()->routeIs('admin.*'))
+        @include('partials.footer')
+    @endunless
     @foreach (app('theme.manager')->jsAssets() as $js)
         <script src="{{ $js['url'] }}" @if($js['defer'])defer @endif @if($js['async'])async @endif></script>
     @endforeach
