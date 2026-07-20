@@ -14,8 +14,7 @@ class HeroTest extends TestCase
     {
         $this->get('/en')
             ->assertOk()
-            ->assertSee('Understanding the Why Behind Your Choices')
-            ->assertSee('Begin Here');
+            ->assertSee('Understanding the Why Behind Your Choices');
     }
 
     public function test_hero_uses_custom_content_when_set(): void
@@ -35,12 +34,13 @@ class HeroTest extends TestCase
         $this->assertArrayHasKey('cta2_url', $defaults);
     }
 
-    public function test_home_renders_stage_with_secondary_cta(): void
+    public function test_home_renders_stage_with_logo_mark(): void
     {
+        // CTA buttons were replaced by the logo mark in the hero actions area.
         $this->get('/en')
             ->assertOk()
             ->assertSee('class="stage"', false)
-            ->assertSee('Read the Journal');       // secondary CTA default
+            ->assertSee('class="hero-logo"', false);
     }
 
     public function test_nav_shows_eyebrow_wordmark_on_every_page(): void
