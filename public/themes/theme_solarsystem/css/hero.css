@@ -259,6 +259,13 @@
   background: rgba(157,193,230,.06);
 }
 .stage .btn-primary:hover { background: rgba(157,193,230,.16); }
+.stage .hero-logo {
+  display: block;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+}
 .stage .btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -309,20 +316,24 @@
      need reserved flow height), so the stage should just hug the hero's own
      content instead of padding out the gap before the next section. */
   .stage { --solar-scale: 0.5; }
-  /* top must clear half the scaled orbit box height (560px * 0.5 / 2 = 140px)
-     so .stage's overflow:hidden doesn't clip the top of the orbit against
-     the nav above it. */
-  .stage .solar-wrap { top: 145px; }
-  .stage .hero { padding-top: 40px; padding-bottom: 32px; }
+  /* The orbit box is 560px square, but the 3D tilt (.plane's rotateX(60deg))
+     and perspective compress its actual rendered extent to well under half
+     that — measured (across a full rotation) at ~141px tall here, not the
+     naive 280px flat half-height. top:64px keeps a few px of clearance so
+     nothing clips against the nav above; hero padding-top is pushed past
+     the orbit's measured bottom edge (~144px) so the title sits clearly
+     below the animation instead of overlapping it. */
+  .stage .solar-wrap { top: 64px; }
+  .stage .hero { padding-top: 162px; padding-bottom: 32px; }
 }
 
 @media (max-width: 460px) {
   .stage { --solar-scale: 0.38; }
-  /* top must clear half the scaled orbit box height (560px * 0.38 / 2 = 106.4px)
-     so .stage's overflow:hidden doesn't clip the top of the orbit against
-     the nav above it. */
-  .stage .solar-wrap { top: 112px; }
-  .stage .hero { padding-top: 30px; padding-bottom: 24px; }
+  /* Same approach as the 720px breakpoint, scaled down: measured rendered
+     orbit height ~107px, so top:50px clears the nav and hero padding-top
+     clears the orbit's measured bottom edge (~113px) with room to spare. */
+  .stage .solar-wrap { top: 50px; }
+  .stage .hero { padding-top: 128px; padding-bottom: 24px; }
   .stage .actions { gap: 12px; }
   .stage .btn-primary { padding: 13px 24px; }
 }

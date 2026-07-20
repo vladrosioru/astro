@@ -27,12 +27,7 @@
         <h1 class="title">{{ $hero['headline'] }}</h1>
         <p class="lede">{{ $hero['subhead'] }}</p>
         <div class="actions">
-            @if (!empty($hero['cta_label']))
-                <a href="{{ $hero['cta_url'] ?? '#' }}" class="btn btn-primary">{{ $hero['cta_label'] }}</a>
-            @endif
-            @if (!empty($hero['cta2_label']))
-                <a href="{{ $hero['cta2_url'] ?? '#' }}" class="btn btn-ghost">{{ $hero['cta2_label'] }} &rarr;</a>
-            @endif
+            <img class="hero-logo" src="{{ asset('img/logo-nav.png') }}" alt="{{ config('app.name') }}">
         </div>
     </main>
 </section>

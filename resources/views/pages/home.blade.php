@@ -28,7 +28,7 @@
                     <p>Far from cold prediction, a chart is a map — a way of reading your own patterns back to
                         you so you can move through the world with a little more self-knowledge and a little
                         more grace.</p>
-                    <a class="about-link" href="/{{ $locale }}/about">Learn More <span aria-hidden="true">→</span></a>
+                    <a class="btn btn-primary" href="/{{ $locale }}/about">Learn More <span aria-hidden="true">→</span></a>
                 </div>
             </div>
         </section>

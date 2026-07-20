@@ -225,6 +225,7 @@ a:hover { color: var(--color-accent); }
 .card__excerpt { color: var(--color-fg); }
 .card__ellipsis { white-space: nowrap; font-weight: 500; }
 .card--first { border-width: 2px; border-color: color-mix(in srgb, var(--color-primary) 55%, transparent); }
+.card--first .card__more { display: table; margin-left: auto; margin-right: auto; }
 /* Meta block: same background as the panel below the image, so it reads as
    a duplicate of it — a separate block above the image, not over it. */
 .card__meta { background: var(--color-bg-alt); }
