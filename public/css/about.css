@@ -212,7 +212,7 @@
 .about-chart-motif {
     display: flex;
     justify-content: center;
-    padding: calc(var(--space-unit) * 5) 0;
+    padding: calc(var(--space-unit) * 2.5) 0;
 }
 .about-chart-motif__svg {
     width: clamp(90px, 13vw, 120px);
@@ -236,9 +236,20 @@
     fill: var(--color-primary);
     filter: drop-shadow(0 0 6px var(--color-primary));
 }
-/* Tighten the seam into the manifesto's own generous top padding. */
-.about-chart-motif + .about-section { padding-top: calc(var(--space-unit) * 5); }
-
+/* The wheel is the first element in "Discover" (1st section) and "Your Core"
+   (2nd section) — zero the section's own top padding there so the wheel's
+   own 10px top padding is the whole visible gap above it, matching the 10px
+   gap it already has below it to the eyebrow text. The 2nd wheel's "gap
+   above" is actually the 1st section's trailing bottom padding (it ends
+   right where the 2nd section's now-zeroed top padding begins), so trim
+   that to 10px too. */
+main.about > .about-section:nth-of-type(1) {
+    padding-top: 0;
+    padding-bottom: calc(var(--space-unit) * 2.5);
+}
+main.about > .about-section:nth-of-type(2) {
+    padding-top: 0;
+}
 /* --- Reading cards ----------------------------------------- */
 /* Two per page (the newest post is shown separately above, full-size, via
    the shared Journal card partial) — see data-journal-carousel in js/about.js.

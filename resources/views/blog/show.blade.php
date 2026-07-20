@@ -62,35 +62,40 @@
 
         <div class="article-footer">
             <p class="article-date">{{ $post->published_at->format('M j, Y') }}</p>
-            <ul class="article-share">
-                <li>
-                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($articleUrl) }}"
-                       target="_blank" rel="noopener" aria-label="Share on Facebook">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-                            <path d="M15 3h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2a1 1 0 0 0-1 1v2h3.5a.5.5 0 0 1 .5.6l-.6 3a.5.5 0 0 1-.5.4H15v8h-4v-8H9v-3.5h2V8a5 5 0 0 1 5-5Z"/>
-                        </svg>
-                    </a>
-                </li>
-                <li>
-                    {{-- Instagram has no public "share this link" web intent — the reference
-                         theme doesn't have an Instagram share button either (only FB/X/Tumblr). --}}
-                    <a href="#" aria-label="Share on Instagram">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-                            <rect x="3.5" y="3.5" width="17" height="17" rx="5"/>
-                            <circle cx="12" cy="12" r="4.2"/>
-                            <circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/>
-                        </svg>
-                    </a>
-                </li>
-                <li>
-                    <a href="https://x.com/intent/tweet?text={{ urlencode($t->title) }}&url={{ urlencode($articleUrl) }}"
-                       target="_blank" rel="noopener" aria-label="Share on X">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
-                            <path d="M4 3h4.2l4 5.6L16.8 3H20l-6.4 8.2L20.4 21H16.2l-4.4-6.1L6.8 21H3.6l6.9-8.8L4 3Z"/>
-                        </svg>
-                    </a>
-                </li>
-            </ul>
+            <div class="article-share-block">
+                <p class="article-share-label">Like it? Tell the world!</p>
+                <ul class="article-share">
+                    <li>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($articleUrl) }}"
+                           target="_blank" rel="noopener" aria-label="Share on Facebook">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                                <path d="M15 3h3a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2a1 1 0 0 0-1 1v2h3.5a.5.5 0 0 1 .5.6l-.6 3a.5.5 0 0 1-.5.4H15v8h-4v-8H9v-3.5h2V8a5 5 0 0 1 5-5Z"/>
+                            </svg>
+                        </a>
+                    </li>
+                    <li>
+                        {{-- Instagram has no public "share this link" web intent, so this
+                             copies the article link to the clipboard (see article-share.js)
+                             and opens the AstroTherapia profile in the same popup style. --}}
+                        <a href="https://www.instagram.com/astrotherapia/" target="_blank" rel="noopener"
+                           data-share="instagram" aria-label="Share on Instagram">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                                <rect x="3.5" y="3.5" width="17" height="17" rx="5"/>
+                                <circle cx="12" cy="12" r="4.2"/>
+                                <circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/>
+                            </svg>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://x.com/intent/tweet?text={{ urlencode($t->title) }}&url={{ urlencode($articleUrl) }}"
+                           target="_blank" rel="noopener" aria-label="Share on X">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                                <path d="M4 3h4.2l4 5.6L16.8 3H20l-6.4 8.2L20.4 21H16.2l-4.4-6.1L6.8 21H3.6l6.9-8.8L4 3Z"/>
+                            </svg>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         @if ($previous || $next)

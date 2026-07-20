@@ -55,6 +55,11 @@
                     <ul class="nav-dropdown-menu">
                         <li><a href="/{{ $locale }}/services#natal-chart-analysis">Natal Chart Analysis</a></li>
                         <li><a href="/{{ $locale }}/services#relationship-analysis">Relationship Analysis</a></li>
+                        <li><a href="/{{ $locale }}/services#progressions-solar-returns">Progressions</a></li>
+                        <li><a href="/{{ $locale }}/services#progressions-solar-returns">Solar Returns</a></li>
+                        <li><a href="/{{ $locale }}/services#elective-horary-charts">Elective Astrology</a></li>
+                        <li><a href="/{{ $locale }}/services#astro-travel">Astrocartography</a></li>
+                        <li><a href="/{{ $locale }}/services#yearly-horoscope">Yearly Forecast</a></li>
                     </ul>
                 </li>
             @endif

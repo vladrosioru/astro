@@ -137,4 +137,11 @@ class ContactFormTest extends TestCase
         $this->get('/en/contact')
             ->assertSee('https://www.facebook.com/astrotherapia.ro', false);
     }
+
+    public function test_contact_page_instagram_link_points_to_real_profile(): void
+    {
+        $this->get('/en/contact')
+            ->assertSee('https://www.instagram.com/astrotherapia/', false)
+            ->assertDontSee('href="about:blank"', false);
+    }
 }

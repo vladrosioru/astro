@@ -42,13 +42,12 @@
                     @endif
                 </dl>
 
-                {{-- No physical address is published; Facebook/Instagram stand in for
-                     it. Links are placeholders (about:blank) until real pages exist. --}}
+                {{-- No physical address is published; Facebook/Instagram stand in for it. --}}
                 <div class="contact-social">
                     <a class="contact-social__link" href="https://www.facebook.com/astrotherapia.ro" aria-label="Facebook" target="_blank" rel="noopener noreferrer" data-fb-page="astrotherapia.ro">
                         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M13.5 21v-8.5h2.9l.4-3.4h-3.3V7c0-.9.3-1.6 1.7-1.6h1.8V2.3C16.7 2.2 15.6 2 14.3 2c-2.7 0-4.6 1.7-4.6 4.7v2.4H6.8v3.4h2.9V21h3.8z"/></svg>
                     </a>
-                    <a class="contact-social__link" href="about:blank" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                    <a class="contact-social__link" href="https://www.instagram.com/astrotherapia/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
                         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
                     </a>
                 </div>

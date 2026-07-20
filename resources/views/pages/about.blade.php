@@ -33,45 +33,10 @@
 @section('content')
 <main class="about">
 
-    {{-- Top graphic — Option 1: mini natal-chart wheel (static SVG, token-driven). --}}
-    <section class="about-chart-motif" aria-hidden="true">
-        <svg class="about-chart-motif__svg" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
-            {{-- Fire trine: Aries–Leo–Sagittarius --}}
-            <polygon class="about-chart-motif__aspect" points="120,52 179,154 61,154" />
-            {{-- Earth trine: Taurus–Virgo–Capricorn --}}
-            <polygon class="about-chart-motif__aspect" points="154,61 154,179 52,120" />
-            {{-- Air trine: Gemini–Libra–Aquarius --}}
-            <polygon class="about-chart-motif__aspect" points="179,86 120,188 61,86" />
-            {{-- Water trine: Cancer–Scorpio–Pisces --}}
-            <polygon class="about-chart-motif__aspect" points="188,120 86,179 86,61" />
-
-            <circle class="about-chart-motif__ring about-chart-motif__ring--inner" cx="120" cy="120" r="68" />
-            <circle class="about-chart-motif__ring about-chart-motif__ring--outer" cx="120" cy="120" r="100" />
-
-            @foreach ([0,30,60,90,120,150,180,210,240,270,300,330] as $deg)
-                @php
-                    $rad = deg2rad($deg - 90);
-                    $x1 = 120 + 68 * cos($rad); $y1 = 120 + 68 * sin($rad);
-                    $x2 = 120 + 100 * cos($rad); $y2 = 120 + 100 * sin($rad);
-                @endphp
-                <line class="about-chart-motif__spoke" x1="{{ round($x1) }}" y1="{{ round($y1) }}" x2="{{ round($x2) }}" y2="{{ round($y2) }}" />
-            @endforeach
-
-            @foreach (['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'] as $i => $glyph)
-                @php
-                    $rad = deg2rad($i * 30 - 90);
-                    $x = 120 + 84 * cos($rad); $y = 120 + 84 * sin($rad);
-                @endphp
-                <text class="about-chart-motif__glyph" x="{{ round($x) }}" y="{{ round($y) }}">{{ $glyph }}&#xFE0E;</text>
-            @endforeach
-
-            <circle class="about-chart-motif__sun" cx="120" cy="120" r="6" />
-        </svg>
-    </section>
-
     {{-- Manifesto: the "why, not what" philosophy ---------------------------- --}}
     <section class="about-section">
         <div class="about-shell about-shell--narrow">
+            @include('partials.about-chart-motif')
             <p class="about-eyebrow about-eyebrow--center">Discover</p>
             <h2 class="about-h2 about-h2--center">Understanding the Why Behind Your Choices</h2>
             <p class="about-hero__sub">Your birth chart is the key to help you understand why you
@@ -137,6 +102,7 @@
     <section class="about-section about-section--alt">
         <div class="about-shell about-split about-split--stacked">
             <div class="about-split__lead">
+                @include('partials.about-chart-motif')
                 <p class="about-eyebrow">Your Core</p>
                 <h2 class="about-h2">Why Knowing Your Patterns Can Change What Happens Next</h2>
             </div>

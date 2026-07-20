@@ -91,6 +91,19 @@ class PublicPagesTest extends TestCase
         $this->get('/en')->assertSee('/en/services');
     }
 
+    public function test_nav_services_submenu_has_all_seven_items_in_order(): void
+    {
+        $this->get('/en')->assertSeeInOrder([
+            'services#natal-chart-analysis">Natal Chart Analysis',
+            'services#relationship-analysis">Relationship Analysis',
+            'services#progressions-solar-returns">Progressions<',
+            'services#progressions-solar-returns">Solar Returns',
+            'services#elective-horary-charts">Elective Astrology',
+            'services#astro-travel">Astrocartography',
+            'services#yearly-horoscope">Yearly Forecast',
+        ], false);
+    }
+
     public function test_services_page_has_no_breadcrumb(): void
     {
         $this->get('/en/services')

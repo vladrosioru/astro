@@ -309,13 +309,19 @@
      need reserved flow height), so the stage should just hug the hero's own
      content instead of padding out the gap before the next section. */
   .stage { --solar-scale: 0.5; }
-  .stage .solar-wrap { top: 20px; }
+  /* top must clear half the scaled orbit box height (560px * 0.5 / 2 = 140px)
+     so .stage's overflow:hidden doesn't clip the top of the orbit against
+     the nav above it. */
+  .stage .solar-wrap { top: 145px; }
   .stage .hero { padding-top: 40px; padding-bottom: 32px; }
 }
 
 @media (max-width: 460px) {
   .stage { --solar-scale: 0.38; }
-  .stage .solar-wrap { top: 15px; }
+  /* top must clear half the scaled orbit box height (560px * 0.38 / 2 = 106.4px)
+     so .stage's overflow:hidden doesn't clip the top of the orbit against
+     the nav above it. */
+  .stage .solar-wrap { top: 112px; }
   .stage .hero { padding-top: 30px; padding-bottom: 24px; }
   .stage .actions { gap: 12px; }
   .stage .btn-primary { padding: 13px 24px; }

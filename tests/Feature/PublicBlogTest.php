@@ -84,4 +84,17 @@ class PublicBlogTest extends TestCase
         $this->get('/en/articles')->assertRedirect('/en/journal');
         $this->get('/en/articles/my-post')->assertRedirect('/en/journal/my-post');
     }
+
+    public function test_article_share_row_has_label_and_working_instagram_link(): void
+    {
+        $this->publishedPost('my-post');
+
+        $response = $this->get('/en/journal/my-post');
+
+        $response->assertOk()
+            ->assertSee('Like it? Tell the world!')
+            ->assertSee('href="https://www.instagram.com/astrotherapia/"', false)
+            ->assertSee('data-share="instagram"', false)
+            ->assertDontSee('href="#" aria-label="Share on Instagram"', false);
+    }
 }
