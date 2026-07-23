@@ -17,6 +17,13 @@ class HeroTest extends TestCase
             ->assertSee('Understanding the Why Behind Your Choices');
     }
 
+    public function test_home_renders_hero_subhead(): void
+    {
+        $this->get('/en')
+            ->assertOk()
+            ->assertSee('Your birth chart is the key to help you understand why you');
+    }
+
     public function test_hero_uses_custom_content_when_set(): void
     {
         $setting = SiteSetting::current();

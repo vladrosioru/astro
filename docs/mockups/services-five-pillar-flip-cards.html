@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Services — Archetypes tab flip cards (mockup)</title>
+<style>
+  :root{
+    --bg:#f5f2ea; --ink:#1c1b22; --card:#ffffff; --card-back:#efeade;
+    --accent-bg:#f1e6d2; --accent-border:#a8722e; --accent-text:#7a531f;
+    --border:rgba(28,27,34,.16); --muted:#6b6a63;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#15141b; --ink:#ede9dd; --card:#22212c; --card-back:#1b1a24;
+      --accent-bg:#3a2f1c; --accent-border:#d9a75c; --accent-text:#e7c383;
+      --border:rgba(237,233,221,.18); --muted:#a29e92;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:2.5rem 1rem 4rem;}
+  h1{font-family:ui-serif,Georgia,serif; font-weight:500; font-size:22px; text-align:center; margin:0 0 .4rem;}
+  p.note{text-align:center; color:var(--muted); font-size:13px; max-width:520px; margin:0 auto 2.5rem;}
+
+  .pentagon{display:flex; flex-direction:column; gap:18px; align-items:center; max-width:640px; margin:0 auto;}
+  .row{display:flex; gap:18px; justify-content:center; width:100%;}
+
+  .flip-card{width:180px; height:200px; perspective:1000px; flex:none;}
+  .flip-card__inner{position:relative; width:100%; height:100%; transition:transform .5s; transform-style:preserve-3d; cursor:pointer;}
+  .flip-card.is-flipped .flip-card__inner{transform:rotateY(180deg);}
+  .face{position:absolute; inset:0; backface-visibility:hidden; border-radius:12px; border:1px solid var(--border);
+        padding:14px; display:flex; flex-direction:column; gap:8px; background:var(--card);}
+  .face--back{transform:rotateY(180deg); background:var(--card-back); justify-content:center;}
+  .face--center{background:var(--accent-bg); border-color:var(--accent-border);}
+  .face--center p{color:var(--accent-text) !important;}
+  .icon{font-size:22px; line-height:1;}
+  .title{font-weight:600; font-size:14px; margin:0;}
+  .desc{font-size:12px; color:var(--muted); margin:0; line-height:1.45;}
+  .kicker{font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:0;}
+  .method{font-size:12px; margin:0; line-height:1.45;}
+  .archetypes{font-size:12px; margin:.3rem 0 0; line-height:1.4; font-weight:600;}
+  .flip-card:focus-visible{outline:2px solid var(--accent-border); outline-offset:3px; border-radius:12px;}
+
+  /* Mobile fallback: stack single column instead of squeezing the pentagon. */
+  @media (max-width: 560px){
+    .row{flex-direction:column; align-items:center;}
+  }
+</style>
+</head>
+<body>
+  <h1>Services — "Archetypes" tab, one card per pillar</h1>
+  <p class="note">One of three Services tabs alongside "Methods" (the current Astrology tab, renamed) and "Tarot" (unchanged). Click or tap any card to flip it: front is the pillar and what it's about, back is the astrological method plus the three archetypes it tends to reveal. Desktop shows the full arrangement; narrow the window (or view on a phone) to see the current CSS-only fallback — the recommended real solution is a swipeable one-card-at-a-time carousel reusing the site's existing testimonial/journal carousel pattern, not yet built here.</p>
+
+  <div class="pentagon">
+    <div class="row">
+      <div class="flip-card" data-flip tabindex="0" role="button" aria-pressed="false">
+        <div class="flip-card__inner">
+          <div class="face"><span class="icon">♡</span><p class="title">Relationships</p>
+            <p class="desc">Why you keep attracting — or avoiding — the same kind of connection</p></div>
+          <div class="face face--back"><p class="kicker">Read through</p>
+            <p class="method">Venus, the Moon, and the 7th house — synastry and composite charts</p>
+            <p class="kicker">Archetypes</p>
+            <p class="archetypes">Mirror seeker, Guardian, Free spirit</p></div>
+        </div>
+      </div>
+      <div class="flip-card" data-flip tabindex="0" role="button" aria-pressed="false">
+        <div class="flip-card__inner">
+          <div class="face"><span class="icon">⟟</span><p class="title">Career &amp; purpose</p>
+            <p class="desc">Why some work feels meaningful and other work just drains you</p></div>
+          <div class="face face--back"><p class="kicker">Read through</p>
+            <p class="method">The Midheaven and 10th house, plus Saturn</p>
+            <p class="kicker">Archetypes</p>
+            <p class="archetypes">Strategist, Craftsman, Wanderer</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="flip-card" data-flip tabindex="0" role="button" aria-pressed="false">
+        <div class="flip-card__inner">
+          <div class="face face--center"><span class="icon">◎</span><p class="title">Identity &amp; growth</p>
+            <p class="desc">Why you feel most like yourself in some seasons, and a stranger in others</p></div>
+          <div class="face face--back"><p class="kicker">Read through</p>
+            <p class="method">The Sun and Ascendant, against outer-planet transits</p>
+            <p class="kicker">Archetypes</p>
+            <p class="archetypes">Chameleon, Outsider, Phoenix</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="flip-card" data-flip tabindex="0" role="button" aria-pressed="false">
+        <div class="flip-card__inner">
+          <div class="face"><span class="icon">◐</span><p class="title">Values &amp; money</p>
+            <p class="desc">Why security, spending, and self-worth feel tangled together</p></div>
+          <div class="face face--back"><p class="kicker">Read through</p>
+            <p class="method">The 2nd house, plus Venus and Saturn</p>
+            <p class="kicker">Archetypes</p>
+            <p class="archetypes">Builder, Provider, Risk-taker</p></div>
+        </div>
+      </div>
+      <div class="flip-card" data-flip tabindex="0" role="button" aria-pressed="false">
+        <div class="flip-card__inner">
+          <div class="face"><span class="icon">☼</span><p class="title">Health &amp; energy</p>
+            <p class="desc">Why stress shows up in your body before you notice it anywhere else</p></div>
+          <div class="face face--back"><p class="kicker">Read through</p>
+            <p class="method">The 6th house, the Moon and Mars</p>
+            <p class="kicker">Archetypes</p>
+            <p class="archetypes">Warrior, Healer, Dreamer</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+document.querySelectorAll('[data-flip]').forEach(function(card){
+  function toggle(){
+    var flipped = card.classList.toggle('is-flipped');
+    card.setAttribute('aria-pressed', String(flipped));
+  }
+  card.addEventListener('click', toggle);
+  card.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+  });
+});
+</script>
+</body>
+</html>

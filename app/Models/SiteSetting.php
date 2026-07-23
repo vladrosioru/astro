@@ -39,7 +39,7 @@ class SiteSetting extends Model
     {
         return [
             'headline' => 'Understanding the Why Behind Your Choices',
-            'subhead' => 'When the planets align, so do the patterns within you. Read the map you were born under and move with intention.',
+            'subhead' => 'Your birth chart is the key to help you understand why you think, feel, and choose the way you do — so you can make your next decision with clarity, not guesswork.',
             'cta_label' => 'Begin Here',
             'cta_url' => '/en/services',
             'eyebrow' => 'AstroTherapia',
