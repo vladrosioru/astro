@@ -101,16 +101,17 @@ existing sessions and any encrypted data.
 
 ## Running a deploy
 
-**Dev (every push):** push to `master` — the pipeline lints, tests, scans,
-builds one artifact, deploys it to dev, and smoke-tests dev. It stops there.
-Dev deploys serialize on their own (`deploy-dev` concurrency); a newer push
-cancels an in-flight older dev deploy.
+**Every push to `master` cascades to prod behind an approval gate.** The pipeline
+lints, tests, scans, builds one artifact, deploys it to dev, smoke-tests dev,
+then **parks at the `production` environment approval gate**. Approve it in the
+run's **"Review deployments"** prompt and the *same* artifact deploys to prod and
+gets smoke-tested; ignore it and nothing reaches prod.
 
-**Prod (on demand):** Actions tab → this workflow → **Run workflow** → set
-**deploy_prod = true**. That runs the dev flow, then **waits for your approval**
-on the `production` environment before deploying the *same* artifact to prod and
-smoke-testing it. Prod never runs on a plain push — so a run parked at the
-approval gate can't block your dev iterations.
+Dev deploys serialize on their own (`deploy-dev` concurrency; a newer push
+cancels an in-flight older dev deploy). A run parked at the prod gate does **not**
+block new dev runs — there is no workflow-level concurrency, and `deploy-prod`
+serializes separately. You can also start a manual re-run from the Actions tab →
+**Run workflow** (it cascades the same way). Only pull requests skip the deploys.
 
 - **Every deploy uploads one `app.zip`** (~30 MB, a single FTPS transfer of a
   minute or two) plus the small `.env` and `extract.php`. `extract.php` unzips

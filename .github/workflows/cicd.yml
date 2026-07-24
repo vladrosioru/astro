@@ -9,12 +9,7 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
-  workflow_dispatch:
-    inputs:
-      deploy_prod:
-        description: 'After dev, also deploy to production (requires approval)'
-        type: boolean
-        default: false
+  workflow_dispatch:   # manual re-run; prod still gated by the production environment
 
 # No workflow-level concurrency: a run parked at the prod approval gate must not
 # block new dev runs. Each deploy job serializes on its own environment instead.
@@ -167,16 +162,26 @@ jobs:
         run: |
           BASE="${{ needs.deploy_dev.outputs.url }}"
           for i in $(seq 1 12); do
-            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$BASE/en" || true)
+            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$BASE/up" || true)
             if [ "$S" = "200" ]; then echo "dev up after ~$((i*5))s"; exit 0; fi
             echo "attempt $i: got $S, retrying in 5s..."; sleep 5
           done
           echo "dev did not come up in time"; exit 1
-      - name: Smoke test routes
+      - name: Smoke test public pages
         run: |
           BASE="${{ needs.deploy_dev.outputs.url }}"
           FAILED=0
-          for path in / /en /en/about /en/services /en/contact /en/journal /ro /admin/login; do
+          for path in / /en /en/about /en/services /en/contact /en/journal /ro; do
+            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            echo "$S  $path"
+            case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
+          done
+          [ "$FAILED" = 0 ] || exit 1
+      - name: Smoke test admin/auth routes
+        run: |
+          BASE="${{ needs.deploy_dev.outputs.url }}"
+          FAILED=0
+          for path in /admin/login /admin; do
             S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
             echo "$S  $path"
             case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
@@ -187,9 +192,10 @@ jobs:
   #    reviewer rule -> this job is the manual approval gate before prod.
   deploy_prd:
     needs: test_dev
-    # Prod never runs on a plain push — only when you manually dispatch with
-    # deploy_prod=true. Keeps pushes from parking at the approval gate.
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy_prod
+    # Auto-cascade: every push to master flows through to here and parks at the
+    # production approval gate (the `production` env's required-reviewer rule).
+    # Approve in the run's "Review deployments". Skips only on pull_request.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: production
     concurrency:
@@ -249,16 +255,26 @@ jobs:
         run: |
           BASE="${{ needs.deploy_prd.outputs.url }}"
           for i in $(seq 1 12); do
-            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$BASE/en" || true)
+            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$BASE/up" || true)
             if [ "$S" = "200" ]; then echo "prod up after ~$((i*5))s"; exit 0; fi
             echo "attempt $i: got $S, retrying in 5s..."; sleep 5
           done
           echo "prod did not come up in time"; exit 1
-      - name: Smoke test routes
+      - name: Smoke test public pages
         run: |
           BASE="${{ needs.deploy_prd.outputs.url }}"
           FAILED=0
-          for path in / /en /en/about /en/services /en/contact /en/journal /ro /admin/login; do
+          for path in / /en /en/about /en/services /en/contact /en/journal /ro; do
+            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            echo "$S  $path"
+            case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
+          done
+          [ "$FAILED" = 0 ] || exit 1
+      - name: Smoke test admin/auth routes
+        run: |
+          BASE="${{ needs.deploy_prd.outputs.url }}"
+          FAILED=0
+          for path in /admin/login /admin; do
             S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
             echo "$S  $path"
             case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
