@@ -153,8 +153,10 @@ jobs:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: |
           curl -fsS --retry 3 --retry-delay 10 --max-time 600 \
+            -A "astro-deploy-bot/1.0" -H "Accept: text/plain" \
             -H "X-Deploy-Token: ${DEPLOY_TOKEN}" "${APP_URL}/extract.php"
           curl -fsS --retry 5 --retry-delay 15 --max-time 300 \
+            -A "astro-deploy-bot/1.0" -H "Accept: text/plain" \
             -H "X-Deploy-Token: ${DEPLOY_TOKEN}" "${APP_URL}/deploy.php"
 
   # 6. Smoke test Dev
@@ -261,8 +263,10 @@ jobs:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
         run: |
           curl -fsS --retry 3 --retry-delay 10 --max-time 600 \
+            -A "astro-deploy-bot/1.0" -H "Accept: text/plain" \
             -H "X-Deploy-Token: ${DEPLOY_TOKEN}" "${APP_URL}/extract.php"
           curl -fsS --retry 5 --retry-delay 15 --max-time 300 \
+            -A "astro-deploy-bot/1.0" -H "Accept: text/plain" \
             -H "X-Deploy-Token: ${DEPLOY_TOKEN}" "${APP_URL}/deploy.php"
 
   # 8. Smoke test Production
