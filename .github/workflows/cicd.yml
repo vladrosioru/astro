@@ -9,12 +9,7 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
-  workflow_dispatch:
-    inputs:
-      deploy_prod:
-        description: 'After dev, also deploy to production (requires approval)'
-        type: boolean
-        default: false
+  workflow_dispatch:   # manual re-run; prod still cascades to the approval gate
 
 # No workflow-level concurrency: a run parked at the prod approval gate must not
 # block new dev runs. Each deploy job serializes on its own environment instead.
@@ -199,10 +194,11 @@ jobs:
   #    reviewer rule -> this job is the manual approval gate before prod.
   deploy_prd:
     needs: test_dev
-    # Prod never runs on a plain push — only when you manually dispatch with
-    # deploy_prod=true. So you can deploy dev as often as you like and promote
-    # to prod on demand; pushes never park at the approval gate.
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy_prod
+    # Auto-cascade: after dev + test_dev pass, this job parks at the `production`
+    # environment approval gate (required-reviewer rule). Each push parks its own
+    # gate — approve the run you want to promote in "Review deployments", ignore
+    # the rest. Skips only on pull_request.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: production
     concurrency:

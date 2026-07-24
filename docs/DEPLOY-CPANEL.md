@@ -101,16 +101,17 @@ existing sessions and any encrypted data.
 
 ## Running a deploy
 
-**Dev (every push):** push to `master` — the pipeline lints, tests, scans,
-builds one artifact, deploys it to dev, and smoke-tests dev. It stops there.
-Dev deploys serialize on their own (`deploy-dev` concurrency); a newer push
-cancels an in-flight older dev deploy. Deploy dev as often as you like.
+**Every push to `master` runs the full pipeline, then waits for your approval
+before prod.** It lints, tests, scans, builds one artifact, deploys to dev,
+smoke-tests dev, then **parks at the `production` approval gate**. Approve the
+run you want in its **"Review deployments"** prompt and the *same* artifact
+deploys to prod and gets smoke-tested; leave the others unapproved and nothing
+reaches prod.
 
-**Prod (on demand):** Actions tab → this workflow → **Run workflow** → set
-**deploy_prod = true**. That runs the dev flow, then **waits for your approval**
-on the `production` environment before deploying the *same* artifact to prod and
-smoke-testing it. Prod never runs on a plain push — so a run parked at the
-approval gate can't block your dev iterations.
+Deploy dev as often as you like — each push parks its own prod approval, so just
+approve the build you actually want to promote and ignore the rest. A parked run
+does **not** block new dev runs (no workflow-level concurrency; `deploy-prod`
+serializes separately). Only pull requests skip the deploys.
 
 - **Every deploy uploads one `app.zip`** (~30 MB, a single FTPS transfer of a
   minute or two) plus the small `.env` and `extract.php`. `extract.php` unzips
