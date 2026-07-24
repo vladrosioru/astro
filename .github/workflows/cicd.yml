@@ -11,8 +11,11 @@ on:
     branches: [master]
   workflow_dispatch:   # manual re-run; prod still cascades to the approval gate
 
-# No workflow-level concurrency: a run parked at the prod approval gate must not
-# block new dev runs. Each deploy job serializes on its own environment instead.
+# No workflow-level concurrency: every push runs fully independently and parks at
+# its own prod approval gate — no run waits on another. Approving ONE prod deploy
+# cancels all other active runs (the "Supersede other active runs" step in
+# deploy_prd). Dev deploys still serialize on the deploy-dev group so two never
+# race the dev server.
 
 permissions:
   contents: read
@@ -195,22 +198,32 @@ jobs:
   deploy_prd:
     needs: test_dev
     # Auto-cascade: after dev + test_dev pass, this job parks at the `production`
-    # environment approval gate (required-reviewer rule). Each push parks its own
-    # gate — approve the run you want to promote in "Review deployments", ignore
-    # the rest. Skips only on pull_request.
+    # approval gate. Every push parks its OWN independent gate — no run waits on
+    # another. Approving one prod deploy cancels all other active runs (the
+    # "Supersede other active runs" step below). Skips only on pull_request.
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: production
-    # A newer push supersedes an older prod run still parked at the approval
-    # gate, so only the latest push is ever pending promotion (no pile-up).
-    # Caveat: this can also cancel an already-approved, in-flight deploy — rare,
-    # and re-approving the newer run redeploys the same bits cleanly.
-    concurrency:
-      group: deploy-prod
-      cancel-in-progress: true
+    permissions:
+      contents: read
+      actions: write     # cancel the other active runs once this deploy is approved
     outputs:
       url: ${{ vars.APP_URL }}
     steps:
+      # This step runs only AFTER the approval gate clears — i.e. on the run you
+      # chose to promote. It cancels every other still-active run of this workflow
+      # (each parked at its own gate, or still deploying dev): the approved run wins.
+      - name: Supersede other active runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "/repos/${{ github.repository }}/actions/workflows/cicd.yml/runs?per_page=100" \
+            --jq '.workflow_runs[] | select(.status != "completed") | .id' \
+          | while read -r rid; do
+              [ "$rid" = "${{ github.run_id }}" ] && continue
+              echo "Cancelling active run $rid"
+              gh api -X POST "/repos/${{ github.repository }}/actions/runs/$rid/cancel" || true
+            done
       - uses: actions/checkout@v5   # for make-env.sh + public/extract.php
       - uses: actions/download-artifact@v7
         with:

@@ -108,10 +108,11 @@ run you want in its **"Review deployments"** prompt and the *same* artifact
 deploys to prod and gets smoke-tested; leave the others unapproved and nothing
 reaches prod.
 
-Deploy dev as often as you like — each push parks its own prod approval, so just
-approve the build you actually want to promote and ignore the rest. A parked run
-does **not** block new dev runs (no workflow-level concurrency; `deploy-prod`
-serializes separately). Only pull requests skip the deploys.
+Deploy dev as often as you like — each push runs **fully independently** and
+parks at its **own** prod approval gate; no run waits on another. When you approve
+one prod deploy, that run **cancels all the other active runs** automatically (via
+the `Supersede other active runs` step), so only the build you chose reaches prod.
+Only pull requests skip the deploys.
 
 - **Every deploy uploads one `app.zip`** (~30 MB, a single FTPS transfer of a
   minute or two) plus the small `.env` and `extract.php`. `extract.php` unzips
