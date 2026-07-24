@@ -201,9 +201,13 @@ jobs:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: production
+    # A newer push supersedes an older prod run still parked at the approval
+    # gate, so only the latest push is ever pending promotion (no pile-up).
+    # Caveat: this can also cancel an already-approved, in-flight deploy — rare,
+    # and re-approving the newer run redeploys the same bits cleanly.
     concurrency:
       group: deploy-prod
-      cancel-in-progress: false
+      cancel-in-progress: true
     outputs:
       url: ${{ vars.APP_URL }}
     steps:
