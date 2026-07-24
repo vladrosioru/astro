@@ -1,0 +1,114 @@
+name: Rollback Production (redeploy a previous build)
+
+# Manual, deliberate rollback for the shell-less cPanel host. It redeploys the
+# EXACT app.zip a previous successful pipeline built (its `app-build` artifact)
+# to production, behind the same `production` approval gate as a normal deploy.
+#
+# Code-only rollback. `migrate --force` on older code is a no-op (the old
+# app.zip carries only old migration files, nothing pending), so additive
+# migrations roll back cleanly. For a deploy that DROPPED or RENAMED a column
+# the old code needs, take a manual cPanel DB export first — see
+# docs/DEPLOY-CPANEL.md "Rolling back production".
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Run ID of the successful pipeline whose app-build to redeploy (last green run before the bad one)'
+        required: true
+
+permissions:
+  contents: read
+  actions: read   # required to download an artifact from a different run
+
+jobs:
+  # Redeploy the chosen previous build to prod, gated by the production
+  # environment's required-reviewer rule.
+  rollback_prd:
+    runs-on: ubuntu-latest
+    environment: production
+    # Serialize with normal prod deploys so a rollback and a deploy never race.
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    outputs:
+      url: ${{ vars.APP_URL }}
+    steps:
+      - uses: actions/checkout@v5   # for make-env.sh + public/.htaccess + public/extract.php
+      - name: Download the target build's artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: app-build                 # -> app.zip in the workspace
+          run-id: ${{ inputs.run_id }}     # from a DIFFERENT run
+          github-token: ${{ github.token }}
+      - name: Generate .env
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+          APP_DEBUG: ${{ vars.APP_DEBUG }}
+          APP_KEY: ${{ secrets.APP_KEY }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          DB_HOST: ${{ vars.DB_HOST }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MAIL_HOST: ${{ vars.MAIL_HOST }}
+          MAIL_PORT: ${{ vars.MAIL_PORT }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS }}
+        run: bash .github/scripts/make-env.sh > "$RUNNER_TEMP/app.env"
+      - name: Upload over FTPS (env + bootstrap extractor + one archive)
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          up() { curl -sS --ssl-reqd --ftp-create-dirs -T "$1" "ftp://${FTP_HOST}/$2" --user "${FTP_USER}:${FTP_PASS}"; }
+          up "$RUNNER_TEMP/app.env" ".env"
+          up "public/.htaccess"     "public/.htaccess"
+          up "public/extract.php"   "public/extract.php"
+          up "app.zip"              "app.zip"
+      - name: Extract on server, then migrate + cache + storage:link
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          curl -fsS --retry 3 --retry-delay 10 --max-time 600 \
+            -H "X-Deploy-Token: ${DEPLOY_TOKEN}" "${APP_URL}/extract.php"
+          curl -fsS --retry 5 --retry-delay 15 --max-time 300 \
+            -H "X-Deploy-Token: ${DEPLOY_TOKEN}" "${APP_URL}/deploy.php"
+
+  # Confirm the rolled-back release is healthy.
+  test_prd_rollback:
+    needs: rollback_prd
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for prod to come up
+        run: |
+          BASE="${{ needs.rollback_prd.outputs.url }}"
+          for i in $(seq 1 12); do
+            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$BASE/up" || true)
+            if [ "$S" = "200" ]; then echo "prod up after ~$((i*5))s"; exit 0; fi
+            echo "attempt $i: got $S, retrying in 5s..."; sleep 5
+          done
+          echo "prod did not come up in time"; exit 1
+      - name: Smoke test public pages
+        run: |
+          BASE="${{ needs.rollback_prd.outputs.url }}"
+          FAILED=0
+          for path in / /en /en/about /en/services /en/contact /en/journal /ro; do
+            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            echo "$S  $path"
+            case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
+          done
+          [ "$FAILED" = 0 ] || exit 1
+      - name: Smoke test admin/auth routes
+        run: |
+          BASE="${{ needs.rollback_prd.outputs.url }}"
+          FAILED=0
+          for path in /admin/login /admin; do
+            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            echo "$S  $path"
+            case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
+          done
+          [ "$FAILED" = 0 ] || exit 1

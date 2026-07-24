@@ -120,6 +120,27 @@ serializes separately. You can also start a manual re-run from the Actions tab �
 - **Migrations run every deploy** (`migrate --force`, additive). Content is
   entered through the admin panel on the live site.
 
+## Rolling back production
+
+The host has no SSH or server-side git, so rollback is **redeploy the previous
+good build**, not `git reset`. Every successful pipeline keeps its `app.zip` as
+a GitHub artifact (`app-build`, retained **30 days**).
+
+To roll back: Actions tab → **Rollback Production** workflow → **Run workflow** →
+enter the **run ID** of the last green pipeline *before* the bad one (open that
+run, copy the ID from its URL). It downloads that run's `app-build`, redeploys
+the *same* bits to prod behind the **`production` approval gate**, then
+smoke-tests. It serializes on the `deploy-prod` concurrency group, so it never
+races a normal deploy.
+
+**This is a code-only rollback.** `migrate --force` on the older code is a no-op
+(the old `app.zip` carries only its own migration files — nothing pending), so
+newer already-applied migrations simply stay and additive changes roll back
+cleanly. The one gap: a migration that **dropped or renamed a column** the old
+code still needs. Before shipping any such schema-breaking change, take a manual
+DB snapshot first — cPanel → **phpMyAdmin** → select `martinis_astro_prod` →
+**Export** — so you can restore the schema by hand if you have to roll back.
+
 ## Uploaded images (no symlink)
 
 This host disables `symlink()`/`exec()`, so `php artisan storage:link` fails.

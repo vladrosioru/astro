@@ -93,7 +93,9 @@ jobs:
         with:
           name: app-build
           path: ${{ runner.temp }}/app.zip
-          retention-days: 5
+          # 30d so the rollback workflow (redeploys a previous app-build) has a
+          # useful window to roll back to. See .github/workflows/rollback-prod.yml.
+          retention-days: 30
 
   # 5. Deploy to Dev (dev.<domain>, HTTPS). Secrets/vars from the `dev` env.
   deploy_dev:
