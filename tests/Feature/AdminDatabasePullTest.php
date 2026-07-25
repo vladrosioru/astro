@@ -123,6 +123,26 @@ class AdminDatabasePullTest extends TestCase
         $this->post('/admin/database/pull')->assertRedirect('/admin/login');
     }
 
+    public function test_the_pull_button_shows_when_enabled_and_source_configured(): void
+    {
+        $this->configureSource();
+
+        $this->actingAs($this->admin())
+            ->get('/admin/database')
+            ->assertOk()
+            ->assertSee('Copy live prod into this site');
+    }
+
+    public function test_the_pull_button_is_hidden_when_source_missing(): void
+    {
+        config(['database.connections.source.database' => null]);
+
+        $this->actingAs($this->admin())
+            ->get('/admin/database')
+            ->assertOk()
+            ->assertDontSee('Copy live prod into this site');
+    }
+
     private function seedLocal(): void
     {
         $local = Post::create(['status' => 'published']);

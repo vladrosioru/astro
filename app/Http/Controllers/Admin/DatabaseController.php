@@ -22,6 +22,7 @@ class DatabaseController extends Controller
         return view('admin.database.index', [
             'backups' => $this->backups->all(),
             'restoreEnabled' => (bool) config('database_admin.restore_enabled'),
+            'sourceConfigured' => (bool) config('database.connections.source.database'),
         ]);
     }
 
