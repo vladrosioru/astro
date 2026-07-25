@@ -97,6 +97,11 @@ Set these on **each** environment (dev values on `dev`, prod values on
 | `MAIL_FROM_ADDRESS` | variable | `no-reply@astrotherapia.com` |
 | `DB_RESTORE_ENABLED` | variable | **dev only** — set `true` on the `dev` environment to enable the prod→dev restore. Leave **unset on `production`**; it defaults to `false`, so prod returns 404 for the restore route. |
 | `MEDIA_FALLBACK_URL` | variable | **dev only** — prod's origin, e.g. `https://astrotherapia.com`. Restored content on dev loads its images from here. Leave unset on `production`. |
+| `PROD_DB_HOST` | variable | **dev only** — read-only prod DB credentials so dev can dump live prod content for the one-click **Copy prod → dev** button; copied from prod's own `.env`. Dev and prod share one cPanel account and MySQL server, so dev connects to prod's database directly. Leave unset on `production`, so the button 404s/hides. |
+| `PROD_DB_PORT` | variable | **dev only** — same prod-source credentials as `PROD_DB_HOST`. Leave unset on `production`. |
+| `PROD_DB_DATABASE` | secret | **dev only** — same prod-source credentials as `PROD_DB_HOST`. Leave unset on `production`. |
+| `PROD_DB_USERNAME` | secret | **dev only** — same prod-source credentials as `PROD_DB_HOST`. Leave unset on `production`. |
+| `PROD_DB_PASSWORD` | secret | **dev only** — same prod-source credentials as `PROD_DB_HOST`. Leave unset on `production`. |
 
 `APP_KEY` must stay **stable** per environment — changing it invalidates
 existing sessions and any encrypted data.
@@ -109,7 +114,18 @@ is gated purely on `DB_RESTORE_ENABLED` — set `true` on the **dev** environmen
 only. **Production is never a restore target:** with the flag unset there, the
 restore route 404s and the upload form is not rendered.
 
-Workflow:
+**One-click (preferred, when `PROD_DB_*` is configured):** on **dev**
+`/admin/database`, click **Copy prod → dev**. This posts to
+`admin.database.pull`, which dumps the **live** prod database directly over
+the read-only `source` DB connection (the `PROD_DB_*` credentials above) to a
+throwaway temp file and runs it through the same restore pipeline as the
+manual path below — dev snapshots its own content first, the dump is
+validated, replayed in a transaction, and media URLs are rewritten to
+`MEDIA_FALLBACK_URL` — then the temp file is deleted. It shares the
+`DB_RESTORE_ENABLED` gate with the manual restore (404 on prod) and also
+requires `PROD_DB_*` to be set; without it the button is hidden/refused.
+
+**Manual upload (fallback, always available):**
 
 1. On **prod** `/admin/database`, click **Back up now**, then download the
    resulting `.sql.gz`.

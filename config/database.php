@@ -62,6 +62,30 @@ return [
             ]) : [],
         ],
 
+        /*
+         * Read-only view of the PROD database for the "Copy prod → dev" button.
+         * Populated from PROD_DB_* on the dev deploy only; unset elsewhere, so
+         * `database` is null and DatabaseController::pull() refuses to run.
+         * Same cPanel account as prod, so this reaches prod's MySQL directly.
+         */
+        'source' => [
+            'driver' => 'mysql',
+            'host' => env('PROD_DB_HOST', '127.0.0.1'),
+            'port' => env('PROD_DB_PORT', '3306'),
+            'database' => env('PROD_DB_DATABASE'),
+            'username' => env('PROD_DB_USERNAME'),
+            'password' => env('PROD_DB_PASSWORD'),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

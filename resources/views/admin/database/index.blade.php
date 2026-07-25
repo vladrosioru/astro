@@ -70,6 +70,26 @@
                 <input type="file" name="backup" accept=".gz" required>
                 <button class="btn btn-primary" type="submit">Restore</button>
             </form>
+
+            @if($sourceConfigured)
+                <h2>Copy live prod into this site</h2>
+
+                <p class="muted">
+                    Pulls the current production content and replaces posts, translations,
+                    media records and site settings on this site. A snapshot of the current
+                    content is taken automatically first.
+                </p>
+
+                @error('pull')
+                    <p class="muted">{{ $message }}</p>
+                @enderror
+
+                <form method="POST" action="{{ route('admin.database.pull') }}"
+                      onsubmit="return confirm('Replace this site\'s content with live production content?')">
+                    @csrf
+                    <button class="btn btn-primary" type="submit">Copy prod → dev now</button>
+                </form>
+            @endif
         @endif
     </div>
 @endsection

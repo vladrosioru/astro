@@ -29,26 +29,33 @@ class DatabaseBackupService
         Storage::disk('backups')->makeDirectory(BackupRepository::DIRECTORY);
 
         $name = $this->backups->filename($origin);
-        $handle = gzopen($this->backups->path($name), 'wb6');
+        $this->dumpTo($this->backups->path($name));
+
+        return $name;
+    }
+
+    /** Gzip a content dump of $connection (default when null) to $path. */
+    public function dumpTo(string $path, ?string $connection = null): void
+    {
+        $handle = gzopen($path, 'wb6');
 
         if ($handle === false) {
             throw new RuntimeException('Could not open the backup file for writing.');
         }
 
         try {
-            $this->writeDump($handle);
+            $this->writeDump($handle, $connection);
         } finally {
             gzclose($handle);
         }
-
-        return $name;
     }
 
     /** @param  resource  $handle */
-    private function writeDump($handle): void
+    private function writeDump($handle, ?string $connection): void
     {
+        $db = DB::connection($connection);
         $tables = (array) config('database_admin.tables');
-        $quoter = QuoterFactory::for(DB::connection()->getDriverName());
+        $quoter = QuoterFactory::for($db->getDriverName());
 
         $this->line($handle, '-- Content backup');
         $this->line($handle, '-- source: '.config('app.url'));
@@ -63,14 +70,14 @@ class DatabaseBackupService
 
         // Parents first, so every child row has its parent present.
         foreach ($tables as $table) {
-            $this->writeTable($handle, $table, $quoter);
+            $this->writeTable($handle, $db, $table, $quoter);
         }
     }
 
     /** @param  resource  $handle */
-    private function writeTable($handle, string $table, SqlQuoter $quoter): void
+    private function writeTable($handle, $db, string $table, SqlQuoter $quoter): void
     {
-        $columns = Schema::getColumnListing($table);
+        $columns = Schema::connection($db->getName())->getColumnListing($table);
 
         if ($columns === []) {
             return;
@@ -78,7 +85,7 @@ class DatabaseBackupService
 
         $columnList = implode(', ', array_map(fn (string $c) => '`'.$c.'`', $columns));
 
-        DB::table($table)->orderBy('id')->chunk(self::CHUNK, function ($rows) use ($handle, $table, $columns, $columnList, $quoter) {
+        $db->table($table)->orderBy('id')->chunk(self::CHUNK, function ($rows) use ($handle, $table, $columns, $columnList, $quoter) {
             $tuples = [];
 
             foreach ($rows as $row) {

@@ -36,6 +36,7 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         ->where('file', '[A-Za-z0-9.\-]+\.sql\.gz')
         ->name('admin.database.destroy');
     Route::post('database/restore', [DatabaseController::class, 'restore'])->name('admin.database.restore');
+    Route::post('database/pull', [DatabaseController::class, 'pull'])->name('admin.database.pull');
 });
 
 Route::get('/', fn () => redirect('/'.config('app.locale')));
