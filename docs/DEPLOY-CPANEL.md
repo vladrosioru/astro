@@ -95,9 +95,38 @@ Set these on **each** environment (dev values on `dev`, prod values on
 | `MAIL_USERNAME` | secret | SMTP user |
 | `MAIL_PASSWORD` | secret | SMTP password |
 | `MAIL_FROM_ADDRESS` | variable | `no-reply@astrotherapia.com` |
+| `DB_RESTORE_ENABLED` | variable | **dev only** — set `true` on the `dev` environment to enable the prod→dev restore. Leave **unset on `production`**; it defaults to `false`, so prod returns 404 for the restore route. |
+| `MEDIA_FALLBACK_URL` | variable | **dev only** — prod's origin, e.g. `https://astrotherapia.com`. Restored content on dev loads its images from here. Leave unset on `production`. |
 
 `APP_KEY` must stay **stable** per environment — changing it invalidates
 existing sessions and any encrypted data.
+
+### Copying prod content to dev
+
+The admin **Database** page (`/admin/database`) copies production content down
+to dev. Both boxes run the same code with `APP_ENV=production`, so the restore
+is gated purely on `DB_RESTORE_ENABLED` — set `true` on the **dev** environment
+only. **Production is never a restore target:** with the flag unset there, the
+restore route 404s and the upload form is not rendered.
+
+Workflow:
+
+1. On **prod** `/admin/database`, click **Back up now**, then download the
+   resulting `.sql.gz`.
+2. On **dev** `/admin/database`, upload that file under **Copy prod content
+   into dev**. Dev snapshots its own content first, then replaces posts,
+   translations, media records and site settings with prod's, rewriting media
+   URLs to `MEDIA_FALLBACK_URL`.
+
+Backups live in `database/backups/` on each server (retention: 10), created via
+a pure-PHP dumper (the host disables `exec()`, so there is no `mysqldump`). They
+survive deploys — the release archive overlays files and does not include that
+directory.
+
+Two shared-host ceilings apply to a restore upload: `upload_max_filesize` /
+`post_max_size` cap the file, and `max_execution_time` caps a large replay. If a
+dump is too big to upload here, it is still plain SQL — import it through
+cPanel's **phpMyAdmin** instead.
 
 ## Running a deploy
 

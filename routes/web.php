@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AttachmentController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DatabaseController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\BlogController;
@@ -25,6 +26,16 @@ Route::prefix('admin')->middleware('admin')->group(function () {
 
     Route::get('themes', [ThemeController::class, 'index'])->name('admin.themes.index');
     Route::patch('themes', [ThemeController::class, 'update'])->name('admin.themes.update');
+
+    Route::get('database', [DatabaseController::class, 'index'])->name('admin.database.index');
+    Route::post('database/backup', [DatabaseController::class, 'backup'])->name('admin.database.backup');
+    Route::get('database/backup/{file}', [DatabaseController::class, 'download'])
+        ->where('file', '[A-Za-z0-9.\-]+\.sql\.gz')
+        ->name('admin.database.download');
+    Route::delete('database/backup/{file}', [DatabaseController::class, 'destroy'])
+        ->where('file', '[A-Za-z0-9.\-]+\.sql\.gz')
+        ->name('admin.database.destroy');
+    Route::post('database/restore', [DatabaseController::class, 'restore'])->name('admin.database.restore');
 });
 
 Route::get('/', fn () => redirect('/'.config('app.locale')));

@@ -57,7 +57,8 @@ Defined in [`routes/web.php`](routes/web.php).
   - `POST /{locale}/contact` (`contact.submit`, `throttle:5,1`) — validates and mails the contact form (`App\Mail\ContactMessage`); a honeypot field plus a render-timestamp trap silently no-op bot submissions
   - `/{locale}/journal`, `/{locale}/journal/{slug}` — the blog feature (`BlogController`), presented as **Journal**; route names stay `blog.*`. Legacy `/{locale}/blog`, `/{locale}/blog/{slug}`, `/{locale}/articles` and `/{locale}/articles/{slug}` **301-redirect** to the `/journal` equivalents.
 - `/admin/login`, `/admin/logout` — session auth (`Admin\AuthController`).
-- `/admin/*` (`admin` middleware) — dashboard, `posts` resource (no `show`), `attachments` upload, and **Themes** (`GET /admin/themes` list + `PATCH /admin/themes` apply).
+- `/admin/*` (`admin` middleware) — dashboard, `posts` resource (no `show`), `attachments` upload, **Themes** (`GET /admin/themes` list + `PATCH /admin/themes` apply), and **Database** (see below).
+  - **Database** (`Admin\DatabaseController`): `GET /admin/database` page, `POST /admin/database/backup` (create), `GET /admin/database/backup/{file}` (download), `DELETE /admin/database/backup/{file}` (delete), and `POST /admin/database/restore` (copy prod content into dev). The `{file}` param is constrained to the backup filename pattern so it cannot traverse the disk.
 
 Middleware aliases are registered in [`bootstrap/app.php`](bootstrap/app.php):
 - `setlocale` → `App\Http\Middleware\SetLocale` (sets `app()->setLocale()` from the route prefix)
@@ -75,6 +76,46 @@ Middleware aliases are registered in [`bootstrap/app.php`](bootstrap/app.php):
   - `hero` — Home hero content (`headline`, `subhead`, `cta_label`, `cta_url`, `eyebrow`, `cta2_label`, `cta2_url`), defaulted by `heroDefaults()`. `eyebrow` is the ASTROTHERAPIA wordmark, now rendered by the nav under the logo (see Nav) rather than inside the hero.
 - **`Post`** + **`PostTranslation`** — a post has one translation per locale (title, slug, excerpt, body, seo_title). Blog reads the translation for the active locale. A translation's `slug` is auto-derived from its title (`PostTranslation::uniqueSlug()`, unique per locale, `-###` suffix on collision) and is never editable in the admin form; it's immutable once saved, with one exception — an admin "regenerate from title" checkbox is available only while the post has never been published (`Post.first_published_at` is null). Once a post has ever gone live, its slugs lock permanently, even if it's later unpublished, so published URLs never break.
 - **`User`** — `is_admin` boolean gates the admin area.
+
+---
+
+## Database backups and prod → dev copy
+
+The admin **Database** page (`/admin/database`) backs up the site's content and
+copies production content down to the dev subdomain. The host is shell-less
+(`exec()` disabled), so there is no `mysqldump`: the dumper is pure PHP over PDO
+(`App\Services\Database\DatabaseBackupService`), writing a gzipped `.sql` with
+**one statement per physical line** so restore can split on newlines without
+parsing SQL (CKEditor bodies are full of semicolons). Driver-specific quoting
+(`MySqlQuoter`/`SqliteQuoter`, chosen by `QuoterFactory`) keeps every value on
+its line.
+
+- **Scope:** content tables only — `posts`, `post_translations`, `media`,
+  `site_settings`. `users`, sessions, cache and queue tables are never touched,
+  so a copy never moves password hashes or logs anyone out.
+- **Config:** [`config/database_admin.php`](config/database_admin.php) —
+  `restore_enabled` (from `DB_RESTORE_ENABLED`), `media_fallback_url` (from
+  `MEDIA_FALLBACK_URL`), `retention` (10), `max_upload_kilobytes` (20480), and
+  the `tables` list (parents-first; deletes run in reverse).
+- **Storage:** a dedicated private `backups` filesystem disk (in
+  [`config/filesystems.php`](config/filesystems.php)) rooted at the project's
+  `database/` directory; files live in `database/backups/` and are never
+  web-reachable (downloads go through the controller). The location is
+  **preserved across deploys** — `public/extract.php` overlays the release
+  archive and `database/backups/` is not in it, so existing backups survive.
+  `public/deploy.php` creates the directory; `.gitignore` excludes it.
+- **Restore is dev-only.** Both boxes deploy the same artifact with
+  `APP_ENV=production`, so the app cannot tell dev from prod. The restore route
+  is gated on `DB_RESTORE_ENABLED`, set true only on the **dev** GitHub
+  environment; prod resolves false, returns **404** for the restore route and
+  renders no upload form — **production content is never overwritten by this
+  feature.** On import, root-relative `/storage/media/...` paths are rewritten
+  to `MEDIA_FALLBACK_URL` (prod's origin) so dev renders prod's images without
+  transferring files. A restore always writes an automatic pre-restore snapshot
+  first and runs in a single transaction.
+
+See [`docs/DEPLOY-CPANEL.md`](docs/DEPLOY-CPANEL.md) for configuring the two
+variables and the download-then-upload workflow.
 
 ---
 

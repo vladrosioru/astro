@@ -48,6 +48,13 @@ PUBLIC_DISK_IN_DOCROOT=true
 # Post-deploy hook auth (public/deploy.php)
 DEPLOY_TOKEN=${DEPLOY_TOKEN:?DEPLOY_TOKEN is required}
 
+# Admin Database page. Restore is fail-closed: only the dev GitHub environment
+# sets DB_RESTORE_ENABLED=true, so prod returns 404 for the restore route.
+# MEDIA_FALLBACK_URL is prod's origin, so restored content on dev loads prod's
+# images (media URLs are stored root-relative and the files stay on prod).
+DB_RESTORE_ENABLED=${DB_RESTORE_ENABLED:-false}
+MEDIA_FALLBACK_URL="${MEDIA_FALLBACK_URL:-}"
+
 MAIL_MAILER=smtp
 MAIL_HOST=${MAIL_HOST:-localhost}
 MAIL_PORT=${MAIL_PORT:-587}

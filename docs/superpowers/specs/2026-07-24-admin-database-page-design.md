@@ -62,9 +62,17 @@ no cross-dialect portability is required.
 ### Restore gating: fail-closed env flag
 
 `DB_RESTORE_ENABLED`, surfaced as `config('database_admin.restore_enabled')`.
-The restore route is registered only when it is true. Prod's `.env` sets it
-false, so prod returns 404 for the restore route and the view's `Route::has()`
-check keeps the upload form from rendering. A missing value means disabled.
+The restore route is always registered; the controller calls
+`abort_unless(config('database_admin.restore_enabled'), 404)` and the view
+renders the upload form only when the flag is true. Prod's `.env` leaves it
+false, so prod returns 404 for the restore route and shows no form. A missing
+value means disabled.
+
+The route is registered unconditionally, rather than only when the flag is
+true, because `public/deploy.php` runs `route:cache`: conditional registration
+would bake the flag into the cached route table and make behaviour depend on
+deploy ordering. Gating in the controller gives the identical outcome and stays
+testable.
 
 This is the mechanism that makes "prod is never overwritten" true in code.
 Enabling restore on prod would require a deliberate GitHub environment edit.
@@ -138,7 +146,7 @@ Added inside the existing `admin` middleware group in `routes/web.php:16`.
 | `POST admin/database/backup` | `admin.database.backup` | always |
 | `GET admin/database/backup/{file}` | `admin.database.download` | always |
 | `DELETE admin/database/backup/{file}` | `admin.database.destroy` | always |
-| `POST admin/database/restore` | `admin.database.restore` | only when `restore_enabled` |
+| `POST admin/database/restore` | `admin.database.restore` | always; controller returns 404 when the flag is off |
 
 `{file}` is constrained to the backup filename pattern so it cannot traverse
 outside the backup directory. Downloads are served through the controller from
@@ -156,11 +164,14 @@ a private disk; the directory is never web-reachable.
 
 **`App\Services\Database\DatabaseRestoreService`**
 
-- `restore(UploadedFile $file): RestoreResult`
-- Validates the upload, calls `DatabaseBackupService::create('auto')`, then in
-  one transaction: deletes `post_translations`, `posts`, `media`,
-  `site_settings`; replays inserts in reverse order; applies the media rewrite.
-- Depends on: the backup service, the connection, the media rewriter.
+- `restore(string $archivePath): array{snapshot: string, rows: int}` — takes a
+  filesystem path (the controller passes the upload's real path) so it is
+  testable without faking an upload.
+- Validates the archive (gzip magic byte, then every statement against an
+  allow-list) before mutating anything, calls `DatabaseBackupService::create('auto')`,
+  then in one transaction replays the dump's deletes and inserts and applies the
+  media rewrite. Throws `InvalidBackupException` on a bad archive.
+- Depends on: the backup service and the media rewriter.
 
 **`App\Services\Database\MediaPathRewriter`**
 
@@ -226,6 +237,7 @@ return [
     'restore_enabled' => env('DB_RESTORE_ENABLED', false),
     'media_fallback_url' => env('MEDIA_FALLBACK_URL'),
     'retention' => 10,
+    'max_upload_kilobytes' => 20480,
     'tables' => ['posts', 'post_translations', 'media', 'site_settings'],
 ];
 ```

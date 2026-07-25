@@ -132,6 +132,8 @@ jobs:
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS }}
+          DB_RESTORE_ENABLED: ${{ vars.DB_RESTORE_ENABLED }}
+          MEDIA_FALLBACK_URL: ${{ vars.MEDIA_FALLBACK_URL }}
         run: bash .github/scripts/make-env.sh > "$RUNNER_TEMP/app.env"
       - name: Upload over FTPS (env + bootstrap extractor + one archive)
         # Explicit FTPS (--ssl-reqd). The FTP account is scoped to the app dir,
@@ -245,6 +247,8 @@ jobs:
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS }}
+          DB_RESTORE_ENABLED: ${{ vars.DB_RESTORE_ENABLED }}
+          MEDIA_FALLBACK_URL: ${{ vars.MEDIA_FALLBACK_URL }}
         run: bash .github/scripts/make-env.sh > "$RUNNER_TEMP/app.env"
       - name: Upload over FTPS (env + bootstrap extractor + one archive)
         env:
