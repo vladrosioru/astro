@@ -179,7 +179,7 @@ jobs:
         run: |
           BASE="${{ needs.deploy_dev.outputs.url }}"
           for i in $(seq 1 12); do
-            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$BASE/up" || true)
+            S=$(curl -s -A "astro-deploy-bot/1.0" -o /dev/null -w "%{http_code}" --max-time 10 "$BASE/up" || true)
             if [ "$S" = "200" ]; then echo "dev up after ~$((i*5))s"; exit 0; fi
             echo "attempt $i: got $S, retrying in 5s..."; sleep 5
           done
@@ -189,7 +189,7 @@ jobs:
           BASE="${{ needs.deploy_dev.outputs.url }}"
           FAILED=0
           for path in / /en /en/about /en/services /en/contact /en/journal /ro; do
-            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            S=$(curl -s -A "astro-deploy-bot/1.0" -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
             echo "$S  $path"
             case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
           done
@@ -199,7 +199,7 @@ jobs:
           BASE="${{ needs.deploy_dev.outputs.url }}"
           FAILED=0
           for path in /admin/login /admin; do
-            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            S=$(curl -s -A "astro-deploy-bot/1.0" -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
             echo "$S  $path"
             case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
           done
@@ -291,7 +291,7 @@ jobs:
         run: |
           BASE="${{ needs.deploy_prd.outputs.url }}"
           for i in $(seq 1 12); do
-            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$BASE/up" || true)
+            S=$(curl -s -A "astro-deploy-bot/1.0" -o /dev/null -w "%{http_code}" --max-time 10 "$BASE/up" || true)
             if [ "$S" = "200" ]; then echo "prod up after ~$((i*5))s"; exit 0; fi
             echo "attempt $i: got $S, retrying in 5s..."; sleep 5
           done
@@ -301,7 +301,7 @@ jobs:
           BASE="${{ needs.deploy_prd.outputs.url }}"
           FAILED=0
           for path in / /en /en/about /en/services /en/contact /en/journal /ro; do
-            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            S=$(curl -s -A "astro-deploy-bot/1.0" -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
             echo "$S  $path"
             case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
           done
@@ -311,7 +311,7 @@ jobs:
           BASE="${{ needs.deploy_prd.outputs.url }}"
           FAILED=0
           for path in /admin/login /admin; do
-            S=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            S=$(curl -s -A "astro-deploy-bot/1.0" -o /dev/null -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
             echo "$S  $path"
             case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
           done
