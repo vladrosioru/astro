@@ -58,7 +58,7 @@ Defined in [`routes/web.php`](routes/web.php).
   - `/{locale}/journal`, `/{locale}/journal/{slug}` — the blog feature (`BlogController`), presented as **Journal**; route names stay `blog.*`. Legacy `/{locale}/blog`, `/{locale}/blog/{slug}`, `/{locale}/articles` and `/{locale}/articles/{slug}` **301-redirect** to the `/journal` equivalents.
 - `/admin/login`, `/admin/logout` — session auth (`Admin\AuthController`).
 - `/admin/*` (`admin` middleware) — dashboard, `posts` resource (no `show`), `attachments` upload, **Themes** (`GET /admin/themes` list + `PATCH /admin/themes` apply), and **Database** (see below).
-  - **Database** (`Admin\DatabaseController`): `GET /admin/database` page, `POST /admin/database/backup` (create), `GET /admin/database/backup/{file}` (download), `DELETE /admin/database/backup/{file}` (delete), `POST /admin/database/restore` (copy prod content into dev from an uploaded backup file), and `POST /admin/database/pull` (`admin.database.pull` — one-click copy prod content into dev, dumping prod directly over the `source` connection instead of an upload). The `{file}` param is constrained to the backup filename pattern so it cannot traverse the disk.
+  - **Database** (`Admin\DatabaseController`): `GET /admin/database` page, `POST /admin/database/backup` (create), `GET /admin/database/backup/{file}` (download), `DELETE /admin/database/backup/{file}` (delete), and `POST /admin/database/pull` (`admin.database.pull` — one-click copy prod content into dev, dumping the live prod DB directly over the `source` connection). The `{file}` param is constrained to the backup filename pattern so it cannot traverse the disk.
 
 Middleware aliases are registered in [`bootstrap/app.php`](bootstrap/app.php):
 - `setlocale` → `App\Http\Middleware\SetLocale` (sets `app()->setLocale()` from the route prefix)
@@ -95,8 +95,8 @@ its line.
   so a copy never moves password hashes or logs anyone out.
 - **Config:** [`config/database_admin.php`](config/database_admin.php) —
   `restore_enabled` (from `DB_RESTORE_ENABLED`), `media_fallback_url` (from
-  `MEDIA_FALLBACK_URL`), `retention` (10), `max_upload_kilobytes` (20480), and
-  the `tables` list (parents-first; deletes run in reverse).
+  `MEDIA_FALLBACK_URL`), `retention` (10), and the `tables` list
+  (parents-first; deletes run in reverse).
 - **Storage:** a dedicated private `backups` filesystem disk (in
   [`config/filesystems.php`](config/filesystems.php)) rooted at the project's
   `database/` directory; files live in `database/backups/` and are never
@@ -104,31 +104,30 @@ its line.
   **preserved across deploys** — `public/extract.php` overlays the release
   archive and `database/backups/` is not in it, so existing backups survive.
   `public/deploy.php` creates the directory; `.gitignore` excludes it.
-- **Restore is dev-only.** Both boxes deploy the same artifact with
-  `APP_ENV=production`, so the app cannot tell dev from prod. The restore route
-  is gated on `DB_RESTORE_ENABLED`, set true only on the **dev** GitHub
-  environment; prod resolves false, returns **404** for the restore route and
-  renders no upload form — **production content is never overwritten by this
-  feature.** On import, root-relative `/storage/media/...` paths are rewritten
-  to `MEDIA_FALLBACK_URL` (prod's origin) so dev renders prod's images without
-  transferring files. A restore always writes an automatic pre-restore snapshot
-  first and runs in a single transaction.
-- **One-click copy (`POST admin/database/pull`, `admin.database.pull`):** skips
-  the download-then-upload dance. `DatabaseController::pull()` dumps the
-  **live** prod database straight over a second, read-only `source` DB
+- **Copy is dev-only.** Both boxes deploy the same artifact with
+  `APP_ENV=production`, so the app cannot tell dev from prod. The copy is gated
+  on `DB_RESTORE_ENABLED`, set true only on the **dev** GitHub environment; prod
+  resolves false, returns **404** for the `pull` route and renders no button —
+  **production content is never overwritten by this feature.** On import,
+  root-relative `/storage/media/...` paths are rewritten to `MEDIA_FALLBACK_URL`
+  (prod's origin) so dev renders prod's images without transferring files. A
+  copy always writes an automatic pre-restore snapshot of dev first and runs in
+  a single transaction.
+- **One-click copy (`POST admin/database/pull`, `admin.database.pull`):** the
+  only copy mechanism — there is no manual upload form. `DatabaseController::pull()`
+  dumps the **live** prod database straight over a second, read-only `source` DB
   connection (`config/database.php`, env `PROD_DB_HOST`/`PROD_DB_PORT`/
   `PROD_DB_DATABASE`/`PROD_DB_USERNAME`/`PROD_DB_PASSWORD`) to a throwaway temp
-  `.sql.gz`, feeds it into the same `DatabaseRestoreService::restore()` used by
-  the upload form (dev snapshot first, validate, transactional replay, media
-  URL rewrite), then deletes the temp file. This works because dev and prod
-  live under **one cPanel account**, so dev can open a direct PDO connection to
-  prod's MySQL database. Same `DB_RESTORE_ENABLED` gate as the manual restore
-  (404 on prod) — the button is also hidden/refused if `PROD_DB_DATABASE` isn't
-  set, so it only ever appears on dev once the prod-source credentials are
+  `.sql.gz`, feeds it into `DatabaseRestoreService::restore()` (dev snapshot
+  first, validate, transactional replay, media URL rewrite), then deletes the
+  temp file. This works because dev and prod live under **one cPanel account**,
+  so dev can open a direct PDO connection to prod's MySQL database. The button
+  is hidden/refused unless `DB_RESTORE_ENABLED` is true **and** `PROD_DB_DATABASE`
+  is set, so it only ever appears on dev once the prod-source credentials are
   configured.
 
 See [`docs/DEPLOY-CPANEL.md`](docs/DEPLOY-CPANEL.md) for configuring the
-variables and the download-then-upload (or one-click) workflow.
+variables and the one-click workflow.
 
 ---
 

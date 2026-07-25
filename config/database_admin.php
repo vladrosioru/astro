@@ -23,9 +23,6 @@ return [
     // Backups kept on disk; older files are pruned after each new backup.
     'retention' => 10,
 
-    // Largest accepted restore upload, in kilobytes (Laravel's `max:` unit).
-    'max_upload_kilobytes' => 20480,
-
     /*
      * Content tables only. users/sessions/cache/jobs are deliberately excluded
      * so a mistaken restore cannot damage accounts or log anyone out.
