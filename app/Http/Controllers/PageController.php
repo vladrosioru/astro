@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\SiteSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class PageController extends Controller
@@ -80,7 +81,18 @@ class PageController extends Controller
             return back()->with('contact_status', 'sent');
         }
 
-        Mail::to('office@astrotherapia.com')->send(new ContactMessage($data));
+        try {
+            Mail::to('office@astrotherapia.com')->send(new ContactMessage($data));
+        } catch (\Throwable $e) {
+            // A misconfigured/unreachable SMTP host (e.g. a STARTTLS cert-hostname
+            // mismatch) must not surface as a 500 to the visitor. Log it and show
+            // a graceful error; withInput() keeps what they typed.
+            Log::error('Contact form mail send failed: '.$e->getMessage());
+
+            return back()
+                ->withInput()
+                ->withErrors(['contact' => 'Sorry — we could not send your message right now. Please try again shortly, or email us directly at office@astrotherapia.com.']);
+        }
 
         return back()->with('contact_status', 'sent');
     }
