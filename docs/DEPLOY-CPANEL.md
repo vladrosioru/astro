@@ -109,40 +109,28 @@ existing sessions and any encrypted data.
 ### Copying prod content to dev
 
 The admin **Database** page (`/admin/database`) copies production content down
-to dev. Both boxes run the same code with `APP_ENV=production`, so the restore
-is gated purely on `DB_RESTORE_ENABLED` — set `true` on the **dev** environment
-only. **Production is never a restore target:** with the flag unset there, the
-restore route 404s and the upload form is not rendered.
+to dev with a single button. Both boxes run the same code with
+`APP_ENV=production`, so the copy is gated purely on `DB_RESTORE_ENABLED` — set
+`true` on the **dev** environment only. **Production is never a copy target:**
+with the flag unset there, the `pull` route 404s and the button is not rendered.
 
-**One-click (preferred, when `PROD_DB_*` is configured):** on **dev**
-`/admin/database`, click **Copy prod → dev**. This posts to
-`admin.database.pull`, which dumps the **live** prod database directly over
-the read-only `source` DB connection (the `PROD_DB_*` credentials above) to a
-throwaway temp file and runs it through the same restore pipeline as the
-manual path below — dev snapshots its own content first, the dump is
-validated, replayed in a transaction, and media URLs are rewritten to
-`MEDIA_FALLBACK_URL` — then the temp file is deleted. It shares the
-`DB_RESTORE_ENABLED` gate with the manual restore (404 on prod) and also
-requires `PROD_DB_*` to be set; without it the button is hidden/refused.
+**One-click Copy prod → dev:** on **dev** `/admin/database`, click
+**Copy prod → dev now**. This posts to `admin.database.pull`, which dumps the
+**live** prod database directly over the read-only `source` DB connection (the
+`PROD_DB_*` credentials above) to a throwaway temp file and runs it through the
+restore pipeline — dev snapshots its own content first, the dump is validated,
+replayed in a transaction, and media URLs are rewritten to `MEDIA_FALLBACK_URL`
+— then the temp file is deleted. The button requires both `DB_RESTORE_ENABLED`
+true (404 on prod) **and** `PROD_DB_*` set; without them it is hidden/refused.
 
-**Manual upload (fallback, always available):**
+Backups (the **Back up now** button) live in `database/backups/` on each server
+(retention: 10), created via a pure-PHP dumper (the host disables `exec()`, so
+there is no `mysqldump`). They survive deploys — the release archive overlays
+files and does not include that directory.
 
-1. On **prod** `/admin/database`, click **Back up now**, then download the
-   resulting `.sql.gz`.
-2. On **dev** `/admin/database`, upload that file under **Copy prod content
-   into dev**. Dev snapshots its own content first, then replaces posts,
-   translations, media records and site settings with prod's, rewriting media
-   URLs to `MEDIA_FALLBACK_URL`.
-
-Backups live in `database/backups/` on each server (retention: 10), created via
-a pure-PHP dumper (the host disables `exec()`, so there is no `mysqldump`). They
-survive deploys — the release archive overlays files and does not include that
-directory.
-
-Two shared-host ceilings apply to a restore upload: `upload_max_filesize` /
-`post_max_size` cap the file, and `max_execution_time` caps a large replay. If a
-dump is too big to upload here, it is still plain SQL — import it through
-cPanel's **phpMyAdmin** instead.
+If you ever need to move a dump by hand, a backup `.sql.gz` is plain gzipped SQL
+— download it from **prod** and import it through cPanel's **phpMyAdmin** on
+dev.
 
 ## Running a deploy
 

@@ -141,6 +141,14 @@ class AdminDatabasePullTest extends TestCase
         $this->post('/admin/database/pull')->assertRedirect('/admin/login');
     }
 
+    public function test_the_manual_restore_upload_route_is_removed(): void
+    {
+        // The upload/RESTORE path was retired in favour of the one-click pull.
+        $this->actingAs($this->admin())
+            ->post('/admin/database/restore', [])
+            ->assertNotFound();
+    }
+
     public function test_the_pull_button_shows_when_enabled_and_source_configured(): void
     {
         $this->configureSource();
