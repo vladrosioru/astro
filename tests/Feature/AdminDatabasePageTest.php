@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Services\Database\BackupRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AdminDatabasePageTest extends TestCase
@@ -34,5 +36,78 @@ class AdminDatabasePageTest extends TestCase
     public function test_guests_cannot_access_the_database_page(): void
     {
         $this->get('/admin/database')->assertRedirect('/admin/login');
+    }
+
+    public function test_admin_can_create_a_backup(): void
+    {
+        Storage::fake('backups');
+
+        $this->actingAs($this->admin())
+            ->post('/admin/database/backup')
+            ->assertRedirect('/admin/database');
+
+        $this->assertCount(1, Storage::disk('backups')->files(BackupRepository::DIRECTORY));
+    }
+
+    public function test_the_page_lists_existing_backups(): void
+    {
+        Storage::fake('backups');
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/backup-20260101-000000-example.com-manual.sql.gz', 'x');
+
+        $this->actingAs($this->admin())
+            ->get('/admin/database')
+            ->assertOk()
+            ->assertSee('backup-20260101-000000-example.com-manual.sql.gz');
+    }
+
+    public function test_admin_can_download_a_backup(): void
+    {
+        Storage::fake('backups');
+        $name = 'backup-20260101-000000-example.com-manual.sql.gz';
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, 'x');
+
+        $this->actingAs($this->admin())
+            ->get('/admin/database/backup/'.$name)
+            ->assertOk()
+            ->assertDownload($name);
+    }
+
+    public function test_download_rejects_a_path_traversal_attempt(): void
+    {
+        $this->actingAs($this->admin())
+            ->get('/admin/database/backup/..%2F..%2F.env')
+            ->assertNotFound();
+    }
+
+    public function test_admin_can_delete_a_backup(): void
+    {
+        Storage::fake('backups');
+        $name = 'backup-20260101-000000-example.com-manual.sql.gz';
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, 'x');
+
+        $this->actingAs($this->admin())
+            ->delete('/admin/database/backup/'.$name)
+            ->assertRedirect('/admin/database');
+
+        $this->assertCount(0, Storage::disk('backups')->files(BackupRepository::DIRECTORY));
+    }
+
+    public function test_creating_a_backup_prunes_beyond_the_retention_limit(): void
+    {
+        Storage::fake('backups');
+        config(['database_admin.retention' => 2]);
+
+        foreach (['20260101', '20260102', '20260103'] as $day) {
+            Storage::disk('backups')->put(BackupRepository::DIRECTORY."/backup-{$day}-000000-example.com-manual.sql.gz", 'x');
+        }
+
+        $this->actingAs($this->admin())->post('/admin/database/backup');
+
+        $this->assertCount(2, Storage::disk('backups')->files(BackupRepository::DIRECTORY));
+    }
+
+    public function test_guests_cannot_create_a_backup(): void
+    {
+        $this->post('/admin/database/backup')->assertRedirect('/admin/login');
     }
 }

@@ -28,6 +28,13 @@ Route::prefix('admin')->middleware('admin')->group(function () {
     Route::patch('themes', [ThemeController::class, 'update'])->name('admin.themes.update');
 
     Route::get('database', [DatabaseController::class, 'index'])->name('admin.database.index');
+    Route::post('database/backup', [DatabaseController::class, 'backup'])->name('admin.database.backup');
+    Route::get('database/backup/{file}', [DatabaseController::class, 'download'])
+        ->where('file', '[A-Za-z0-9.\-]+\.sql\.gz')
+        ->name('admin.database.download');
+    Route::delete('database/backup/{file}', [DatabaseController::class, 'destroy'])
+        ->where('file', '[A-Za-z0-9.\-]+\.sql\.gz')
+        ->name('admin.database.destroy');
 });
 
 Route::get('/', fn () => redirect('/'.config('app.locale')));
