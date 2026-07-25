@@ -35,5 +35,26 @@
                 @endforeach
             </ul>
         @endif
+
+        @if($restoreEnabled)
+            <h2>Copy prod content into dev</h2>
+
+            <p class="muted">
+                Upload a backup taken on production. This replaces posts, translations,
+                media records and site settings on this site. A snapshot of the current
+                content is taken automatically first.
+            </p>
+
+            @error('backup')
+                <p class="muted">{{ $message }}</p>
+            @enderror
+
+            <form method="POST" action="{{ route('admin.database.restore') }}" enctype="multipart/form-data"
+                  onsubmit="return confirm('Replace this site\'s content with the uploaded backup?')">
+                @csrf
+                <input type="file" name="backup" accept=".gz" required>
+                <button class="btn btn-primary" type="submit">Restore</button>
+            </form>
+        @endif
     </div>
 @endsection
