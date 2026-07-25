@@ -324,20 +324,20 @@ class BackupRepositoryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Storage::fake('local');
+        Storage::fake('backups');
         $this->repository = new BackupRepository;
     }
 
-    private function put(string $name): void
+    private function putBackup(string $name): void
     {
         Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, 'x');
     }
 
     public function test_it_lists_backups_newest_first(): void
     {
-        $this->put('backup-20260101-000000-example.com-manual.sql.gz');
-        $this->put('backup-20260301-000000-example.com-manual.sql.gz');
-        $this->put('backup-20260201-000000-example.com-auto.sql.gz');
+        $this->putBackup('backup-20260101-000000-example.com-manual.sql.gz');
+        $this->putBackup('backup-20260301-000000-example.com-manual.sql.gz');
+        $this->putBackup('backup-20260201-000000-example.com-auto.sql.gz');
 
         $names = $this->repository->all()->pluck('name')->all();
 
@@ -350,15 +350,15 @@ class BackupRepositoryTest extends TestCase
 
     public function test_it_labels_the_origin(): void
     {
-        $this->put('backup-20260101-000000-example.com-auto.sql.gz');
+        $this->putBackup('backup-20260101-000000-example.com-auto.sql.gz');
 
         $this->assertSame('auto (pre-restore)', $this->repository->all()->first()['origin']);
     }
 
     public function test_it_ignores_files_that_are_not_backups(): void
     {
-        $this->put('notes.txt');
-        $this->put('backup-20260101-000000-example.com-manual.sql.gz');
+        $this->putBackup('notes.txt');
+        $this->putBackup('backup-20260101-000000-example.com-manual.sql.gz');
 
         $this->assertCount(1, $this->repository->all());
     }
@@ -366,7 +366,7 @@ class BackupRepositoryTest extends TestCase
     public function test_prune_keeps_only_the_newest_n(): void
     {
         foreach (['20260101', '20260102', '20260103', '20260104'] as $day) {
-            $this->put("backup-{$day}-000000-example.com-manual.sql.gz");
+            $this->putBackup("backup-{$day}-000000-example.com-manual.sql.gz");
         }
 
         $this->repository->prune(2);
@@ -379,7 +379,7 @@ class BackupRepositoryTest extends TestCase
 
     public function test_delete_removes_a_backup(): void
     {
-        $this->put('backup-20260101-000000-example.com-manual.sql.gz');
+        $this->putBackup('backup-20260101-000000-example.com-manual.sql.gz');
 
         $this->repository->delete('backup-20260101-000000-example.com-manual.sql.gz');
 
