@@ -819,7 +819,7 @@ class DatabaseBackupTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Storage::fake('local');
+        Storage::fake('backups');
     }
 
     private function contents(string $name): string
@@ -1050,7 +1050,7 @@ Append to `tests/Feature/AdminDatabasePageTest.php` (add `use Illuminate\Support
 ```php
     public function test_admin_can_create_a_backup(): void
     {
-        Storage::fake('local');
+        Storage::fake('backups');
 
         $this->actingAs($this->admin())
             ->post('/admin/database/backup')
@@ -1061,7 +1061,7 @@ Append to `tests/Feature/AdminDatabasePageTest.php` (add `use Illuminate\Support
 
     public function test_the_page_lists_existing_backups(): void
     {
-        Storage::fake('local');
+        Storage::fake('backups');
         Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/backup-20260101-000000-example.com-manual.sql.gz', 'x');
 
         $this->actingAs($this->admin())
@@ -1072,7 +1072,7 @@ Append to `tests/Feature/AdminDatabasePageTest.php` (add `use Illuminate\Support
 
     public function test_admin_can_download_a_backup(): void
     {
-        Storage::fake('local');
+        Storage::fake('backups');
         $name = 'backup-20260101-000000-example.com-manual.sql.gz';
         Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, 'x');
 
@@ -1091,7 +1091,7 @@ Append to `tests/Feature/AdminDatabasePageTest.php` (add `use Illuminate\Support
 
     public function test_admin_can_delete_a_backup(): void
     {
-        Storage::fake('local');
+        Storage::fake('backups');
         $name = 'backup-20260101-000000-example.com-manual.sql.gz';
         Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, 'x');
 
@@ -1104,7 +1104,7 @@ Append to `tests/Feature/AdminDatabasePageTest.php` (add `use Illuminate\Support
 
     public function test_creating_a_backup_prunes_beyond_the_retention_limit(): void
     {
-        Storage::fake('local');
+        Storage::fake('backups');
         config(['database_admin.retention' => 2]);
 
         foreach (['20260101', '20260102', '20260103'] as $day) {
@@ -1499,7 +1499,7 @@ class DatabaseRestoreServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Storage::fake('local');
+        Storage::fake('backups');
     }
 
     private function seedPost(string $title, string $body = '<p>Body</p>'): Post
@@ -1870,7 +1870,7 @@ class AdminDatabaseRestoreTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Storage::fake('local');
+        Storage::fake('backups');
         config(['database_admin.restore_enabled' => true]);
     }
 
