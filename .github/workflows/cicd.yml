@@ -134,6 +134,14 @@ jobs:
           MAIL_FROM_ADDRESS: ${{ vars.MAIL_FROM_ADDRESS }}
           DB_RESTORE_ENABLED: ${{ vars.DB_RESTORE_ENABLED }}
           MEDIA_FALLBACK_URL: ${{ vars.MEDIA_FALLBACK_URL }}
+          # Read-only prod DB source for the one-click Copy prod -> dev button.
+          # Dev environment only; the prod deploy block deliberately omits these
+          # so the button stays 404/hidden on production.
+          PROD_DB_HOST: ${{ vars.PROD_DB_HOST }}
+          PROD_DB_PORT: ${{ vars.PROD_DB_PORT }}
+          PROD_DB_DATABASE: ${{ vars.PROD_DB_DATABASE }}
+          PROD_DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
         run: bash .github/scripts/make-env.sh > "$RUNNER_TEMP/app.env"
       - name: Upload over FTPS (env + bootstrap extractor + one archive)
         # Explicit FTPS (--ssl-reqd). The FTP account is scoped to the app dir,
