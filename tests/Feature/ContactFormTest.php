@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Mail\ContactMessage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Mail\PendingMail;
 use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\TestCase;
 
 class ContactFormTest extends TestCase
@@ -89,9 +91,9 @@ class ContactFormTest extends TestCase
         // aborts on a cert-hostname mismatch, so Mail::to()->send() throws a
         // TransportException instead of returning. The visitor must never see a
         // 500 — the form should degrade to a graceful error and keep its input.
-        $pending = \Mockery::mock(\Illuminate\Mail\PendingMail::class);
+        $pending = \Mockery::mock(PendingMail::class);
         $pending->shouldReceive('send')->once()->andThrow(
-            new \Symfony\Component\Mailer\Exception\TransportException(
+            new TransportException(
                 "Peer certificate CN=`server20.romania-webhosting.com' did not match expected CN=`localhost'"
             )
         );
