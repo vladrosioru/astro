@@ -20,20 +20,35 @@
         @if($backups->isEmpty())
             <p class="muted">No backups yet.</p>
         @else
-            <ul>
-                @foreach($backups as $backup)
-                    <li>
-                        <a href="{{ route('admin.database.download', $backup['name']) }}">{{ $backup['name'] }}</a>
-                        <span class="muted">{{ $backup['origin'] }} &middot; {{ number_format($backup['size'] / 1024, 1) }} KB</span>
-                        <form method="POST" action="{{ route('admin.database.destroy', $backup['name']) }}"
-                              onsubmit="return confirm('Delete this backup?')">
-                            @csrf
-                            @method('DELETE')
-                            <button class="btn" type="submit">Delete</button>
-                        </form>
-                    </li>
-                @endforeach
-            </ul>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Backup</th>
+                        <th>Origin</th>
+                        <th>Size</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($backups as $backup)
+                        <tr>
+                            <td>
+                                <a href="{{ route('admin.database.download', $backup['name']) }}">{{ $backup['name'] }}</a>
+                            </td>
+                            <td class="muted">{{ $backup['origin'] }}</td>
+                            <td class="muted">{{ number_format($backup['size'] / 1024, 1) }} KB</td>
+                            <td>
+                                <form method="POST" action="{{ route('admin.database.destroy', $backup['name']) }}"
+                                      onsubmit="return confirm('Delete this backup?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn" type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         @endif
 
         @if($restoreEnabled)

@@ -60,6 +60,18 @@ class AdminDatabasePageTest extends TestCase
             ->assertSee('backup-20260101-000000-example.com-manual.sql.gz');
     }
 
+    public function test_backups_are_listed_in_a_table(): void
+    {
+        Storage::fake('backups');
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/backup-20260101-000000-example.com-manual.sql.gz', 'x');
+
+        $this->actingAs($this->admin())
+            ->get('/admin/database')
+            ->assertOk()
+            ->assertSee('<table', false)
+            ->assertSeeInOrder(['Backup', 'Origin', 'Size', 'backup-20260101-000000-example.com-manual.sql.gz']);
+    }
+
     public function test_admin_can_download_a_backup(): void
     {
         Storage::fake('backups');
