@@ -75,6 +75,24 @@ class AdminDatabasePullTest extends TestCase
         $this->assertSame(1, PostTranslation::count());
     }
 
+    public function test_pull_rewrites_media_urls_to_the_fallback_origin(): void
+    {
+        $this->configureSource();
+        Media::on('source')->create([
+            'path' => 'media/photo.jpg',
+            'url' => '/storage/media/photo.jpg',
+        ]);
+
+        $this->actingAs($this->admin())
+            ->post('/admin/database/pull')
+            ->assertRedirect('/admin/database');
+
+        $this->assertSame(
+            'https://astrotherapia.com/storage/media/photo.jpg',
+            Media::first()->url
+        );
+    }
+
     public function test_pull_takes_a_pre_restore_snapshot_of_dev(): void
     {
         $this->configureSource();
