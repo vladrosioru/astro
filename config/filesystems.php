@@ -38,6 +38,19 @@ return [
             'report' => false,
         ],
 
+        // Content backups written by the admin Database page. Rooted at the
+        // project's database/ dir; every access is scoped to the backups/
+        // subfolder via BackupRepository::DIRECTORY, so migrations and the dev
+        // sqlite file are never touched. No `serve`/`url`: these dumps are
+        // content exports and must never be web-reachable — downloads go
+        // through DatabaseController::download() on this private disk.
+        'backups' => [
+            'driver' => 'local',
+            'root' => database_path(),
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             // On shared hosts that disable symlink()/exec(), `storage:link` can't

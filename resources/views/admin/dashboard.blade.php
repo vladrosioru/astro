@@ -15,6 +15,9 @@
             @if (Route::has('admin.themes.index'))
                 <li><a href="{{ route('admin.themes.index') }}">Themes</a></li>
             @endif
+            @if (Route::has('admin.database.index'))
+                <li><a href="{{ route('admin.database.index') }}">Database</a></li>
+            @endif
         </ul>
         <form method="POST" action="{{ route('admin.logout') }}">@csrf<button type="submit">Log out</button></form>
     </div>

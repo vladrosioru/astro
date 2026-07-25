@@ -63,6 +63,8 @@ foreach ([
     'storage/framework/cache/data', 'storage/framework/sessions',
     'storage/framework/views', 'storage/framework/testing',
     'storage/logs', 'bootstrap/cache',
+    // Admin Database page writes content backups here (the `backups` disk).
+    'database/backups',
     // With PUBLIC_DISK_IN_DOCROOT=true the public disk serves from here (no
     // symlink), so it must exist and be writable.
     'public/storage',
