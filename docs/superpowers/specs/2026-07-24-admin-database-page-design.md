@@ -95,11 +95,30 @@ domain is baked into dev data. Only ever on dev.
 ### Backup storage: server-side, listed, pruned
 
 Manual backups and automatic pre-restore snapshots both write to
-`storage/app/private/backups/` and appear in one table on the page, labelled by
-origin. Retention keeps the most recent 10 and deletes older files.
+`database/backups/` and appear in one table on the page, labelled by origin.
+Retention keeps the most recent 10 and deletes older files.
+
+The files sit on a dedicated private filesystem disk, `backups`, rooted at the
+project's `database/` directory; every access is scoped to the `backups/`
+subfolder, so the disk never touches migrations or the dev sqlite file. The disk
+declares no `serve`/`url`, so the directory is never web-reachable — downloads
+go through the controller.
+
+This location survives deploys. `public/extract.php` unzips the CI archive with
+`extractTo()`, which overlays files and never wipes the tree, and
+`make-archive.php` never contains a `database/backups/` (it is created at
+runtime, not held in the repo). A deploy therefore writes the archive on top and
+leaves existing backups untouched — the same guarantee `storage/` gets. Because
+`database/` (unlike `storage/`) does ship in the archive, two small chores
+follow: `public/deploy.php` creates `database/backups` in its ensure-loop (the
+FTP sync skips empty dirs), and `.gitignore` excludes `/database/backups` so
+dump files are never committed.
 
 Rejected: streaming manual backups straight to the browser without persisting,
-which would mean two separate mechanisms and no visible history on prod.
+which would mean two separate mechanisms and no visible history on prod. Also
+rejected: `storage/app/private/backups/` — it works and is idiomatic, but the
+operator asked for the backups to live under `database/`, and the disk scoping
+above keeps that safe.
 
 ### No typed confirmation
 
@@ -153,6 +172,8 @@ a private disk; the directory is never web-reachable.
 - `all(): Collection` — filename, size, timestamp, origin label.
 - `prune(int $keep): void`, `delete(string $file): void`,
   `path(string $file): string`.
+- Reads and writes through the `backups` disk (`database/backups/`); the only
+  place a caller-supplied filename is trusted, guarded by the filename pattern.
 
 **`App\Http\Controllers\Admin\DatabaseController`**
 
@@ -267,8 +288,9 @@ against.
 
 Updated in the same change, per `CLAUDE.md`:
 
-- `README.md` — the new routes, `config/database_admin.php`, and the two
-  environment variables.
+- `README.md` — the new routes, `config/database_admin.php`, the `backups`
+  filesystem disk and where backups live (`database/backups/`, preserved across
+  deploys), and the two environment variables.
 - `docs/DEPLOY-CPANEL.md` — configuring `DB_RESTORE_ENABLED` and
   `MEDIA_FALLBACK_URL` on the `dev` GitHub environment, the backup-download-
   upload workflow, and the shared-host size and timeout ceilings.

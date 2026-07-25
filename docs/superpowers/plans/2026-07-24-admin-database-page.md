@@ -41,6 +41,9 @@ Delivers a reachable admin page with the config that every later task reads.
 - Create: `config/database_admin.php`
 - Create: `resources/views/admin/database/index.blade.php`
 - Create: `app/Http/Controllers/Admin/DatabaseController.php`
+- Modify: `config/filesystems.php:31-70` (register the `backups` disk)
+- Modify: `public/deploy.php:61-69` (add `database/backups` to the ensure-loop)
+- Modify: `.gitignore` (ignore `/database/backups`)
 - Modify: `routes/web.php:9` (imports), `routes/web.php:24-27` (route group)
 - Modify: `resources/views/admin/dashboard.blade.php:15-17`
 - Test: `tests/Feature/AdminDatabasePageTest.php`
@@ -100,7 +103,7 @@ Run: `php artisan test --filter=AdminDatabasePageTest`
 
 Expected: FAIL. `test_database_page_renders_for_an_admin` returns 404 because the route does not exist.
 
-- [ ] **Step 3: Create the config file**
+- [ ] **Step 3: Create the config file and register the backups disk**
 
 Create `config/database_admin.php`:
 
@@ -143,6 +146,48 @@ return [
     'tables' => ['posts', 'post_translations', 'media', 'site_settings'],
 ];
 ```
+
+Register a dedicated private disk for the backups. In `config/filesystems.php`,
+add to the `'disks'` array (after the `'local'` disk):
+
+```php
+        // Content backups written by the admin Database page. Rooted at the
+        // project's database/ dir; every access is scoped to the backups/
+        // subfolder via BackupRepository::DIRECTORY, so migrations and the dev
+        // sqlite file are never touched. No `serve`/`url`: these dumps are
+        // content exports and must never be web-reachable — downloads go
+        // through DatabaseController::download() on a private disk.
+        'backups' => [
+            'driver' => 'local',
+            'root' => database_path(),
+            'throw' => false,
+            'report' => false,
+        ],
+```
+
+The location survives deploys. `public/extract.php` unzips the CI archive with
+`extractTo()`, which *overlays* — it never wipes the tree — and `make-archive.php`
+never includes a `database/backups/` (the folder is created at runtime, not in
+the repo). So a deploy writes the archive on top and leaves existing backups
+untouched, exactly as `storage/` is preserved.
+
+Two consequences of putting runtime-writable files under `database/` (which,
+unlike `storage/`, *does* ship in the archive):
+
+1. The FTP sync skips empty dirs, so the folder must be created server-side. In
+   `public/deploy.php`, add `database/backups` to the ensure-loop
+   (`public/deploy.php:61-69`):
+
+   ```php
+       'storage/logs', 'bootstrap/cache',
+       'database/backups',
+   ```
+
+2. Backup files must never be committed. In `.gitignore`, add:
+
+   ```
+   /database/backups
+   ```
 
 - [ ] **Step 4: Create the controller**
 
@@ -231,8 +276,8 @@ Run: `vendor/bin/pint` — expected: files formatted, no errors.
 - [ ] **Step 10: Commit**
 
 ```bash
-git add config/database_admin.php app/Http/Controllers/Admin/DatabaseController.php resources/views/admin/database/index.blade.php resources/views/admin/dashboard.blade.php routes/web.php tests/Feature/AdminDatabasePageTest.php
-git commit -m "feat: add the admin Database page shell and its config"
+git add config/database_admin.php config/filesystems.php public/deploy.php .gitignore app/Http/Controllers/Admin/DatabaseController.php resources/views/admin/database/index.blade.php resources/views/admin/dashboard.blade.php routes/web.php tests/Feature/AdminDatabasePageTest.php
+git commit -m "feat: add the admin Database page shell, config and backups disk"
 ```
 
 ---
@@ -285,7 +330,7 @@ class BackupRepositoryTest extends TestCase
 
     private function put(string $name): void
     {
-        Storage::disk('local')->put(BackupRepository::DIRECTORY.'/'.$name, 'x');
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, 'x');
     }
 
     public function test_it_lists_backups_newest_first(): void
@@ -385,9 +430,14 @@ use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 
 /**
- * Backup files on the private `local` disk (storage/app/private/backups).
- * Never the public disk: these dumps are content exports and must not be
- * web-reachable. Downloads go through DatabaseController::download().
+ * Backup files live on the private `backups` disk, rooted at the project's
+ * database/ directory, under database/backups/. Never the public disk: these
+ * dumps are content exports and must not be web-reachable. Downloads go through
+ * DatabaseController::download().
+ *
+ * The location survives deploys: public/extract.php overlays the CI archive
+ * (it never wipes the tree) and database/backups/ is not an archive entry, so
+ * existing backups are left untouched — the same guarantee storage/ gets.
  */
 class BackupRepository
 {
@@ -413,7 +463,7 @@ class BackupRepository
     /** @return Collection<int, array{name: string, size: int, origin: string}> */
     public function all(): Collection
     {
-        $disk = Storage::disk('local');
+        $disk = Storage::disk('backups');
 
         return collect($disk->files(self::DIRECTORY))
             ->map(fn (string $path) => basename($path))
@@ -434,13 +484,13 @@ class BackupRepository
 
     public function delete(string $name): void
     {
-        Storage::disk('local')->delete(self::DIRECTORY.'/'.$this->assertValid($name));
+        Storage::disk('backups')->delete(self::DIRECTORY.'/'.$this->assertValid($name));
     }
 
     /** Absolute filesystem path to a backup. */
     public function path(string $name): string
     {
-        return Storage::disk('local')->path(self::DIRECTORY.'/'.$this->assertValid($name));
+        return Storage::disk('backups')->path(self::DIRECTORY.'/'.$this->assertValid($name));
     }
 
     /** The only place a caller-supplied filename is trusted. */
@@ -774,7 +824,7 @@ class DatabaseBackupTest extends TestCase
 
     private function contents(string $name): string
     {
-        return (string) gzdecode(Storage::disk('local')->get(BackupRepository::DIRECTORY.'/'.$name));
+        return (string) gzdecode(Storage::disk('backups')->get(BackupRepository::DIRECTORY.'/'.$name));
     }
 
     public function test_it_writes_a_gzipped_backup_containing_seeded_rows(): void
@@ -883,7 +933,7 @@ class DatabaseBackupService
      */
     public function create(string $origin = 'manual'): string
     {
-        Storage::disk('local')->makeDirectory(BackupRepository::DIRECTORY);
+        Storage::disk('backups')->makeDirectory(BackupRepository::DIRECTORY);
 
         $name = $this->backups->filename($origin);
         $handle = gzopen($this->backups->path($name), 'wb6');
@@ -1006,13 +1056,13 @@ Append to `tests/Feature/AdminDatabasePageTest.php` (add `use Illuminate\Support
             ->post('/admin/database/backup')
             ->assertRedirect('/admin/database');
 
-        $this->assertCount(1, Storage::disk('local')->files(BackupRepository::DIRECTORY));
+        $this->assertCount(1, Storage::disk('backups')->files(BackupRepository::DIRECTORY));
     }
 
     public function test_the_page_lists_existing_backups(): void
     {
         Storage::fake('local');
-        Storage::disk('local')->put(BackupRepository::DIRECTORY.'/backup-20260101-000000-example.com-manual.sql.gz', 'x');
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/backup-20260101-000000-example.com-manual.sql.gz', 'x');
 
         $this->actingAs($this->admin())
             ->get('/admin/database')
@@ -1024,7 +1074,7 @@ Append to `tests/Feature/AdminDatabasePageTest.php` (add `use Illuminate\Support
     {
         Storage::fake('local');
         $name = 'backup-20260101-000000-example.com-manual.sql.gz';
-        Storage::disk('local')->put(BackupRepository::DIRECTORY.'/'.$name, 'x');
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, 'x');
 
         $this->actingAs($this->admin())
             ->get('/admin/database/backup/'.$name)
@@ -1043,13 +1093,13 @@ Append to `tests/Feature/AdminDatabasePageTest.php` (add `use Illuminate\Support
     {
         Storage::fake('local');
         $name = 'backup-20260101-000000-example.com-manual.sql.gz';
-        Storage::disk('local')->put(BackupRepository::DIRECTORY.'/'.$name, 'x');
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, 'x');
 
         $this->actingAs($this->admin())
             ->delete('/admin/database/backup/'.$name)
             ->assertRedirect('/admin/database');
 
-        $this->assertCount(0, Storage::disk('local')->files(BackupRepository::DIRECTORY));
+        $this->assertCount(0, Storage::disk('backups')->files(BackupRepository::DIRECTORY));
     }
 
     public function test_creating_a_backup_prunes_beyond_the_retention_limit(): void
@@ -1058,12 +1108,12 @@ Append to `tests/Feature/AdminDatabasePageTest.php` (add `use Illuminate\Support
         config(['database_admin.retention' => 2]);
 
         foreach (['20260101', '20260102', '20260103'] as $day) {
-            Storage::disk('local')->put(BackupRepository::DIRECTORY."/backup-{$day}-000000-example.com-manual.sql.gz", 'x');
+            Storage::disk('backups')->put(BackupRepository::DIRECTORY."/backup-{$day}-000000-example.com-manual.sql.gz", 'x');
         }
 
         $this->actingAs($this->admin())->post('/admin/database/backup');
 
-        $this->assertCount(2, Storage::disk('local')->files(BackupRepository::DIRECTORY));
+        $this->assertCount(2, Storage::disk('backups')->files(BackupRepository::DIRECTORY));
     }
 
     public function test_guests_cannot_create_a_backup(): void
@@ -1475,7 +1525,7 @@ class DatabaseRestoreServiceTest extends TestCase
     private function fakeArchive(string $contents): string
     {
         $name = 'backup-20260101-000000-example.com-manual.sql.gz';
-        Storage::disk('local')->put(BackupRepository::DIRECTORY.'/'.$name, (string) gzencode($contents));
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, (string) gzencode($contents));
 
         return $this->backupPath($name);
     }
@@ -1505,7 +1555,7 @@ class DatabaseRestoreServiceTest extends TestCase
         $result = app(DatabaseRestoreService::class)->restore($this->backupPath($name));
 
         $this->assertStringEndsWith('-auto.sql.gz', $result['snapshot']);
-        $this->assertTrue(Storage::disk('local')->exists(BackupRepository::DIRECTORY.'/'.$result['snapshot']));
+        $this->assertTrue(Storage::disk('backups')->exists(BackupRepository::DIRECTORY.'/'.$result['snapshot']));
     }
 
     public function test_it_reports_the_number_of_restored_rows(): void
@@ -1552,7 +1602,7 @@ class DatabaseRestoreServiceTest extends TestCase
     public function test_it_rejects_a_file_that_is_not_gzipped(): void
     {
         $name = 'backup-20260101-000000-example.com-manual.sql.gz';
-        Storage::disk('local')->put(BackupRepository::DIRECTORY.'/'.$name, 'not gzip at all');
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, 'not gzip at all');
 
         $this->expectException(InvalidBackupException::class);
 
@@ -2136,7 +2186,7 @@ Both are GitHub *variables*, not secrets — neither is sensitive, and variables
 
 - [ ] **Step 6: Update `README.md`**
 
-Add the new routes to the routes table, and a short section covering: the `Database` admin page, `config/database_admin.php` and its keys, where backups live (`storage/app/private/backups`, retention 10), and that restore is dev-only via `DB_RESTORE_ENABLED`.
+Add the new routes to the routes table, and a short section covering: the `Database` admin page, `config/database_admin.php` and its keys, the `backups` filesystem disk and where backups live (`database/backups/`, retention 10, preserved across deploys), and that restore is dev-only via `DB_RESTORE_ENABLED`.
 
 - [ ] **Step 7: Update `docs/DEPLOY-CPANEL.md`**
 
