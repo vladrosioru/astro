@@ -83,6 +83,32 @@ class ContactFormTest extends TestCase
         });
     }
 
+    public function test_mail_transport_failure_does_not_500_and_shows_a_graceful_error(): void
+    {
+        // Reproduce the misconfigured-MAIL_HOST failure: the STARTTLS handshake
+        // aborts on a cert-hostname mismatch, so Mail::to()->send() throws a
+        // TransportException instead of returning. The visitor must never see a
+        // 500 — the form should degrade to a graceful error and keep its input.
+        $pending = \Mockery::mock(\Illuminate\Mail\PendingMail::class);
+        $pending->shouldReceive('send')->once()->andThrow(
+            new \Symfony\Component\Mailer\Exception\TransportException(
+                "Peer certificate CN=`server20.romania-webhosting.com' did not match expected CN=`localhost'"
+            )
+        );
+        Mail::shouldReceive('to')->once()->with('office@astrotherapia.com')->andReturn($pending);
+
+        $response = $this->from('/en/contact')->post('/en/contact', $this->validPayload());
+
+        $response->assertRedirect('/en/contact');
+        $response->assertSessionHasErrors();
+        $this->assertNotSame('sent', session('contact_status'));
+
+        $this->get('/en/contact')
+            ->assertOk()
+            ->assertSee('contact-alert--error', false)
+            ->assertDontSee('contact-alert--success', false);
+    }
+
     public function test_blank_subject_falls_back_to_default_subject(): void
     {
         Mail::fake();
