@@ -55,6 +55,14 @@ DEPLOY_TOKEN=${DEPLOY_TOKEN:?DEPLOY_TOKEN is required}
 DB_RESTORE_ENABLED=${DB_RESTORE_ENABLED:-false}
 MEDIA_FALLBACK_URL="${MEDIA_FALLBACK_URL:-}"
 
+# Copy prod -> dev button (dev environment only). Read-only prod DB creds so
+# dev can dump live prod content. Absent on prod => the button 404s/hides.
+PROD_DB_HOST="${PROD_DB_HOST:-127.0.0.1}"
+PROD_DB_PORT="${PROD_DB_PORT:-3306}"
+PROD_DB_DATABASE="${PROD_DB_DATABASE:-}"
+PROD_DB_USERNAME="${PROD_DB_USERNAME:-}"
+PROD_DB_PASSWORD="${PROD_DB_PASSWORD:-}"
+
 MAIL_MAILER=smtp
 MAIL_HOST=${MAIL_HOST:-localhost}
 MAIL_PORT=${MAIL_PORT:-587}
