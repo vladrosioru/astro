@@ -36,33 +36,34 @@
         </div>
         <ul class="nav-right">
             @if ($setting->sectionVisible('services'))
-                {{-- Services keeps its own link; the dropdown is a separate affordance
-                     next to it. Desktop reveals the submenu on hover/focus. Phone gets
-                     a tap-to-expand accordion via the same checkbox-hack pattern as the
-                     main hamburger toggle (input precedes the elements it controls so a
-                     `~` sibling combinator can reach them without :has()). --}}
-                <li class="nav-dropdown">
-                    {{-- Wraps just the label + caret (not the menu) so the caret can be
-                         pinned to the label's own width on phone — see structure.css.
-                         The checkbox stays a direct sibling of the menu (not nested in
-                         the wrapper) since the `~` sibling combinator below needs them
-                         sharing the same parent to reach the menu on :checked. --}}
-                    <span class="nav-dropdown-head">
-                        <a href="/{{ $locale }}/services">Services</a>
-                        <label for="services-toggle" class="nav-dropdown-btn" aria-label="Toggle Services submenu"></label>
-                    </span>
-                    <input type="checkbox" id="services-toggle" class="nav-dropdown-toggle-input">
-                    <ul class="nav-dropdown-menu">
-                        <li><a href="/{{ $locale }}/services#natal-chart-analysis">Natal Chart Analysis</a></li>
-                        <li><a href="/{{ $locale }}/services#relationship-analysis">Relationship Analysis</a></li>
-                        <li><a href="/{{ $locale }}/services#progressions-solar-returns">Progressions</a></li>
-                        <li><a href="/{{ $locale }}/services#progressions-solar-returns">Solar Returns</a></li>
-                        <li><a href="/{{ $locale }}/services#elective-horary-charts">Elective Astrology</a></li>
-                        <li><a href="/{{ $locale }}/services#astro-travel">Astrocartography</a></li>
-                        <li><a href="/{{ $locale }}/services#yearly-horoscope">Yearly Forecast</a></li>
-                    </ul>
-                </li>
+                <li><a href="/{{ $locale }}/services">Services</a></li>
             @endif
+            {{-- Services submenu (7-item dropdown) is disabled — plain link above only.
+                 To re-enable: replace the <li> above with the block below (uncomment,
+                 unindent) and restore test_nav_services_submenu_is_hidden in
+                 tests/Feature/PublicPagesTest.php with an assertion the items appear.
+            <li class="nav-dropdown">
+                Wraps just the label + caret (not the menu) so the caret can be
+                pinned to the label's own width on phone — see structure.css.
+                The checkbox stays a direct sibling of the menu (not nested in
+                the wrapper) since the `~` sibling combinator below needs them
+                sharing the same parent to reach the menu on :checked.
+                <span class="nav-dropdown-head">
+                    <a href="/{{ $locale }}/services">Services</a>
+                    <label for="services-toggle" class="nav-dropdown-btn" aria-label="Toggle Services submenu"></label>
+                </span>
+                <input type="checkbox" id="services-toggle" class="nav-dropdown-toggle-input">
+                <ul class="nav-dropdown-menu">
+                    <li><a href="/{{ $locale }}/services#natal-chart-analysis">Natal Chart Analysis</a></li>
+                    <li><a href="/{{ $locale }}/services#relationship-analysis">Relationship Analysis</a></li>
+                    <li><a href="/{{ $locale }}/services#progressions-solar-returns">Progressions</a></li>
+                    <li><a href="/{{ $locale }}/services#progressions-solar-returns">Solar Returns</a></li>
+                    <li><a href="/{{ $locale }}/services#elective-horary-charts">Elective Astrology</a></li>
+                    <li><a href="/{{ $locale }}/services#astro-travel">Astrocartography</a></li>
+                    <li><a href="/{{ $locale }}/services#yearly-horoscope">Yearly Forecast</a></li>
+                </ul>
+            </li>
+            --}}
             @if ($setting->sectionVisible('contact'))
                 <li><a href="/{{ $locale }}/contact">Contact</a></li>
             @endif

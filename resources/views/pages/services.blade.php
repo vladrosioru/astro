@@ -21,8 +21,31 @@
     $contactVisible = \App\Models\SiteSetting::current()->sectionVisible('contact');
 
     $categories = [
-        'astrology' => 'Astrology',
-        'tarot'     => 'Tarotscopes',
+        'archetypes' => 'Archetypes',
+        'astrology'  => 'Methods',
+    ];
+
+    $archetypes = [
+        ['glyph' => '♡', 'title' => 'Relationships',
+         'desc' => 'Why you keep attracting — or avoiding — the same kind of connection',
+         'method' => 'Venus, the Moon, and the 7th house — synastry and composite charts',
+         'names' => 'Mirror seeker, Guardian, Free spirit'],
+        ['glyph' => '⟟', 'title' => 'Career & purpose',
+         'desc' => 'Why some work feels meaningful and other work just drains you',
+         'method' => 'The Midheaven and 10th house, plus Saturn',
+         'names' => 'Strategist, Craftsman, Wanderer'],
+        ['glyph' => '◎', 'title' => 'Identity & growth', 'center' => true,
+         'desc' => 'Why you feel most like yourself in some seasons, and a stranger in others',
+         'method' => 'The Sun and Ascendant, against outer-planet transits',
+         'names' => 'Chameleon, Outsider, Phoenix'],
+        ['glyph' => '◐', 'title' => 'Values & money',
+         'desc' => 'Why security, spending, and self-worth feel tangled together',
+         'method' => 'The 2nd house, plus Venus and Saturn',
+         'names' => 'Builder, Provider, Risk-taker'],
+        ['glyph' => '☼', 'title' => 'Health & energy',
+         'desc' => 'Why stress shows up in your body before you notice it anywhere else',
+         'method' => 'The 6th house, the Moon and Mars',
+         'names' => 'Warrior, Healer, Dreamer'],
     ];
 
     $services = [
@@ -38,7 +61,11 @@
          'desc' => "An astrocartography reading that maps your chart onto the globe, showing which cities and regions light up specific parts of your life — useful before a move, a relocation, or a big trip."],
         ['id' => 'yearly-horoscope', 'cat' => 'astrology', 'glyph' => '✧', 'title' => 'Yearly Horoscope',
          'desc' => "A year-ahead forecast across love, work and growth, built from the major transits and returns crossing your chart over the next twelve months."],
+    ];
 
+    $tarotDescription = "Tarot works a little differently than a chart reading, but it asks the same kind of question — not what's coming, but what's already moving underneath the thing you're sitting with. One card can sharpen a question you already have; three laid out side by side show where a situation has been and where it's actually heading. What you do with what surfaces is still yours to decide.";
+
+    $tarotServices = [
         ['id' => 'single-card-draw', 'cat' => 'tarot', 'glyph' => '✦', 'title' => 'Single Card Draw',
          'desc' => "One card, one clear answer — quick guidance for a question that's been sitting with you."],
         ['id' => 'three-card-spread', 'cat' => 'tarot', 'glyph' => '❖', 'title' => 'Three-Card Spread',
@@ -62,6 +89,8 @@
          'a' => 'Your exact birth date, time, and place. Time matters more than people expect — it sets your rising sign and house placements, and without it a chart can only say so much.'],
         ['q' => 'Do you keep what I share private?',
          'a' => 'Yes. If a session ever informs something I write, it\'s anonymized and reshaped enough that it isn\'t recognizable — the pattern matters, not your personal details.'],
+        ['q' => 'How much does a session cost?',
+         'a' => 'It depends on what you need — prices vary by service, from a single tarot card draw to a full natal chart reading. Reach out by email or phone with what you\'re interested about, and I\'ll get either the basic price list or the quotation for your special request.'],
     ];
 
     $testimonials = [
@@ -88,7 +117,7 @@
         </div>
     </header>
 
-    {{-- Service categories + card grid ---------------------------------------- --}}
+    {{-- Service categories: Archetypes (pentagon flip cards) / Methods (grid) --- --}}
     <section class="about-section">
         <div class="about-shell">
             <div class="svc-tabs" data-svc-tabs role="tablist">
@@ -97,14 +126,82 @@
                 @endforeach
             </div>
 
-            <div class="svc-grid" data-svc-grid>
-                @foreach ($services as $s)
-                    <article class="svc-card" id="{{ $s['id'] }}" data-svc-cat="{{ $s['cat'] }}" @if($s['cat'] !== 'astrology') hidden @endif>
-                        <span class="svc-card__icon" aria-hidden="true">{{ $s['glyph'] }}&#xFE0E;</span>
-                        <h3 class="svc-card__title">{{ $s['title'] }}</h3>
-                        <p class="svc-card__desc">{{ $s['desc'] }}</p>
-                    </article>
-                @endforeach
+            <div class="svc-pentagon" data-svc-panel="archetypes">
+                <button type="button" class="svc-carousel-arrow svc-carousel-arrow--prev" data-svc-prev aria-label="Previous archetype">&#8249;</button>
+                <div class="svc-track" data-svc-track>
+                    <div class="svc-pentagon__row">
+                        @foreach (array_slice($archetypes, 0, 2) as $a)
+                            @include('pages.partials.svc-flip-card', ['a' => $a])
+                        @endforeach
+                    </div>
+                    <div class="svc-pentagon__row">
+                        @foreach (array_slice($archetypes, 2, 1) as $a)
+                            @include('pages.partials.svc-flip-card', ['a' => $a])
+                        @endforeach
+                    </div>
+                    <div class="svc-pentagon__row">
+                        @foreach (array_slice($archetypes, 3, 2) as $a)
+                            @include('pages.partials.svc-flip-card', ['a' => $a])
+                        @endforeach
+                    </div>
+                </div>
+                <button type="button" class="svc-carousel-arrow svc-carousel-arrow--next" data-svc-next aria-label="Next archetype">&#8250;</button>
+                <div class="svc-carousel-dots" data-svc-dots aria-hidden="true">
+                    @foreach ($archetypes as $i => $a)
+                        <button type="button" class="svc-carousel-dot @if(!empty($a['center'])) is-active @endif" data-svc-dot="{{ $i }}"></button>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="svc-grid" data-svc-grid data-svc-panel="astrology" hidden>
+                <button type="button" class="svc-carousel-arrow svc-carousel-arrow--prev" data-svc-prev aria-label="Previous service">&#8249;</button>
+                <div class="svc-track" data-svc-track>
+                    @foreach ($services as $s)
+                        <article class="svc-card" id="{{ $s['id'] }}" data-svc-cat="{{ $s['cat'] }}">
+                            <span class="svc-card__icon" aria-hidden="true">{{ $s['glyph'] }}&#xFE0E;</span>
+                            <h3 class="svc-card__title">{{ $s['title'] }}</h3>
+                            <p class="svc-card__desc">{{ $s['desc'] }}</p>
+                        </article>
+                    @endforeach
+                </div>
+                <button type="button" class="svc-carousel-arrow svc-carousel-arrow--next" data-svc-next aria-label="Next service">&#8250;</button>
+                <div class="svc-carousel-dots" data-svc-dots aria-hidden="true">
+                    @foreach ($services as $i => $s)
+                        <button type="button" class="svc-carousel-dot @if($i === 0) is-active @endif" data-svc-dot="{{ $i }}"></button>
+                    @endforeach
+                </div>
+            </div>
+
+            <p class="about-manifesto__cta">
+                <a class="about-btn" href="/{{ $locale }}/contact">Book a Session</a>
+            </p>
+        </div>
+    </section>
+
+    {{-- Tarot: separate section below Archetypes/Methods tabs, own CTA -------- --}}
+    <section class="about-section about-section--alt">
+        <div class="about-shell" id="tarot">
+            <p class="about-eyebrow about-eyebrow--center">Beyond the Chart</p>
+            <h2 class="about-h2 about-h2--center">Tarot</h2>
+            <p class="about-lede about-center">{{ $tarotDescription }}</p>
+
+            <div class="svc-grid" data-svc-tarot-grid>
+                <button type="button" class="svc-carousel-arrow svc-carousel-arrow--prev" data-svc-prev aria-label="Previous tarot spread">&#8249;</button>
+                <div class="svc-track" data-svc-track>
+                    @foreach ($tarotServices as $s)
+                        <article class="svc-card" id="{{ $s['id'] }}" data-svc-cat="{{ $s['cat'] }}">
+                            <span class="svc-card__icon" aria-hidden="true">{{ $s['glyph'] }}&#xFE0E;</span>
+                            <h3 class="svc-card__title">{{ $s['title'] }}</h3>
+                            <p class="svc-card__desc">{{ $s['desc'] }}</p>
+                        </article>
+                    @endforeach
+                </div>
+                <button type="button" class="svc-carousel-arrow svc-carousel-arrow--next" data-svc-next aria-label="Next tarot spread">&#8250;</button>
+                <div class="svc-carousel-dots" data-svc-dots aria-hidden="true">
+                    @foreach ($tarotServices as $i => $s)
+                        <button type="button" class="svc-carousel-dot @if($i === 0) is-active @endif" data-svc-dot="{{ $i }}"></button>
+                    @endforeach
+                </div>
             </div>
 
             <p class="about-manifesto__cta">

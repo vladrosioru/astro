@@ -27,6 +27,13 @@ class PublicBlogTest extends TestCase
         $this->get('/en/journal')->assertOk()->assertSee('Hello');
     }
 
+    public function test_index_shows_subhead_under_title(): void
+    {
+        $this->get('/en/journal')->assertOk()
+            ->assertSee('Cosmic Journal')
+            ->assertSee('Reflections on the sky, the self, and the seen and unseen patterns');
+    }
+
     public function test_show_renders_published_post_body(): void
     {
         $this->publishedPost('my-post');

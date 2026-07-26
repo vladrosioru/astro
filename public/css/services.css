@@ -113,3 +113,210 @@
 @media (max-width: 720px) {
     .svc-card__desc { font-size: 1.47rem; }
 }
+
+/* --- Panel visibility (Archetypes/Methods tab swap) ------------ */
+/* Both panels use display:flex/grid, which — same specificity as the
+   [hidden] attribute selector — would otherwise silently defeat native
+   hidden-attribute behaviour, exactly like .svc-card[hidden] already
+   has to handle for individual cards. */
+[data-svc-panel][hidden] { display: none; }
+
+/* --- Archetypes: five-pillar flip-card pentagon ----------------- */
+.svc-pentagon {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--space-unit) * 7);
+    align-items: center;
+    max-width: 48rem;
+    margin: 0 auto calc(var(--space-unit) * 10);
+}
+.svc-pentagon__row {
+    display: flex;
+    gap: calc(var(--space-unit) * 7);
+    justify-content: center;
+    width: 100%;
+}
+.flip-card {
+    width: 100%;
+    max-width: 15rem;
+    height: 14rem;
+    perspective: 1000px;
+    flex: none;
+}
+.flip-card__inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform .5s ease;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+.flip-card.is-flipped .flip-card__inner { transform: rotateY(180deg); }
+.flip-card__face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    padding: calc(var(--space-unit) * 7) calc(var(--space-unit) * 5);
+    background: color-mix(in srgb, var(--color-bg-alt) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 14%, transparent);
+    border-radius: 3px;
+    transition: border-color .3s ease, box-shadow .3s ease;
+}
+.flip-card__face--back { transform: rotateY(180deg); }
+.flip-card--center .flip-card__face {
+    background: color-mix(in srgb, var(--color-accent) 14%, var(--color-bg-alt));
+    border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+.flip-card--center .svc-card__title,
+.flip-card--center .flip-card__method,
+.flip-card--center .flip-card__names { color: var(--color-accent); }
+.flip-card:hover .flip-card__face,
+.flip-card:focus-within .flip-card__face {
+    border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+    box-shadow: 0 18px 40px -24px color-mix(in srgb, var(--color-primary) 60%, transparent);
+}
+.flip-card:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: 3px; }
+.flip-card__kicker {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+.flip-card__method { margin: calc(var(--space-unit) * 1) 0 calc(var(--space-unit) * 4); font-size: 0.85rem; line-height: 1.5; color: var(--color-fg); }
+.flip-card__names { margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--color-heading); }
+
+/* --- Mobile carousel controls (Archetypes, Methods & Tarot) --- */
+/* Hidden by default (desktop); shown inside the ≤620px query below.
+   .svc-track is `display: contents` by default so it never affects
+   desktop layout — the pentagon rows / grid cards render exactly as
+   if this wrapper didn't exist. [data-svc-clone] is the JS-inserted
+   loop-buffer card (see services.js) — it must stay out of desktop
+   layout entirely, since it's a duplicate of a real card added only to
+   make the mobile carousel wrap seamlessly past either end. */
+.svc-carousel-arrow,
+.svc-carousel-dots,
+[data-svc-clone] {
+    display: none;
+}
+.svc-track {
+    display: contents;
+}
+
+/* Below 620px, the Archetypes pentagon, the Methods grid, and the Tarot grid
+   all become a native scroll-snap carousel: one card in view, swipe (or the
+   arrows/dots) to move prev/next, wrapping past either end. Real touch-scroll
+   gestures don't dispatch a synthetic `click` on the element being dragged,
+   so this never fights with the flip-card's own tap-to-flip handler —
+   resolving the conflict noted below without hand-rolled touch-delta
+   tracking. `.svc-grid` covers Methods and Tarot alike, since both share
+   that class. */
+@media (max-width: 620px) {
+    .svc-pentagon__row { display: contents; }
+    .flip-card { max-width: 100%; }
+    [data-svc-clone] { display: block; }
+
+    .svc-pentagon,
+    .svc-grid {
+        position: relative;
+    }
+
+    .svc-pentagon .svc-track,
+    .svc-grid .svc-track {
+        display: flex;
+        width: 100%;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .svc-pentagon .svc-track::-webkit-scrollbar,
+    .svc-grid .svc-track::-webkit-scrollbar {
+        display: none;
+    }
+
+    .svc-pentagon .flip-card,
+    .svc-grid .svc-card {
+        flex: 0 0 100%;
+        scroll-snap-align: center;
+        scroll-snap-stop: always;
+    }
+
+    .svc-carousel-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 42%;
+        transform: translateY(-50%);
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 50%;
+        border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+        background: color-mix(in srgb, var(--color-bg-alt) 85%, transparent);
+        color: var(--color-primary);
+        font-size: 1.3rem;
+        line-height: 1;
+        cursor: pointer;
+        z-index: 2;
+        transition: background .25s ease, color .25s ease, border-color .25s ease;
+    }
+    .svc-carousel-arrow:hover {
+        background: var(--color-primary);
+        color: var(--color-bg);
+        border-color: var(--color-primary);
+    }
+    .svc-carousel-arrow--prev { left: 0; }
+    .svc-carousel-arrow--next { right: 0; }
+
+    .svc-carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: calc(var(--space-unit) * 2);
+        margin-top: calc(var(--space-unit) * 5);
+    }
+    .svc-carousel-dot {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        border: none;
+        padding: 0;
+        background: color-mix(in srgb, var(--color-primary) 25%, transparent);
+        cursor: pointer;
+    }
+    .svc-carousel-dot.is-active {
+        background: var(--color-primary);
+    }
+}
+
+/* The phone-readability bump above (.svc-card__desc to 1.47rem at
+   ≤720px) would overflow the flip card's fixed height — scope it back
+   down inside flip cards specifically. */
+@media (max-width: 720px) {
+    .flip-card .svc-card__desc { font-size: 1rem; }
+}
+
+/* --- Section rhythm fix: Archetypes/Methods → Tarot boundary ---- */
+/* about.css has a `main.about > .about-section:nth-of-type(1|2)` rule
+   that zeroes/trims padding to fit the About/Home chart-motif wheel
+   tight against its section edge. Services has no such wheel, but
+   shares `main.about`, so this rule reaches it by accident: before the
+   Tarot section existed it happened to zero the old FAQ section's top
+   padding (nth-of-type(2)); now Tarot occupies that slot instead, so
+   the wheel rule zeroes Tarot's top padding and keeps trimming the
+   Archetypes/Methods section's bottom padding — collapsing just that
+   one boundary while every other section boundary on this page gets
+   the full rhythm. Restore both sides to the same 9-unit padding the
+   FAQ/testimonials sections already use, so every boundary matches. */
+.page-services main.about > .about-section:nth-of-type(1) {
+    padding-bottom: calc(var(--space-unit) * 9);
+}
+.page-services main.about > .about-section:nth-of-type(2) {
+    padding-top: calc(var(--space-unit) * 9);
+}

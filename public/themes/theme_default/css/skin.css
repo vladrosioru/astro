@@ -131,6 +131,13 @@ body > nav .nav-dropdown-btn::after { content: '\25be'; color: var(--color-muted
     line-height: 1;
     color: var(--color-heading);
 }
+.journal-hero__sub {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+}
 
 /* Journal card teaser: date line, themed title link, first-post emphasis.
    `.card`/`.card__media`/`.card__body` stay as-is above (the admin Themes

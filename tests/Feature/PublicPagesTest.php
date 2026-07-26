@@ -38,6 +38,23 @@ class PublicPagesTest extends TestCase
         );
     }
 
+    public function test_about_page_manifesto_covers_all_five_pillars(): void
+    {
+        $response = $this->get('/en/about');
+
+        $response->assertOk()
+            ->assertSee('At the center of it is identity', false)
+            ->assertSee('Work and purpose orbit the same center', false)
+            ->assertDontSee('keep you up at night', false);
+    }
+
+    public function test_about_page_faq_includes_pricing_question(): void
+    {
+        $this->get('/en/about')
+            ->assertOk()
+            ->assertSee('How much does a session cost?', false);
+    }
+
     public function test_about_page_has_no_solar_system_divider(): void
     {
         $this->get('/en/about')
@@ -91,17 +108,12 @@ class PublicPagesTest extends TestCase
         $this->get('/en')->assertSee('/en/services');
     }
 
-    public function test_nav_services_submenu_has_all_seven_items_in_order(): void
+    public function test_nav_services_submenu_is_hidden(): void
     {
-        $this->get('/en')->assertSeeInOrder([
-            'services#natal-chart-analysis">Natal Chart Analysis',
-            'services#relationship-analysis">Relationship Analysis',
-            'services#progressions-solar-returns">Progressions<',
-            'services#progressions-solar-returns">Solar Returns',
-            'services#elective-horary-charts">Elective Astrology',
-            'services#astro-travel">Astrocartography',
-            'services#yearly-horoscope">Yearly Forecast',
-        ], false);
+        $this->get('/en')
+            ->assertOk()
+            ->assertDontSee('services#natal-chart-analysis">Natal Chart Analysis', false)
+            ->assertDontSee('nav-dropdown', false);
     }
 
     public function test_services_page_has_no_breadcrumb(): void
@@ -167,21 +179,164 @@ class PublicPagesTest extends TestCase
             ->assertSeeInOrder(['data-svc-grid', 'Frequently Asked Questions'], false);
     }
 
-    public function test_services_page_book_a_session_button_after_cards(): void
-    {
-        $response = $this->get('/en/services');
-        $content = $response->getContent();
-
-        $response->assertOk()->assertSeeInOrder(['data-svc-grid', 'Book a Session'], false);
-
-        $this->assertSame(1, substr_count($content, 'Book a Session'));
-    }
-
     public function test_services_page_testimonials_use_andrei_not_alice(): void
     {
         $this->get('/en/services')
             ->assertOk()
             ->assertSee('Andrei')
             ->assertDontSee('Alice');
+    }
+
+    public function test_services_page_archetypes_tab_is_first_and_labeled(): void
+    {
+        $response = $this->get('/en/services');
+        $content = $response->getContent();
+
+        $response->assertOk()->assertSeeInOrder([
+            'data-svc-tab="archetypes"',
+            'Archetypes',
+            'data-svc-tab="astrology"',
+            'Methods',
+        ], false);
+
+        $this->assertStringNotContainsString('>Astrology<', $content);
+    }
+
+    public function test_services_page_methods_tab_renamed_astrology_cards_unchanged(): void
+    {
+        $response = $this->get('/en/services');
+        $content = $response->getContent();
+
+        $response->assertOk()->assertSee('Methods');
+        $this->assertStringNotContainsString('>Astrology<', $content);
+        $this->assertSame(6, substr_count($content, 'data-svc-cat="astrology"'));
+        $this->assertStringNotContainsString('svc-card__cat', $content);
+    }
+
+    public function test_services_page_tarot_tab_removed_from_tab_bar(): void
+    {
+        $this->get('/en/services')
+            ->assertOk()
+            ->assertDontSee('data-svc-tab="tarot"', false);
+    }
+
+    public function test_services_page_archetypes_tab_has_five_pillar_flip_cards(): void
+    {
+        $response = $this->get('/en/services');
+        $content = $response->getContent();
+
+        $response->assertOk()
+            ->assertSeeInOrder(['data-svc-tab="archetypes"', 'data-svc-panel="archetypes"'], false)
+            ->assertSee('Identity &amp; growth', false)
+            ->assertSee('Career &amp; purpose', false)
+            ->assertSee('Values &amp; money', false)
+            ->assertSee('Health &amp; energy', false)
+            ->assertSee('Mirror seeker, Guardian, Free spirit')
+            ->assertSee('Chameleon, Outsider, Phoenix');
+
+        $this->assertSame(5, substr_count($content, 'data-flip'));
+    }
+
+    public function test_services_page_tarot_section_exists_after_tabs_with_heading_description_and_cards(): void
+    {
+        $response = $this->get('/en/services');
+        $content = $response->getContent();
+
+        $response->assertOk()
+            ->assertSeeInOrder(['data-svc-grid', 'id="tarot"', '>Tarot<', 'data-svc-tarot-grid'], false)
+            ->assertSeeInOrder(['data-svc-tarot-grid', 'Frequently Asked Questions'], false);
+
+        $this->assertSame(3, substr_count($content, 'data-svc-cat="tarot"'));
+        $this->assertSame(1, substr_count($content, 'data-svc-tarot-grid'));
+    }
+
+    public function test_services_page_two_book_a_session_ctas_one_per_section(): void
+    {
+        $response = $this->get('/en/services');
+        $content = $response->getContent();
+
+        $response->assertOk()->assertSeeInOrder([
+            'data-svc-grid',
+            'Book a Session',
+            'data-svc-tarot-grid',
+            'Book a Session',
+            'Frequently Asked Questions',
+        ], false);
+
+        $this->assertSame(2, substr_count($content, 'Book a Session'));
+    }
+
+    public function test_services_page_faq_has_eight_items_matching_about(): void
+    {
+        $response = $this->get('/en/services');
+        $content = $response->getContent();
+
+        $response->assertOk()->assertSee('How much does a session cost?', false);
+        $this->assertSame(8, substr_count($content, 'about-faq__q'));
+    }
+
+    public function test_services_page_archetypes_carousel_has_arrows_and_five_dots(): void
+    {
+        $response = $this->get('/en/services');
+        $content = $response->getContent();
+        $response->assertOk();
+
+        $start = strpos($content, 'data-svc-panel="archetypes"');
+        $end = strpos($content, 'data-svc-panel="astrology"');
+        $panel = substr($content, $start, $end - $start);
+
+        $this->assertSame(1, substr_count($panel, 'data-svc-prev'));
+        $this->assertSame(1, substr_count($panel, 'data-svc-next'));
+        $this->assertSame(5, substr_count($panel, 'data-svc-dot='));
+    }
+
+    public function test_services_page_methods_carousel_has_arrows_and_six_dots(): void
+    {
+        $response = $this->get('/en/services');
+        $content = $response->getContent();
+        $response->assertOk();
+
+        $start = strpos($content, 'data-svc-panel="astrology"');
+        $end = strpos($content, 'data-svc-tarot-grid');
+        $panel = substr($content, $start, $end - $start);
+
+        $this->assertSame(1, substr_count($panel, 'data-svc-prev'));
+        $this->assertSame(1, substr_count($panel, 'data-svc-next'));
+        $this->assertSame(6, substr_count($panel, 'data-svc-dot='));
+    }
+
+    public function test_services_page_tarot_carousel_has_arrows_and_three_dots(): void
+    {
+        $response = $this->get('/en/services');
+        $content = $response->getContent();
+        $response->assertOk();
+
+        $start = strpos($content, 'data-svc-tarot-grid');
+        $end = strpos($content, 'Frequently Asked Questions');
+        $tarot = substr($content, $start, $end - $start);
+
+        $this->assertSame(1, substr_count($tarot, 'data-svc-prev'));
+        $this->assertSame(1, substr_count($tarot, 'data-svc-next'));
+        $this->assertSame(3, substr_count($tarot, 'data-svc-dot='));
+    }
+
+    public function test_services_page_methods_cards_never_get_data_flip(): void
+    {
+        $response = $this->get('/en/services');
+        $content = $response->getContent();
+        $response->assertOk();
+
+        $start = strpos($content, 'data-svc-panel="astrology"');
+        $end = strpos($content, 'data-svc-tarot-grid');
+        $panel = substr($content, $start, $end - $start);
+
+        $this->assertStringNotContainsString('data-flip', $panel);
+    }
+
+    public function test_services_page_identity_growth_is_still_center_card(): void
+    {
+        $response = $this->get('/en/services');
+
+        $response->assertOk()->assertSeeInOrder(['flip-card--center', 'Identity &amp; growth'], false);
     }
 }

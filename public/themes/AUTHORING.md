@@ -125,6 +125,13 @@ nested inside it — this lets CSS restyle `<nav>` itself from the checkbox's
 `:checked` state using a plain `~` sibling combinator, without needing the
 `:has()` relational selector (which isn't supported by every browser):
 
+> **Status:** the Services submenu (`.nav-dropdown` and everything below it in
+> the skeleton/table here) is currently disabled — `nav.blade.php` renders
+> "Services" as a plain link only, with the dropdown markup kept commented out
+> in that file for easy reactivation. The `.nav-dropdown*` CSS below is
+> intentionally left in both themes' stylesheets, inert, ready to work again
+> once the markup is restored.
+
 ```html
 <input type="checkbox" id="nav-toggle" class="nav-toggle-input">
 <nav><div class="container">
@@ -254,18 +261,22 @@ nav's `.nav-eyebrow` wordmark — see Navigation — not emitted by the hero.)
 
 Both the Journal list and every article page open with the same full-bleed
 photo-band hero (title overlaid on an image), authored directly in the shared
-view — there's no `theme::` slot for it, just two fixed classes every theme styles:
+view — there's no `theme::` slot for it, just fixed classes every theme styles.
+The listing page also carries an optional subhead paragraph under the title;
+article pages don't use it:
 
 ```html
 <header class="journal-hero">
   <h1 class="journal-hero__title">Cosmic Journal</h1> <!-- or the article's title -->
+  <p class="journal-hero__sub">Reflections on the sky, the self, and the seen and unseen patterns</p> <!-- listing page only -->
 </header>
 ```
 
 | Selector | Notes |
 |---|---|
-| `.journal-hero` | full-bleed band — background image/color, centering (layout in `structure.css`; background + `::before` scrim in `skin.css`). **Height is not fixed** — see below. |
+| `.journal-hero` | full-bleed band — background image/color, centering (layout in `structure.css`; background + `::before` scrim in `skin.css`). **Height is not fixed** — see below. `flex-direction: column` stacks the optional subhead under the title. |
 | `.journal-hero__title` | the overlaid `<h1>` — color, optional `text-shadow` for legibility over a photo. **Don't set its own `font-size`/`line-height`** — see below. |
+| `.journal-hero__sub` | optional overlaid `<p>` tagline, listing page only — italic, muted, sized in `rem` (not `em`, so it doesn't inherit `.journal-hero`'s title-locked font-size). |
 
 `theme_solarsystem` sets `.journal-hero`'s `background-image` to a photo it ships
 in its own `img/` folder (referenced with a CSS-relative `url(../img/...)`, so
@@ -286,6 +297,8 @@ above/below the title symmetric on article pages where a longer title wraps to
 two lines — the padding is a fixed multiple of the font-size, not of the number
 of lines, and `align-items: center` centers whatever the title's box turns out
 to be. Follow this pattern rather than setting a `min-height` on `.journal-hero`.
+This exact 3x figure holds for title-only usage (article pages); on the listing
+page, the optional `.journal-hero__sub` adds its own height on top of it.
 
 ### Blog listing — `resources/views/blog/index.blade.php`
 

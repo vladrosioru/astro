@@ -205,6 +205,14 @@ a:hover { color: var(--color-accent); }
     color: var(--color-heading);
     text-shadow: 0 2px 30px rgba(0, 0, 0, .6), 0 0 60px rgba(20, 40, 80, .5);
 }
+.journal-hero__sub {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: var(--color-muted);
+    text-shadow: 0 2px 30px rgba(0, 0, 0, .6), 0 0 60px rgba(20, 40, 80, .5);
+}
 
 /* Journal card teaser: date line, themed title link, first-post emphasis.
    `.card`/`.card__media`/`.card__body` stay as-is above (the admin Themes

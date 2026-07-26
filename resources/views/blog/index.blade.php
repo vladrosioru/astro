@@ -3,6 +3,7 @@
 @section('content')
     <header class="journal-hero">
         <h1 class="journal-hero__title">Cosmic Journal</h1>
+        <p class="journal-hero__sub">Reflections on the sky, the self, and the seen and unseen patterns</p>
     </header>
 
     <div class="container">

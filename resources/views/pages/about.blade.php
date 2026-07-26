@@ -27,6 +27,8 @@
          'a' => 'Your exact birth date, time, and place. Time matters more than people expect — it sets your rising sign and house placements, and without it a chart can only say so much.'],
         ['q' => 'Do you keep what I share private?',
          'a' => 'Yes. If a session ever informs something I write, it\'s anonymized and reshaped enough that it isn\'t recognizable — the pattern matters, not your personal details.'],
+        ['q' => 'How much does a session cost?',
+         'a' => 'It depends on what you need — prices vary by service, from a single tarot card draw to a full natal chart reading. Reach out by email or phone with what you\'re interested about, and I\'ll get either the basic price list or the quotation for your special request.'],
     ];
 @endphp
 
@@ -60,23 +62,31 @@
                     fortune-telling. Fortune-telling asks the chart to do your thinking for you. I ask it
                     to show you what you're already doing, clearly enough that you can finally choose
                     something different — or choose to keep going, on purpose instead of on autopilot.</p>
-                <p>Here's what that looks like across the parts of life clients actually bring to me.</p>
-                <p>In relationships, the chart doesn't tell you who to love. It tends to show you the
-                    pattern underneath who you keep loving — why safety can feel safer than passion, or
-                    why closeness sometimes feels like losing yourself. Once you can see the pattern, you
-                    get to decide whether it's still serving you.</p>
-                <p>In money and self-worth, it's rarely about the money for long. It's usually about what
-                    security means to you, and where you learned to measure your worth by what you've
-                    built, saved, or given away. The chart won't tell you to spend or save. It can show
-                    you why that decision feels so loaded in the first place.</p>
-                <p>In health and energy, it's not about diagnosis — that's not what this is, and I'll
-                    always say so plainly. It's about noticing the rhythm underneath your stress: when
-                    you tend to override your body instead of listening to it, and why rest can feel like
-                    something you have to earn rather than something you're allowed.</p>
-                <p>And in the decisions that actually keep you up at night — the ones about timing, about
-                    whether now is the moment — the chart doesn't predict the outcome. It can explain the
-                    resistance. Sometimes "is this the right time" is really "am I ready," and those are
-                    different questions with different answers.</p>
+                <p>Here's what that looks like across the parts of life clients actually bring to me —
+                    and it usually starts from the same place.</p>
+                <p>◎ At the center of it is identity — the Sun and the Ascendant, the part of the chart
+                    that's simply you. Why you feel most like yourself in some seasons, and like a
+                    stranger to yourself in others. Every pattern below spins around this one, the same
+                    way a chart's other houses spin around the degree that was rising the moment you were
+                    born. Get a little clearer on this, and the rest tends to follow.</p>
+                <p>♡ Relationships spin off from there first, more often than not. The chart doesn't tell
+                    you who to love. It tends to show you the pattern underneath who you keep loving — why
+                    safety can feel safer than passion, or why closeness sometimes feels like losing
+                    yourself. Once you can see the pattern, you get to decide whether it's still serving
+                    you.</p>
+                <p>⟟ Work and purpose orbit the same center — the Midheaven, the part of the chart that
+                    asks what you're building and who's watching you build it. Why some work feels
+                    meaningful and other work just quietly drains you, even when it looks fine on paper.
+                    The chart won't tell you which job to take. It can show you why the choice keeps
+                    feeling harder than it should.</p>
+                <p>◐ Money and self-worth circle around here too. It's rarely about the money for long.
+                    It's usually about what security means to you, and where you learned to measure your
+                    worth by what you've built, saved, or given away. The chart won't tell you to spend or
+                    save. It can show you why that decision feels so loaded in the first place.</p>
+                <p>☼ And so does the body — health and energy, the rhythm underneath your stress. That's
+                    not about diagnosis, and I'll always say so plainly. It's about noticing when you tend
+                    to override your body instead of listening to it, and why rest can feel like something
+                    you have to earn rather than something you're allowed.</p>
                 <p>Over years of reading charts, I keep meeting the same handful of patterns wearing
                     different names. Someone who tests every commitment before they'll trust it. Someone
                     who builds and builds and never quite says when enough is enough. Someone who takes

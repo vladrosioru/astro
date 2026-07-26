@@ -120,16 +120,21 @@ body > nav .nav-dropdown-menu {
 .page-home > nav { position: sticky; top: 0; }
 .page-home { position: relative; }
 
-/* Journal / Article hero (layout only): full-bleed band, title centered over
-   whatever background the skin gives it (photo or flat color). */
+/* Journal / Article hero (layout only): full-bleed band, title (and, on the
+   listing page only, a subhead) centered over whatever background the skin
+   gives it (photo or flat color). column direction stacks the optional
+   subhead under the title instead of beside it. */
 /* No fixed/min height: the skin sets this element's own font-size to match
    the title, and 1em top/bottom padding here means the band is always
    exactly 1x (top) + 1x (title line) + 1x (bottom) = 3x the title's text
    size — and stays symmetric top/bottom even when a longer article title
-   wraps to two lines, since the padding doesn't grow with line count. */
+   wraps to two lines, since the padding doesn't grow with line count. This
+   only holds for title-only usage (article pages); the listing page's
+   subhead adds its own height on top of that 3x figure. */
 .journal-hero {
     position: relative;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 1em calc(var(--space-unit) * 4);
@@ -137,6 +142,7 @@ body > nav .nav-dropdown-menu {
     overflow: hidden;
 }
 .journal-hero__title { position: relative; z-index: 1; margin: 0; max-width: 48rem; }
+.journal-hero__sub { position: relative; z-index: 1; margin: calc(var(--space-unit) * 4) 0 0; max-width: 34rem; }
 
 /* Journal listing: `.blog-grid--journal` is a modifier on top of the base
    `.blog-grid` (which the admin Themes picker also uses, unmodified, for its

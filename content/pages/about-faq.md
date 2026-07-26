@@ -3,7 +3,7 @@ page: about
 slot: faq
 locale: en
 status: draft
-count: 7
+count: 8
 note: "Replaces the 5 placeholder zodiac-trivia FAQs currently in about.blade.php / home.blade.php (sun sign lookup, 13th zodiac sign, cusp dates, rising sign glossary entry, twin flame) — flagged as off-brand: generic astrology-101 trivia and, for twin flame specifically, fated-soulmate language that contradicts the why-not-what positioning. Trim to your preferred count (5-6 is typical) when wiring in."
 ---
 
@@ -29,3 +29,6 @@ note: "Replaces the 5 placeholder zodiac-trivia FAQs currently in about.blade.ph
 
 7. **Do you keep what I share private?**
    Yes. If a session ever informs something I write, it's anonymized and reshaped enough that it isn't recognizable — the pattern matters, not your personal details.
+
+8. **How much does a session cost?**
+   It depends on what you need — prices vary by service, from a single tarot card draw to a full natal chart reading. Reach out by email or phone with what you're interested about, and I'll get either the basic price list or the quotation for your special request.
