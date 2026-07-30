@@ -60,6 +60,17 @@
             </div>
         </article>
 
+        <div class="article-author">
+            <div class="article-author__media">
+                <img src="{{ asset('img/logo-nav.png') }}" alt="AstroTherapia">
+            </div>
+            <div class="article-author__body">
+                <p class="article-author__label">Author</p>
+                <h2 class="article-author__name"><span class="article-author__name-first">Andrei</span><span class="article-author__name-rest"> | AstroTherapia</span></h2>
+                <p class="article-author__bio">Associate Member of Faculty of Astrological Studies - London, UK</p>
+            </div>
+        </div>
+
         <div class="article-footer">
             <p class="article-date">{{ $post->published_at->format('M j, Y') }}</p>
             <div class="article-share-block">
@@ -74,23 +85,29 @@
                         </a>
                     </li>
                     <li>
-                        {{-- Instagram has no public "share this link" web intent, so this
-                             copies the article link to the clipboard (see article-share.js)
-                             and opens the AstroTherapia profile in the same popup style. --}}
-                        <a href="https://www.instagram.com/astrotherapia/" target="_blank" rel="noopener"
-                           data-share="instagram" aria-label="Share on Instagram">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-                                <rect x="3.5" y="3.5" width="17" height="17" rx="5"/>
-                                <circle cx="12" cy="12" r="4.2"/>
-                                <circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/>
-                            </svg>
-                        </a>
-                    </li>
-                    <li>
                         <a href="https://x.com/intent/tweet?text={{ urlencode($t->title) }}&url={{ urlencode($articleUrl) }}"
                            target="_blank" rel="noopener" aria-label="Share on X">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
                                 <path d="M4 3h4.2l4 5.6L16.8 3H20l-6.4 8.2L20.4 21H16.2l-4.4-6.1L6.8 21H3.6l6.9-8.8L4 3Z"/>
+                            </svg>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode($articleUrl) }}"
+                           target="_blank" rel="noopener" aria-label="Share on LinkedIn">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+                                <path d="M4.98 3.5a1.98 1.98 0 1 1 0 3.96 1.98 1.98 0 0 1 0-3.96ZM3.2 9h3.55v11.5H3.2V9Zm6.2 0h3.4v1.57h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.26 2.37 4.26 5.46v6.32h-3.55v-5.6c0-1.34-.02-3.06-1.87-3.06-1.87 0-2.15 1.46-2.15 2.96v5.7H9.4V9Z"/>
+                            </svg>
+                        </a>
+                    </li>
+                    <li>
+                        {{-- Copies the article link to the clipboard (see article-share.js);
+                             no popup to open, so href just points at the article itself. --}}
+                        <a href="{{ $articleUrl }}" target="_blank" rel="noopener"
+                           data-share="copy" aria-label="Copy link">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                                <rect x="9" y="9" width="11" height="11" rx="2"/>
+                                <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/>
                             </svg>
                         </a>
                     </li>

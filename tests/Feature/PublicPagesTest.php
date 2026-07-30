@@ -187,6 +187,30 @@ class PublicPagesTest extends TestCase
             ->assertDontSee('Alice');
     }
 
+    public function test_services_page_testimonials_have_no_avatar_placeholder(): void
+    {
+        $response = $this->get('/en/services');
+        $content = $response->getContent();
+
+        $response->assertOk();
+        $this->assertStringNotContainsString('about-testi__avatar', $content);
+    }
+
+    public function test_services_page_testimonials_use_first_name_initial_reviewers(): void
+    {
+        $response = $this->get('/en/services');
+
+        $response->assertOk()
+            ->assertSeeInOrder(['John M', 'London'])
+            ->assertSeeInOrder(['Anca R', 'Boston'])
+            ->assertSeeInOrder(['Andreea P', 'Brasov'])
+            ->assertSeeInOrder(['Catalin A', 'Bucharest'])
+            ->assertDontSee('Jenna Mackenzie')
+            ->assertDontSee('Milan')
+            ->assertDontSee('Los Angeles')
+            ->assertDontSee('Paris');
+    }
+
     public function test_services_page_archetypes_tab_is_first_and_labeled(): void
     {
         $response = $this->get('/en/services');

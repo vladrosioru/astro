@@ -48,4 +48,30 @@ class AttachmentUploadTest extends TestCase
 
         $this->assertSame(1, Media::count());
     }
+
+    public function test_gif_upload_keeps_its_animation_instead_of_being_flattened_to_png(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        // A real GIF blob (not UploadedFile::fake()->image(), which only fakes
+        // JPEG-shaped bytes). GD can't read/write multi-frame GIF at all, so
+        // routing any GIF through Intervention's GD-based resize/encode
+        // pipeline always flattens animation to one frame — proven here by
+        // asserting the stored file is byte-for-byte identical to what was
+        // uploaded and keeps its .gif extension, meaning it was never
+        // decoded/re-encoded at all (which is what preserves every frame).
+        ob_start();
+        imagegif(imagecreatetruecolor(2, 2));
+        $gifBytes = ob_get_clean();
+
+        $response = $this->actingAs($admin)->post('/admin/attachments', [
+            'upload' => UploadedFile::fake()->createWithContent('animated.gif', $gifBytes),
+        ]);
+
+        $response->assertOk()->assertJsonStructure(['url']);
+        $media = Media::first();
+        $this->assertStringEndsWith('.gif', $media->path);
+        $this->assertSame($gifBytes, Storage::disk('public')->get($media->path));
+    }
 }

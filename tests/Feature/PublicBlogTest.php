@@ -67,6 +67,17 @@ class PublicBlogTest extends TestCase
             ->assertSee('/storage/media/pic.jpg', false);
     }
 
+    public function test_card_shows_author_placeholder_and_rule_above_read_more(): void
+    {
+        $post = $this->publishedPost();
+        $post->update(['featured_image' => '/storage/media/pic.jpg']);
+
+        $this->get('/en/journal')->assertOk()
+            ->assertSee('Andrei | AstroTherapia')
+            ->assertSee('card__author', false)
+            ->assertSee('card__rule', false);
+    }
+
     public function test_card_is_text_only_without_featured_image(): void
     {
         $this->publishedPost();
@@ -92,7 +103,7 @@ class PublicBlogTest extends TestCase
         $this->get('/en/articles/my-post')->assertRedirect('/en/journal/my-post');
     }
 
-    public function test_article_share_row_has_label_and_working_instagram_link(): void
+    public function test_article_share_row_has_facebook_x_linkedin_and_copy_link(): void
     {
         $this->publishedPost('my-post');
 
@@ -100,8 +111,42 @@ class PublicBlogTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Like it? Tell the world!')
-            ->assertSee('href="https://www.instagram.com/astrotherapia/"', false)
-            ->assertSee('data-share="instagram"', false)
-            ->assertDontSee('href="#" aria-label="Share on Instagram"', false);
+            ->assertSee('https://www.facebook.com/sharer/sharer.php', false)
+            ->assertSee('aria-label="Share on X"', false)
+            ->assertSee('https://www.linkedin.com/sharing/share-offsite', false)
+            ->assertSee('data-share="copy"', false)
+            ->assertDontSee('instagram', false);
+    }
+
+    public function test_article_page_shows_author_cassette(): void
+    {
+        $this->publishedPost('my-post');
+
+        $response = $this->get('/en/journal/my-post');
+
+        $response->assertOk()
+            ->assertSee('article-author', false)
+            ->assertSee('Author', false)
+            ->assertSeeText('Andrei | AstroTherapia')
+            ->assertSee('Associate Member of Faculty of Astrological Studies - London, UK')
+            ->assertDontSee('About Author')
+            ->assertDontSee('View all posts');
+    }
+
+    public function test_author_cassette_falls_directly_below_article_body_before_share_row(): void
+    {
+        $this->publishedPost('my-post');
+
+        $content = $this->get('/en/journal/my-post')->getContent();
+
+        $articlePaperPos = strpos($content, 'article-paper');
+        $authorPos = strpos($content, 'article-author');
+        $footerPos = strpos($content, 'article-footer');
+
+        $this->assertNotFalse($articlePaperPos);
+        $this->assertNotFalse($authorPos);
+        $this->assertNotFalse($footerPos);
+        $this->assertTrue($articlePaperPos < $authorPos, 'Author cassette should come after the article body');
+        $this->assertTrue($authorPos < $footerPos, 'Date/share row should come after the author cassette');
     }
 }

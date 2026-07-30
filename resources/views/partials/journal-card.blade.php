@@ -9,28 +9,41 @@
 @endphp
 <article class="card{{ $post->featured_image ? ' card--media' : '' }}{{ ($first ?? false) ? ' card--first' : '' }}">
     @if ($post->featured_image)
-        <div class="card__meta">
-            <p class="card__date">{{ $post->published_at->format('M j, Y') }}</p>
-            <h2 class="card__title"><a href="{{ $url }}">{{ $translation->title }}</a></h2>
-            @if (!empty($translation->subtitle))
-                <p class="card__subtitle">{{ $translation->subtitle }}</p>
-            @endif
+        <div class="card__row">
+            <a class="card__media-link" href="{{ $url }}">
+                <img class="card__media" src="{{ $post->featured_image }}" alt="{{ $translation->title }}">
+            </a>
+            <div class="card__content">
+                <div class="card__meta">
+                    <p class="card__date">{{ $post->published_at->format('M j, Y') }}</p>
+                    <h2 class="card__title"><a href="{{ $url }}">{{ $translation->title }}</a></h2>
+                    @if (!empty($translation->subtitle))
+                        <p class="card__subtitle">{{ $translation->subtitle }}</p>
+                    @endif
+                </div>
+                <div class="card__body">
+                    @if ($frag['lead'] !== '')
+                        <p class="card__excerpt">{{ $frag['lead'] }}@if($frag['continued']) {{ $frag['continued'] }}@endif <a class="card__ellipsis" href="{{ $url }}">[...]</a></p>
+                    @endif
+                    <p class="card__author">Andrei | AstroTherapia</p>
+                </div>
+                <div class="card__foot">
+                    <hr class="card__rule">
+                    <a class="card__more btn btn-primary" href="{{ $url }}">Read more</a>
+                </div>
+            </div>
         </div>
-        <a class="card__media-link" href="{{ $url }}">
-            <img class="card__media" src="{{ $post->featured_image }}" alt="{{ $translation->title }}">
-        </a>
-    @endif
-    <div class="card__body">
-        @unless ($post->featured_image)
+    @else
+        <div class="card__body">
             <p class="card__date">{{ $post->published_at->format('M j, Y') }}</p>
             <h2 class="card__title"><a href="{{ $url }}">{{ $translation->title }}</a></h2>
             @if (!empty($translation->subtitle))
                 <p class="card__subtitle">{{ $translation->subtitle }}</p>
             @endif
-        @endunless
-        @if ($frag['lead'] !== '')
-            <p class="card__excerpt">{{ $frag['lead'] }}@if($frag['continued']) {{ $frag['continued'] }}@endif <a class="card__ellipsis" href="{{ $url }}">[...]</a></p>
-        @endif
-        <a class="card__more btn btn-primary" href="{{ $url }}">Read more</a>
-    </div>
+            @if ($frag['lead'] !== '')
+                <p class="card__excerpt">{{ $frag['lead'] }}@if($frag['continued']) {{ $frag['continued'] }}@endif <a class="card__ellipsis" href="{{ $url }}">[...]</a></p>
+            @endif
+            <a class="card__more btn btn-primary" href="{{ $url }}">Read more</a>
+        </div>
+    @endif
 </article>

@@ -12,12 +12,48 @@
 
 .article-paper {
   max-width: 48rem;
-  margin: calc(var(--space-unit) * 6) auto calc(var(--space-unit) * 12);
+  margin: calc(var(--space-unit) * 6) auto 0;
   padding: clamp(1.5rem, 4vw, 3.5rem);
   background: var(--color-bg-alt);
   border: 1px solid color-mix(in srgb, var(--color-fg) 12%, transparent);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+}
+
+/* Re-skin CKEditor's own UI chrome (toolbar, dropdowns, balloons) too, so the
+   whole editing panel matches the published look, not just the text. These
+   --ck-color-* custom properties only affect CKEditor's UI elements, which
+   never render on the public article page, so this is admin-only in practice.
+   CKEditor derives --ck-color-toolbar-background etc. from the --ck-color-base-*
+   vars only once, at :root — var() references inside a custom property
+   resolve at the element where they're declared, then inherit as an already-
+   frozen value, so overriding just the base-* vars here has no effect on the
+   derived ones. Every derived token an actual UI element paints with has to
+   be redeclared directly instead of relying on CKEditor's own indirection. */
+.article-paper {
+  --ck-color-base-foreground: var(--color-bg);
+  --ck-color-base-background: var(--color-bg-alt);
+  --ck-color-base-border: color-mix(in srgb, var(--color-fg) 25%, transparent);
+  --ck-color-base-text: var(--color-fg);
+  --ck-color-base-action: var(--color-primary);
+  --ck-color-base-focus: var(--color-primary);
+  --ck-color-focus-border: var(--color-primary);
+  --ck-color-button-on-background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+  --ck-color-button-on-color: var(--color-primary);
+
+  --ck-color-toolbar-background: var(--color-bg);
+  --ck-color-toolbar-border: color-mix(in srgb, var(--color-fg) 25%, transparent);
+  --ck-color-dropdown-panel-background: var(--color-bg-alt);
+  --ck-color-dropdown-panel-border: color-mix(in srgb, var(--color-fg) 25%, transparent);
+  --ck-color-panel-background: var(--color-bg-alt);
+  --ck-color-panel-border: color-mix(in srgb, var(--color-fg) 25%, transparent);
+  --ck-color-list-background: var(--color-bg-alt);
+  --ck-color-input-background: var(--color-bg-alt);
+  --ck-color-input-border: color-mix(in srgb, var(--color-fg) 25%, transparent);
+  --ck-color-input-text: var(--color-fg);
+  --ck-color-text: var(--color-fg);
+  --ck-color-tooltip-background: var(--color-fg);
+  --ck-color-tooltip-text: var(--color-bg-alt);
 }
 
 .article-paper .ck-content {
@@ -128,6 +164,61 @@
   transform: translate(-50%, 0);
 }
 
+/* Author cassette: static brand byline shown under every article. */
+.article-author {
+  max-width: 48rem;
+  margin: calc(var(--space-unit) * 3.6) auto 0;
+  display: flex;
+  background: var(--color-bg-alt);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.article-author__media {
+  flex: 0 0 12rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: calc(var(--space-unit) * 4);
+}
+.article-author__media img {
+  display: block;
+  width: 50%;
+  height: auto;
+  object-fit: contain;
+}
+.article-author__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: calc(var(--space-unit) * 2);
+  padding: calc(var(--space-unit) * 4) clamp(1.5rem, 4vw, 3rem) calc(var(--space-unit) * 6);
+}
+.article-author__label {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+.article-author__name {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+.article-author__name-first {
+  background: linear-gradient(135deg, #f6e6a8 0%, #c9a227 45%, #7a5215 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.article-author__name-rest {
+  color: var(--color-primary);
+}
+.article-author__bio {
+  margin: 0;
+  color: var(--color-fg);
+}
+
 /* Previous/next: placeholder entries (not wired to real adjacent posts). */
 .article-adjacent {
   max-width: 48rem;
@@ -162,4 +253,6 @@
 /* Phone readability: article body copy +60% over the inherited base size. */
 @media (max-width: 720px) {
   .article-paper .ck-content { font-size: 1.6rem; }
+  .article-author { flex-direction: column; }
+  .article-author__media { padding-bottom: 0; }
 }

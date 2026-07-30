@@ -305,15 +305,23 @@ page, the optional `.journal-hero__sub` adds its own height on top of it.
 ```html
 <div class="blog-grid blog-grid--journal">
   <article class="card card--media card--first">
-    <div class="card__meta">
-      <p class="card__date">…</p>
-      <h2 class="card__title"><a>…</a></h2>
-      <p class="card__subtitle">…</p>
-    </div>
-    <a class="card__media-link"><img class="card__media"></a>
-    <div class="card__body">
-      <p class="card__excerpt">… <a class="card__ellipsis">[...]</a></p>
-      <a class="card__more btn btn-primary">Read more</a>
+    <div class="card__row">
+      <a class="card__media-link"><img class="card__media"></a>
+      <div class="card__content">
+        <div class="card__meta">
+          <p class="card__date">…</p>
+          <h2 class="card__title"><a>…</a></h2>
+          <p class="card__subtitle">…</p>
+        </div>
+        <div class="card__body">
+          <p class="card__excerpt">… <a class="card__ellipsis">[...]</a></p>
+          <p class="card__author">Andrei | AstroTherapia</p>
+        </div>
+        <div class="card__foot">
+          <hr class="card__rule">
+          <a class="card__more btn btn-primary">Read more</a>
+        </div>
+      </div>
     </div>
   </article>
 </div>
@@ -331,29 +339,37 @@ once, for the newest post only, in its own "From the Journal" section — so a
 theme's `.blog-grid--journal`/`.card*` styling now applies there too, not just
 on `/journal`.
 
-`.card__meta` (date + title + subtitle) is a **separate block stacked above**
-the image, not overlaid on top of it — the square image always renders fully,
-uncropped by any text panel. `.card__body` below the image holds the
-auto-generated `.card__excerpt` teaser + "Read more". For cards **without** a
-featured image, there's no image to put a block above, so `.card__date`/
-`.card__title`/`.card__subtitle` render directly inside `.card__body` instead,
-followed by `.card__excerpt` and "Read more" — same classes, different parent.
+`.card__row` lays the image (`.card__media-link`, quarter width) out **beside**
+the text column (`.card__content`), top-aligned — not stacked above it. Inside
+`.card__content`: `.card__meta` (date + title + subtitle), then `.card__body`
+(the auto-generated excerpt + the `.card__author` byline), then `.card__foot`
+(a `.card__rule` divider + "Read more") pinned to the bottom of the column
+regardless of excerpt length. For cards **without** a featured image, there's
+no `.card__row`/image at all — `.card__date`/`.card__title`/`.card__subtitle`
+render directly inside a single `.card__body`, followed by `.card__excerpt` and
+"Read more" — same classes, no author line or rule, since that layout was left
+untouched.
 
 | Selector | Notes |
 |---|---|
 | `.blog-grid` | base wrapper — see the admin-sharing note above |
 | `.blog-grid--journal` | modifier added alongside `.blog-grid` on the public Journal page only — turns the base grid into a single-column stacked list of full-width cards, capped to a readable max-width |
 | `.card` | a card (also used as a plain text panel for image-less posts) |
-| `.card--media` | card variant with a top image (flush edges, clipped corners) |
+| `.card--media` | card variant with an image (flush edges, clipped corners) |
 | `.card--first` | modifier on the newest/first card in the list — give it a visually stronger border |
-| `.card__meta` | date + title + subtitle block, stacked **above** the image (media cards only) — give it the **same opaque background as `.card__body`** (`color-bg-alt`) so it duplicates that panel's look |
-| `.card__media-link`, `.card__media` | the image link + image — give the image a square `aspect-ratio` + `object-fit: cover` |
-| `.card__body` | below the image: excerpt + "Read more" (media cards) or date + title + subtitle + excerpt + "Read more" (text-only cards) |
+| `.card__row` | media cards only — flex row placing the image beside `.card__content`; collapses to a stacked column below the phone breakpoint |
+| `.card__media-link`, `.card__media` | the image link + image — constrained to half of `.card__row`'s width on media cards, with a square `aspect-ratio` + `object-fit: cover` |
+| `.card__content` | media cards only — the text column beside the image: `.card__meta`, `.card__body`, then `.card__foot` |
+| `.card__meta` | date + title + subtitle block — top of the text column (media cards) or top of `.card__body` (text-only cards) |
+| `.card__body` | excerpt + author (media cards) or date + title + subtitle + excerpt + "Read more" (text-only cards) |
 | `.card__date` | the publish date, above the title, wherever it renders |
 | `.card__title`, `.card__title a` | the title heading + its link |
 | `.card__subtitle` | the post's admin-entered `subtitle` field (`post_translations.subtitle`, empty → omitted), right under the title, no link — **same font-family as the article body text** (`public/css/article.css`), but italic + bold |
 | `.card__excerpt` | auto-generated teaser (first sentence + first few words of the next, derived from the article body), ending in the `.card__ellipsis` link — plain style, distinct from `.card__subtitle` |
 | `.card__ellipsis` | the trailing `[...]` link into the article |
+| `.card__author` | fixed placeholder byline ("Andrei \| AstroTherapia"), media cards only — italic, right-aligned, distinct from `.card__excerpt` |
+| `.card__foot` | media cards only — wraps `.card__rule` + `.card__more`, pinned to the bottom of `.card__content` |
+| `.card__rule` | a `<hr>` divider directly above "Read more", media cards only |
 | `.card__more` | the "Read more" button — markup pairs it with `.btn.btn-primary` so it reuses the Home hero's CTA styling; add card-specific spacing only |
 
 ### Article body — `resources/views/blog/show.blade.php`
@@ -363,8 +379,10 @@ as a bare `article > h1` — there's no separate title element for the theme to
 style here. (The excerpt/teaser lives on the **Journal listing**, right under
 the card title — see `.card__excerpt` above — not on this page.) Below the
 hero, in order: the post's own `.article-image` (if it has one), the body in
-`.article-paper > .ck-content`, an `.article-footer` (date + share icons), and
-an `.article-adjacent` previous/next nav — the chronologically adjacent published posts in the same locale (`BlogController@show`), each link omitted when there isn't one (i.e. on the oldest/newest post).
+`.article-paper > .ck-content`, an `.article-footer` (date + share icons for
+Facebook/X/LinkedIn plus a copy-link action), a static `.article-author`
+brand cassette (logo + name + bio, fixed copy, not per-post data), and an
+`.article-adjacent` previous/next nav — the chronologically adjacent published posts in the same locale (`BlogController@show`), each link omitted when there isn't one (i.e. on the oldest/newest post).
 
 All of it — including `.article-paper`/`.ck-content` — is styled by the
 **app-level** [`public/css/article.css`](../css/article.css), **not** per-theme

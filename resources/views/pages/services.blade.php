@@ -16,7 +16,6 @@
     // testimonials carousel reuse the About page's about.css/about.js
     // (about-hero, about-section, about-testi, etc.); services.css/js add
     // only the category tabs and the service card grid.
-    $img = fn ($f) => asset('img/about/' . $f);
     $locale = app()->getLocale();
     $contactVisible = \App\Models\SiteSetting::current()->sectionVisible('contact');
 
@@ -94,13 +93,13 @@
     ];
 
     $testimonials = [
-        ['img' => 'image-22-copyright-min-90x90.jpg', 'name' => 'Jenna Mackenzie', 'city' => 'Milan',
+        ['name' => 'John M', 'city' => 'London',
          'quote' => 'Andrei created my personal horoscope and interpreted my natal chart in a way that finally made sense of the life problems I kept circling back to. I left our session lighter and clearer.'],
-        ['img' => 'image-57-copyright-min-90x90.jpg', 'name' => 'Maya Gabriella', 'city' => 'Boston',
+        ['name' => 'Anca R', 'city' => 'Boston',
          'quote' => 'What impressed me most was how Andrei synthesised information from a variety of different sources into one coherent, personal reading. Nothing felt generic — it was all mine.'],
-        ['img' => 'image-40-copyright-min-90x90.jpg', 'name' => 'Avery Mia', 'city' => 'Los Angeles',
+        ['name' => 'Andreea P', 'city' => 'Brasov',
          'quote' => 'Andrei gave me a brand-new perspective on the problem areas I had been stuck in for years. The reading was warm, precise, and genuinely useful.'],
-        ['img' => 'image-50-copyright-min-90x90.jpg', 'name' => 'Clara Jenkins', 'city' => 'Paris',
+        ['name' => 'Catalin A', 'city' => 'Bucharest',
          'quote' => 'Beyond the reading itself, Andrei offered clear ways to develop and a real plan of how to move ahead. I still return to his notes months later.'],
     ];
 @endphp
@@ -246,8 +245,6 @@
                             <figure class="about-testi__item">
                                 <blockquote class="about-testi__quote">“{{ $t['quote'] }}”</blockquote>
                                 <figcaption class="about-testi__who">
-                                    <img class="about-testi__avatar" src="{{ $img($t['img']) }}"
-                                         alt="{{ $t['name'] }}" loading="lazy" width="90" height="90">
                                     <span class="about-testi__name">{{ $t['name'] }}</span>
                                     <span class="about-testi__city">{{ $t['city'] }}</span>
                                 </figcaption>

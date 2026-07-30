@@ -1,5 +1,6 @@
 @php($t = isset($post) ? fn ($l) => optional($post->translation($l)) : fn ($l) => null)
 <link rel="stylesheet" href="{{ asset('vendor/ckeditor/ckeditor5.css') }}">
+<link rel="stylesheet" href="{{ versioned_asset('css/article.css') }}">
 <script src="{{ asset('vendor/ckeditor/ckeditor5.umd.js') }}"></script>
 
 @if ($errors->any())
@@ -47,7 +48,17 @@
             @endif
         </p>
         <p><label>Subtitle <input name="{{ $locale }}_subtitle" value="{{ old("{$locale}_subtitle", $t($locale)?->subtitle) }}"></label></p>
-        <textarea name="{{ $locale }}_body" id="editor_{{ $locale }}">{{ old("{$locale}_body", $t($locale)?->body) }}</textarea>
+        <p><button type="button" class="preview-toggle" data-locale="{{ $locale }}">Preview</button></p>
+        <div class="article-paper" id="editorPaper_{{ $locale }}">
+            <textarea name="{{ $locale }}_body" id="editor_{{ $locale }}">{{ old("{$locale}_body", $t($locale)?->body) }}</textarea>
+        </div>
+        <div class="admin-post-preview" id="preview_{{ $locale }}" hidden>
+            <header class="journal-hero"><h1 class="journal-hero__title"></h1></header>
+            @if (isset($post) && $post->featured_image)
+                <div class="article-image"><img src="{{ $post->featured_image }}" alt=""></div>
+            @endif
+            <article><div class="article-paper"><div class="ck-content"></div></div></article>
+        </div>
     </fieldset>
 @endforeach
 
@@ -84,6 +95,34 @@ const {
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
         }
     }).catch(function (e) { console.error(e); });
+});
+
+// Live preview toggle: swaps the editing view for a read-only render using
+// blog/show.blade.php's own markup/CSS (.journal-hero, .article-paper >
+// .ck-content), reading straight from the CKEditor instance so unsaved edits
+// show up too, not just what's been saved.
+['en', 'ro'].forEach(function (loc) {
+    var btn = document.querySelector('.preview-toggle[data-locale="' + loc + '"]');
+    var editorPaper = document.getElementById('editorPaper_' + loc);
+    var preview = document.getElementById('preview_' + loc);
+    var titleInput = document.querySelector('input[name="' + loc + '_title"]');
+    if (!btn || !editorPaper || !preview) return;
+
+    btn.addEventListener('click', function () {
+        if (preview.hidden) {
+            var editable = editorPaper.querySelector('[contenteditable]');
+            var editor = editable && editable.ckeditorInstance;
+            preview.querySelector('.journal-hero__title').textContent = titleInput.value;
+            preview.querySelector('.ck-content').innerHTML = editor ? editor.getData() : '';
+            editorPaper.hidden = true;
+            preview.hidden = false;
+            btn.textContent = 'Edit';
+        } else {
+            editorPaper.hidden = false;
+            preview.hidden = true;
+            btn.textContent = 'Preview';
+        }
+    });
 });
 
 // Approximate, client-side-only slug preview: the server always recomputes

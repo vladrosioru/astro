@@ -157,21 +157,43 @@ body > nav .nav-dropdown-menu {
     gap: calc(var(--space-unit) * 10);
     margin-top: calc(var(--space-unit) * 10);
 }
-/* Cap each card short of the full container so the square image doesn't run
-   edge-to-edge on wide screens. */
+/* Cap each card short of the full container so it doesn't run edge-to-edge
+   on wide screens. */
 .blog-grid--journal .card { max-width: 44rem; margin: 0 auto; width: 100%; }
 .card__media-link { display: block; }
-/* Meta block: date + title + subtitle sit in their own panel above the
-   image (only for cards that have one — text-only cards keep them in
-   .card__body instead), so the image itself renders fully uncropped. */
-.card__meta { padding: calc(var(--space-unit) * 4); }
+
+/* Cards with a featured image: the image (quarter width) sits beside the
+   text column — meta, excerpt, author line, then a rule + Read More — rather
+   than stacked above it. Text-only cards (no image, no .card--media) keep
+   the plain single-column .card__body layout below untouched. */
+.card--media .card__row {
+    display: flex;
+    align-items: flex-start;
+    gap: calc(var(--space-unit) * 4);
+}
+.card--media .card__media-link {
+    flex: 0 0 50%;
+    max-width: 50%;
+}
+.card--media .card__content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: calc(var(--space-unit) * 4);
+}
+/* Read More is pinned to the bottom of the text column regardless of excerpt
+   length, so short excerpts don't leave it floating mid-card. */
+.card--media .card__foot { margin-top: auto; }
+
+.card__meta { margin: 0 0 calc(var(--space-unit) * 3); }
 .card__meta .card__date { margin: 0 0 calc(var(--space-unit) * 2); }
 .card__meta .card__title { margin: 0 0 calc(var(--space-unit) * 2); }
 .card__meta .card__subtitle:last-child { margin-bottom: 0; }
 .card__date { margin: 0 0 calc(var(--space-unit) * 2); }
 .card__title { margin: 0 0 calc(var(--space-unit) * 4); }
 .card__subtitle { margin: 0 0 calc(var(--space-unit) * 4); }
-.card__excerpt { margin: 0 0 calc(var(--space-unit) * 5); }
+.card__excerpt { margin: 0 0 calc(var(--space-unit) * 2); }
 .card__more { margin-top: calc(var(--space-unit) * 1); }
 
 /* Phone: only the brand (logo + eyebrow) stays visible, centered, with the
@@ -181,6 +203,11 @@ body > nav .nav-dropdown-menu {
        desktop-derived sizes below, so it's bumped +60% here (mirrored across
        every phone-copy element in the other theme/page CSS files). */
     .card__excerpt { font-size: 1.6rem; }
+
+    /* Image + text is too cramped side by side on a phone screen — stack
+       back to image-on-top, text-below. */
+    .card--media .card__row { flex-direction: column; }
+    .card--media .card__media-link { max-width: 100%; flex: 0 0 auto; }
 
     body > nav .nav-logo img { height: 1.9rem; }
     /* Phone: the wordmark just sits centered under the logo at its natural
