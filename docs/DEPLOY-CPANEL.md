@@ -10,7 +10,7 @@ This site deploys to shared cPanel hosting via GitHub Actions. The host offers
    instead of syncing thousands of `vendor/` files individually (much faster),
 3. calls token-guarded web hooks: `extract.php` unzips `app.zip` server-side,
    then [`public/deploy.php`](../public/deploy.php) runs `artisan`
-   (migrate, cache, `storage:link`).
+   (migrate, seed the default author, cache).
 
 The server `.env` and `storage/` are never in the archive, so they survive
 every deploy. Extraction overlays files (it does not delete files removed from
@@ -151,8 +151,10 @@ Only pull requests skip the deploys.
   minute or two) plus the small `.env` and `extract.php`. `extract.php` unzips
   it on the server. No per-file syncing — deploy time is roughly constant
   regardless of how much of `vendor/` changed.
-- **Migrations run every deploy** (`migrate --force`, additive). Content is
-  entered through the admin panel on the live site.
+- **Migrations run every deploy** (`migrate --force`, additive). The default
+  `AuthorSeeder` also runs every deploy (idempotent: `updateOrCreate` on the
+  author, only backfills posts with no `author_id`). Content is entered
+  through the admin panel on the live site.
 
 ## Rolling back production
 

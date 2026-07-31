@@ -299,7 +299,7 @@ Manager / FTP only).
 is a single-branch cascade off `master` —
 `lint → test → security → build → deploy_dev → test_dev → [approve] → deploy_prd → test_prd`.
 It builds the production app in CI, uploads it over **FTPS**, and runs
-post-deploy `artisan` (migrate, cache, `storage:link`) through the
+post-deploy `artisan` (migrate, seed the default author, cache) through the
 token-guarded [`public/deploy.php`](public/deploy.php) hook. Dev and prod are
 separate cPanel subdomains/databases; the `production` GitHub environment's
 required-reviewer rule is the manual approval gate. Full setup — cPanel

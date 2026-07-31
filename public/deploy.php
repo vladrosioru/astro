@@ -11,7 +11,7 @@ use Illuminate\Foundation\Application;
  * to run `artisan` on the server after a deploy.
  *
  * It runs: ensure the writable storage tree exists -> migrate --force ->
- * storage:link -> config/route/view cache.
+ * seed the default author -> config/route/view cache.
  *
  * Auth: the caller must send the DEPLOY_TOKEN (from .env) in the
  * `X-Deploy-Token` request header (query `?token=` also accepted as a
@@ -105,6 +105,10 @@ $run = function (string $command, array $params = [], bool $fatal = true) use ($
 };
 
 $run('migrate', ['--force' => true]);      // fatal: bad DB config must fail the deploy
+// AuthorSeeder is idempotent (updateOrCreate + only fills NULL author_id), so
+// it's safe to run on every deploy rather than as a one-off manual step on a
+// host with no SSH. Non-fatal: a seed failure shouldn't block config caching.
+$run('db:seed', ['--class' => 'Database\\Seeders\\AuthorSeeder', '--force' => true], false);
 // No storage:link: this host disables symlink()/exec(); the public disk serves
 // from the real public/storage folder (PUBLIC_DISK_IN_DOCROOT) created above.
 $run('config:cache');
