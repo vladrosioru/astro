@@ -9,6 +9,9 @@
             @if (Route::has('admin.posts.index'))
                 <li><a href="{{ route('admin.posts.index') }}">Blog posts</a></li>
             @endif
+            @if (Route::has('admin.authors.index'))
+                <li><a href="{{ route('admin.authors.index') }}">Authors</a></li>
+            @endif
             @if (Route::has('admin.payments.edit'))
                 <li><a href="{{ route('admin.payments.edit') }}">Payment settings</a></li>
             @endif

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AttachmentController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\AuthorController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DatabaseController;
 use App\Http\Controllers\Admin\PostController;
@@ -20,6 +21,10 @@ Route::prefix('admin')->middleware('admin')->group(function () {
     Route::resource('posts', PostController::class)
         ->except(['show'])
         ->names('admin.posts');
+
+    Route::resource('authors', AuthorController::class)
+        ->except(['show'])
+        ->names('admin.authors');
 
     Route::post('attachments', [AttachmentController::class, 'store'])
         ->name('admin.attachments.store');
