@@ -142,12 +142,23 @@ body > nav .nav-dropdown-btn::after { content: '\25be'; color: var(--color-muted
 /* Journal card teaser: date line, themed title link, first-post emphasis.
    `.card`/`.card__media`/`.card__body` stay as-is above (the admin Themes
    picker reuses them unmodified for its own grid). */
+.card__date-row { display: flex; justify-content: space-between; align-items: baseline; gap: calc(var(--space-unit) * 2); }
 .card__date {
     font-family: var(--font-display);
     font-size: 0.75rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--color-muted);
+}
+.card__reading-time {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: none;
+    font-style: italic;
+    color: var(--color-muted);
+    white-space: nowrap;
 }
 .card__title a { color: var(--color-heading); text-decoration: none; transition: color .2s ease; }
 .card__title a:hover { color: var(--color-primary); }

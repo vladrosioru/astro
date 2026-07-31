@@ -309,7 +309,10 @@ page, the optional `.journal-hero__sub` adds its own height on top of it.
       <a class="card__media-link"><img class="card__media"></a>
       <div class="card__content">
         <div class="card__meta">
-          <p class="card__date">…</p>
+          <div class="card__date-row">
+            <p class="card__date">…</p>
+            <p class="card__reading-time">9 min. read</p>
+          </div>
           <h2 class="card__title"><a>…</a></h2>
           <p class="card__subtitle">…</p>
         </div>
@@ -362,12 +365,14 @@ untouched.
 | `.card__content` | media cards only — the text column beside the image: `.card__meta`, `.card__body`, then `.card__foot` |
 | `.card__meta` | date + title + subtitle block — top of the text column (media cards) or top of `.card__body` (text-only cards) |
 | `.card__body` | excerpt + author (media cards) or date + title + subtitle + excerpt + "Read more" (text-only cards) |
+| `.card__date-row` | flex row pairing `.card__date` with `.card__reading-time`, right-aligning the latter on the same line — wraps the date wherever it renders |
 | `.card__date` | the publish date, above the title, wherever it renders |
+| `.card__reading-time` | the post's admin-entered `posts.reading_time` (minutes, 1-99), right-aligned next to the date, lowercase + italic (unlike the uppercase `.card__date`) — omitted entirely when the post has no reading time set |
 | `.card__title`, `.card__title a` | the title heading + its link |
 | `.card__subtitle` | the post's admin-entered `subtitle` field (`post_translations.subtitle`, empty → omitted), right under the title, no link — **same font-family as the article body text** (`public/css/article.css`), but italic + bold |
 | `.card__excerpt` | auto-generated teaser (first sentence + first few words of the next, derived from the article body), ending in the `.card__ellipsis` link — plain style, distinct from `.card__subtitle` |
 | `.card__ellipsis` | the trailing `[...]` link into the article |
-| `.card__author` | fixed placeholder byline ("Andrei \| AstroTherapia"), media cards only — italic, right-aligned, distinct from `.card__excerpt` |
+| `.card__author` | the post's author byline (`posts.author_id` → `authors.name`), media cards only, omitted when the post has no author — italic, right-aligned, distinct from `.card__excerpt` |
 | `.card__foot` | media cards only — wraps `.card__rule` + `.card__more`, pinned to the bottom of `.card__content` |
 | `.card__rule` | a `<hr>` divider directly above "Read more", media cards only |
 | `.card__more` | the "Read more" button — markup pairs it with `.btn.btn-primary` so it reuses the Home hero's CTA styling; add card-specific spacing only |
@@ -380,9 +385,12 @@ style here. (The excerpt/teaser lives on the **Journal listing**, right under
 the card title — see `.card__excerpt` above — not on this page.) Below the
 hero, in order: the post's own `.article-image` (if it has one), the body in
 `.article-paper > .ck-content`, an `.article-footer` (date + share icons for
-Facebook/X/LinkedIn plus a copy-link action), a static `.article-author`
-brand cassette (logo + name + bio, fixed copy, not per-post data), and an
-`.article-adjacent` previous/next nav — the chronologically adjacent published posts in the same locale (`BlogController@show`), each link omitted when there isn't one (i.e. on the oldest/newest post).
+Facebook/X/LinkedIn plus a copy-link action), an `.article-author` cassette
+(picture + name + bio, sourced from the post's linked `Author` model —
+`posts.author_id` → `authors` table — omitted entirely when the post has no
+author), and an `.article-adjacent` previous/next nav — the chronologically
+adjacent published posts in the same locale (`BlogController@show`), each
+link omitted when there isn't one (i.e. on the oldest/newest post).
 
 All of it — including `.article-paper`/`.ck-content` — is styled by the
 **app-level** [`public/css/article.css`](../css/article.css), **not** per-theme

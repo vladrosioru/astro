@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Author;
 use App\Models\Post;
 use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,7 +14,12 @@ class PublicBlogTest extends TestCase
 
     private function publishedPost(string $slug = 'hello'): Post
     {
-        $post = Post::create(['status' => 'published', 'published_at' => now()]);
+        $author = Author::firstOrCreate(
+            ['name' => 'Andrei | AstroTherapia'],
+            ['description' => 'Associate Member of Faculty of Astrological Studies - London, UK', 'picture' => 'img/logo-nav.png'],
+        );
+
+        $post = Post::create(['status' => 'published', 'published_at' => now(), 'author_id' => $author->id]);
         $post->translations()->create([
             'locale' => 'en', 'title' => 'Hello', 'slug' => $slug, 'body' => '<p>Hi there</p>',
         ]);
@@ -148,5 +154,56 @@ class PublicBlogTest extends TestCase
         $this->assertNotFalse($footerPos);
         $this->assertTrue($articlePaperPos < $authorPos, 'Author cassette should come after the article body');
         $this->assertTrue($authorPos < $footerPos, 'Date/share row should come after the author cassette');
+    }
+
+    public function test_article_page_reflects_the_posts_actual_author_from_the_database(): void
+    {
+        $author = Author::create([
+            'name' => 'Jane | Guest Writer',
+            'description' => 'A guest contributor bio.',
+            'picture' => 'img/logo-nav.png',
+        ]);
+        $post = Post::create(['status' => 'published', 'published_at' => now(), 'author_id' => $author->id]);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Hello', 'slug' => 'my-post', 'body' => '<p>Hi</p>']);
+
+        $response = $this->get('/en/journal/my-post');
+
+        $response->assertOk()
+            ->assertSeeText('Jane | Guest Writer')
+            ->assertSee('A guest contributor bio.')
+            ->assertDontSeeText('Andrei | AstroTherapia');
+    }
+
+    public function test_article_page_omits_author_cassette_when_post_has_no_author(): void
+    {
+        $post = Post::create(['status' => 'published', 'published_at' => now()]);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Hello', 'slug' => 'my-post', 'body' => '<p>Hi</p>']);
+
+        $this->get('/en/journal/my-post')->assertOk()->assertDontSee('article-author', false);
+    }
+
+    public function test_card_omits_author_line_when_post_has_no_author(): void
+    {
+        $post = Post::create(['status' => 'published', 'published_at' => now(), 'featured_image' => '/storage/media/pic.jpg']);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Hello', 'slug' => 'hello', 'body' => '<p>Hi</p>']);
+
+        $this->get('/en/journal')->assertOk()->assertDontSee('card__author', false);
+    }
+
+    public function test_card_shows_reading_time_next_to_date_when_set(): void
+    {
+        $post = $this->publishedPost();
+        $post->update(['reading_time' => 9]);
+
+        $this->get('/en/journal')->assertOk()
+            ->assertSee('card__reading-time', false)
+            ->assertSee('9 min. read');
+    }
+
+    public function test_card_omits_reading_time_when_not_set(): void
+    {
+        $this->publishedPost();
+
+        $this->get('/en/journal')->assertOk()->assertDontSee('card__reading-time', false);
     }
 }

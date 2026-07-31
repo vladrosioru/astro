@@ -15,7 +15,12 @@
             </a>
             <div class="card__content">
                 <div class="card__meta">
-                    <p class="card__date">{{ $post->published_at->format('M j, Y') }}</p>
+                    <div class="card__date-row">
+                        <p class="card__date">{{ $post->published_at->format('M j, Y') }}</p>
+                        @if ($post->reading_time)
+                            <p class="card__reading-time">{{ $post->reading_time }} min. read</p>
+                        @endif
+                    </div>
                     <h2 class="card__title"><a href="{{ $url }}">{{ $translation->title }}</a></h2>
                     @if (!empty($translation->subtitle))
                         <p class="card__subtitle">{{ $translation->subtitle }}</p>
@@ -25,7 +30,9 @@
                     @if ($frag['lead'] !== '')
                         <p class="card__excerpt">{{ $frag['lead'] }}@if($frag['continued']) {{ $frag['continued'] }}@endif <a class="card__ellipsis" href="{{ $url }}">[...]</a></p>
                     @endif
-                    <p class="card__author">Andrei | AstroTherapia</p>
+                    @if ($post->author)
+                        <p class="card__author">{{ $post->author->name }}</p>
+                    @endif
                 </div>
                 <div class="card__foot">
                     <hr class="card__rule">
@@ -35,7 +42,12 @@
         </div>
     @else
         <div class="card__body">
-            <p class="card__date">{{ $post->published_at->format('M j, Y') }}</p>
+            <div class="card__date-row">
+                <p class="card__date">{{ $post->published_at->format('M j, Y') }}</p>
+                @if ($post->reading_time)
+                    <p class="card__reading-time">{{ $post->reading_time }} min. read</p>
+                @endif
+            </div>
             <h2 class="card__title"><a href="{{ $url }}">{{ $translation->title }}</a></h2>
             @if (!empty($translation->subtitle))
                 <p class="card__subtitle">{{ $translation->subtitle }}</p>

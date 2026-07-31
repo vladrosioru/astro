@@ -14,7 +14,7 @@ class BlogController extends Controller
 
         $locale = app()->getLocale();
         $posts = Post::published()
-            ->with('translations')
+            ->with(['translations', 'author'])
             ->latest('published_at')
             ->get()
             ->filter(fn (Post $p) => $p->translation($locale) !== null)
@@ -30,6 +30,7 @@ class BlogController extends Controller
         $translation = PostTranslation::where('locale', $locale)
             ->where('slug', $slug)
             ->whereHas('post', fn ($q) => $q->published())
+            ->with('post.author')
             ->first();
 
         abort_if($translation === null, 404);

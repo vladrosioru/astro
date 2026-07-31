@@ -187,10 +187,12 @@ body > nav .nav-dropdown-menu {
 .card--media .card__foot { margin-top: auto; }
 
 .card__meta { margin: 0 0 calc(var(--space-unit) * 3); }
-.card__meta .card__date { margin: 0 0 calc(var(--space-unit) * 2); }
+.card__meta .card__date-row { margin: 0 0 calc(var(--space-unit) * 2); }
+.card__meta .card__date { margin: 0; }
 .card__meta .card__title { margin: 0 0 calc(var(--space-unit) * 2); }
 .card__meta .card__subtitle:last-child { margin-bottom: 0; }
-.card__date { margin: 0 0 calc(var(--space-unit) * 2); }
+.card__date-row { margin: 0 0 calc(var(--space-unit) * 2); }
+.card__date { margin: 0; }
 .card__title { margin: 0 0 calc(var(--space-unit) * 4); }
 .card__subtitle { margin: 0 0 calc(var(--space-unit) * 4); }
 .card__excerpt { margin: 0 0 calc(var(--space-unit) * 2); }

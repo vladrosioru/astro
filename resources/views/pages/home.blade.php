@@ -67,7 +67,12 @@
                                         @if (!empty($t->subtitle))
                                             <p class="about-card__subtitle">{{ $t->subtitle }}</p>
                                         @endif
-                                        <p class="about-card__meta">{{ optional($p->published_at)->format('M j, Y') }}</p>
+                                        <div class="about-card__meta-row">
+                                            <p class="about-card__meta">{{ optional($p->published_at)->format('M j, Y') }}</p>
+                                            @if ($p->reading_time)
+                                                <p class="about-card__reading-time">{{ $p->reading_time }} min. read</p>
+                                            @endif
+                                        </div>
                                     </div>
                                 </article>
                             @endforeach

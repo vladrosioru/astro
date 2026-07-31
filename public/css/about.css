@@ -309,11 +309,24 @@ main.about > .about-section:nth-of-type(2) {
     font-style: italic;
     color: var(--color-fg);
 }
+.about-card__meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: calc(var(--space-unit) * 2);
+}
 .about-card__meta {
     margin: 0;
     font-size: 0.8rem;
     letter-spacing: 0.05em;
     color: var(--color-muted);
+}
+.about-card__reading-time {
+    margin: 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+    white-space: nowrap;
 }
 
 /* --- Numbered pagination ----------------------------------- */

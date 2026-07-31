@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Author;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\User;
@@ -235,5 +236,142 @@ class AdminPostCrudTest extends TestCase
         ])->assertRedirect('/admin/posts');
 
         $this->assertSame('original-title', $post->fresh()->translation('en')->slug);
+    }
+
+    public function test_creating_a_published_post_with_an_explicit_date_uses_that_date(): void
+    {
+        $this->actingAs($this->admin())->post('/admin/posts', [
+            'status' => 'published',
+            'published_date' => '2026-03-15',
+            'en_title' => 'Dated Post',
+        ])->assertRedirect('/admin/posts');
+
+        $this->assertSame('2026-03-15', Post::first()->published_at->toDateString());
+    }
+
+    public function test_creating_a_published_post_without_a_date_defaults_to_now(): void
+    {
+        $this->actingAs($this->admin())->post('/admin/posts', [
+            'status' => 'published',
+            'en_title' => 'Undated Post',
+        ])->assertRedirect('/admin/posts');
+
+        $this->assertSame(now()->toDateString(), Post::first()->published_at->toDateString());
+    }
+
+    public function test_updating_an_already_published_post_without_unlocking_keeps_published_at_unchanged(): void
+    {
+        $post = Post::create(['status' => 'published', 'published_at' => '2026-02-01 00:00:00']);
+        $post->translations()->create(['locale' => 'en', 'title' => 'T', 'slug' => 't']);
+
+        $this->actingAs($this->admin())->put("/admin/posts/{$post->id}", [
+            'status' => 'published',
+            'published_date' => '2026-05-20',
+            'en_title' => 'T',
+        ])->assertRedirect('/admin/posts');
+
+        $this->assertSame('2026-02-01', $post->fresh()->published_at->toDateString());
+    }
+
+    public function test_updating_an_already_published_post_with_unlock_changes_published_at(): void
+    {
+        $post = Post::create(['status' => 'published', 'published_at' => '2026-02-01 00:00:00']);
+        $post->translations()->create(['locale' => 'en', 'title' => 'T', 'slug' => 't']);
+
+        $this->actingAs($this->admin())->put("/admin/posts/{$post->id}", [
+            'status' => 'published',
+            'published_date' => '2026-05-20',
+            'unlock_date' => '1',
+            'en_title' => 'T',
+        ])->assertRedirect('/admin/posts');
+
+        $this->assertSame('2026-05-20', $post->fresh()->published_at->toDateString());
+    }
+
+    public function test_submitting_a_date_before_2026_fails_validation(): void
+    {
+        $this->actingAs($this->admin())->post('/admin/posts', [
+            'status' => 'draft',
+            'published_date' => '2025-12-31',
+            'en_title' => 'T',
+        ])->assertSessionHasErrors('published_date');
+
+        $this->assertSame(0, Post::count());
+    }
+
+    public function test_submitting_a_future_date_fails_validation(): void
+    {
+        $this->actingAs($this->admin())->post('/admin/posts', [
+            'status' => 'draft',
+            'published_date' => now()->addDay()->toDateString(),
+            'en_title' => 'T',
+        ])->assertSessionHasErrors('published_date');
+
+        $this->assertSame(0, Post::count());
+    }
+
+    public function test_author_id_is_saved_on_create_and_update(): void
+    {
+        $author = Author::create(['name' => 'Andrei | AstroTherapia']);
+
+        $this->actingAs($this->admin())->post('/admin/posts', [
+            'status' => 'draft',
+            'author_id' => $author->id,
+            'en_title' => 'T',
+        ])->assertRedirect('/admin/posts');
+
+        $post = Post::first();
+        $this->assertSame($author->id, $post->author_id);
+
+        $other = Author::create(['name' => 'Someone Else']);
+        $this->actingAs($this->admin())->put("/admin/posts/{$post->id}", [
+            'status' => 'draft',
+            'author_id' => $other->id,
+            'en_title' => 'T',
+        ])->assertRedirect('/admin/posts');
+
+        $this->assertSame($other->id, $post->fresh()->author_id);
+    }
+
+    public function test_reading_time_is_saved_on_create_and_update(): void
+    {
+        $this->actingAs($this->admin())->post('/admin/posts', [
+            'status' => 'draft',
+            'reading_time' => '9',
+            'en_title' => 'T',
+        ])->assertRedirect('/admin/posts');
+
+        $post = Post::first();
+        $this->assertSame(9, $post->reading_time);
+
+        $this->actingAs($this->admin())->put("/admin/posts/{$post->id}", [
+            'status' => 'draft',
+            'reading_time' => '12',
+            'en_title' => 'T',
+        ])->assertRedirect('/admin/posts');
+
+        $this->assertSame(12, $post->fresh()->reading_time);
+    }
+
+    public function test_reading_time_out_of_range_fails_validation(): void
+    {
+        $this->actingAs($this->admin())->post('/admin/posts', [
+            'status' => 'draft',
+            'reading_time' => '100',
+            'en_title' => 'T',
+        ])->assertSessionHasErrors('reading_time');
+
+        $this->assertSame(0, Post::count());
+    }
+
+    public function test_reading_time_of_zero_fails_validation(): void
+    {
+        $this->actingAs($this->admin())->post('/admin/posts', [
+            'status' => 'draft',
+            'reading_time' => '0',
+            'en_title' => 'T',
+        ])->assertSessionHasErrors('reading_time');
+
+        $this->assertSame(0, Post::count());
     }
 }

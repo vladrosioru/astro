@@ -1,6 +1,6 @@
 # AstroTherapia — concept & development record
 
-*Last updated: 2026-07-26. This is a current-state document — sections get rewritten in place as decisions change, not appended to. Git history covers "how we got here" if it's ever needed; this file only needs to say what's true now.*
+*Last updated: 2026-07-31. This is a current-state document — sections get rewritten in place as decisions change, not appended to. Git history covers "how we got here" if it's ever needed; this file only needs to say what's true now.*
 
 This is the "concept file" — the canonical, human-editable record of AstroTherapia's brand positioning, content strategy, and site content plan. When referred to as "the concept file" (or similar), read/update this file. It's kept in sync with the assistant's own session memory, but if the two ever disagree, **this file wins** — it's the one you can open and edit directly.
 
@@ -109,10 +109,10 @@ About, Home, and Services currently run hardcoded placeholder copy from a generi
 
 | Page | Role | Plan | Actual state (checked 2026-07-07) |
 |---|---|---|---|
-| **Homepage** | Fast orientation → booking or quiz | Hero, one-line differentiator, four-pillar teaser, 2 condensed quotes, journal preview, closing CTA — target ~150–220 words. | Partly there: the zodiac-trivia FAQ and Sun-sign sections are gone (matches the plan). But the differentiator strip, pillar teaser, condensed social proof, and closing CTA were never added — homepage is still just hero + one intro block + Journal preview. Hero **subhead is still the old placeholder line**, not the locked positioning statement. |
+| **Homepage** | Fast orientation → booking or quiz | Hero, one-line differentiator, four-pillar teaser, 2 condensed quotes, journal preview, closing CTA — target ~150–220 words. | Partly there: the zodiac-trivia FAQ and Sun-sign sections are gone (matches the plan), and the hero subhead now **does** use the locked positioning statement (`SiteSetting::heroDefaults()` — fixed since last check). But the differentiator strip, pillar teaser, condensed social proof, and closing CTA were still never added — homepage is still just hero + one intro block ("What is AstroTHERAPIA?", old unsynced text, see Drafted copy) + Journal preview. |
 | **About** | Trust & philosophy | Hero → astrology intro → pillars overview → manifesto teaser (full essay on Journal) → practitioner bio → FAQ → testimonials. | Manifesto (full text) and the astrology-intro piece are both live, in that order, followed by the new FAQ. But: no pillars overview, no practitioner bio section, and testimonials were removed from this page entirely (now Services-only). |
-| **Services** | Bookable offerings | Tabs restructured to the five pillars, Natal Chart Analysis featured as "start here." | Now **Archetypes / Methods** tabs (2026-07-26) plus a separate Tarot section below — the five-pillar flip cards live under Archetypes, Methods keeps the same 6 cards (renamed from "Astrology"), Tarot's 3 cards moved out of the tab bar into their own section with a new short description and its own CTA. Energy healing (4 services), Daily Horoscope, and Child's Horoscope were removed earlier. Hero subhead **does** use the locked positioning statement here (inconsistent with Homepage's stale one). Testimonials now live here, and the placeholder name is gone — quotes now credit **Andrei** by name. |
-| **Journal** | Personal-voice blog | Reflections, current-sky commentary, session notes; hosts the pinned manifesto. | Unchanged — still the real CMS with no new posts published. The manifesto did **not** end up here; it was inlined into About instead (see Drafted copy). |
+| **Services** | Bookable offerings | Tabs restructured to the five pillars, Natal Chart Analysis featured as "start here." | Now **Archetypes / Methods** tabs (2026-07-26) plus a separate Tarot section below — the five-pillar flip cards live under Archetypes, Methods keeps the same 6 cards (renamed from "Astrology"), Tarot's 3 cards moved out of the tab bar into their own section with a new short description and its own CTA. Energy healing (4 services), Daily Horoscope, and Child's Horoscope were removed earlier. Hero subhead uses the locked positioning statement (now matches Homepage too, see above). Testimonials live here (About has none). **Newly found this audit:** the testimonial content itself changed since last check — new names/cities (John M/London, Anca R/Boston, Andreea P/Brasov, Catalin A/Bucharest, replacing Jenna Mackenzie/Milan, Maya Gabriella/Boston, Avery Mia/Los Angeles, Clara Jenkins/Paris) and the avatar photos were removed entirely from the markup — not something this file had documented. |
+| **Journal** | Personal-voice blog | Reflections, current-sky commentary, session notes; hosts the pinned manifesto. | Index page now has a subhead — "Reflections on the sky, the self, and the seen and unseen patterns" (the user's own draft, shipped). **First real article published** (found in the 2026-07-31 audit): "The Clock You Didn't Know You Were Keeping" (Jul 30, bylined Andrei) — the flagship "evidence-respecting" register, sets the quality bar for the pipeline. But test posts ("Exerpt", "Slug Slug Slug", "another slug", the "double size test" post — some with space-containing slugs = broken URLs) are publicly listed alongside it, at least in dev; verify/clean prod. The manifesto did **not** end up here — it was inlined into About instead (see Drafted copy). |
 
 **Decided 2026-07-07: tarot readings stay** as a real, ongoing service — the 3 remaining tarot cards are intentional, not leftover placeholder content. Energy healing and "Daily Horoscope" were still cut as genuinely off-brand; tarot is different — kept deliberately. This is also reflected in the three-tab Services structure above, where Tarot is its own permanent tab alongside Archetypes and Methods, not something pending removal.
 
@@ -122,7 +122,7 @@ Source drafts live in `content/pages/`, checked against the actual templates on 
 
 | File | Title | Status | Where it actually landed |
 |---|---|---|---|
-| `content/pages/about-manifesto.md` | "Understanding the Why Behind Your Choices" | **draft** (updated 2026-07-07, not yet re-synced to the live page) | Inlined in full on the About page (`about.blade.php`), not teased-and-linked to a pinned Journal post as originally planned — a real deviation worth a conscious decision, not just letting it stand by default (see Open items). The 2026-07-07 update rewrote the pillar tour to cover all five current pillars (previously only relationships/money/health, plus an obsolete "decisions & timing" paragraph), with Identity & growth opening it as the central vortex the other four spin around, and each paragraph prefixed with its matching mockup icon (♡ ⟟ ◎ ◐ ☼). Live page still has the old four-pillar version. |
+| `content/pages/about-manifesto.md` | "Understanding the Why Behind Your Choices" | **live** (re-synced — confirmed this audit) | Inlined in full on the About page (`about.blade.php`), not teased-and-linked to a pinned Journal post as originally planned — a real deviation worth a conscious decision, not just letting it stand by default (see Open items). The five-pillar rewrite (Identity & growth opening it as the central vortex, each paragraph prefixed with its matching mockup icon ♡ ⟟ ◎ ◐ ☼) is now live word-for-word — this file previously said the live page still had the old four-pillar version; that's no longer true. |
 | `content/pages/about-astrology-intro.md` | "Why Knowing Your Patterns Can Change What Happens Next" | **live** | On the About page, right after the manifesto (word-for-word). A shortened variant also appears on the Homepage's intro section, blended with an older placeholder line ("far from cold prediction, a chart is a map"). |
 | `content/pages/about-faq.md` | 8 new FAQs | **live** | All 8 items on **both** the About and Services pages, word-for-word. Item 8 (pricing) was added to the file 2026-07-07 and copied into About immediately; Services was still missing it until 2026-07-26, now synced. |
 | Tarot section description (Services) | Short description between the "Tarot" heading and its 3 cards | **live** (drafted and shipped together, 2026-07-26) | `services.blade.php`'s `$tarotDescription` — no prior locked copy existed for this spot; drafted fresh in the site voice: "Tarot works a little differently than a chart reading, but it asks the same kind of question — not what's coming, but what's already moving underneath the thing you're sitting with. One card can sharpen a question you already have; three laid out side by side show where a situation has been and where it's actually heading. What you do with what surfaces is still yours to decide." |
@@ -130,7 +130,7 @@ Source drafts live in `content/pages/`, checked against the actual templates on 
 
 ## Facebook page audit
 
-Audited 2026-07-07: [facebook.com/astrotherapia.ro](https://www.facebook.com/astrotherapia.ro/) (765 followers, not logged in — only the intro panel and one post were reachable, which is itself a signal).
+Audited 2026-07-07: [facebook.com/astrotherapia.ro](https://www.facebook.com/astrotherapia.ro/) (765 followers, not logged in — only the intro panel and one post were reachable, which is itself a signal). **Re-checked 2026-07-31:** still named "Astro Therapia" (two words), still effectively opaque without login — none of the proposed fixes below have been applied yet. Channel context from the market research: Facebook is still the right primary channel for Romania (75% of online 18–54s use it), TikTok the fastest-growing (8.5M users), Instagram skews under-24.
 
 | Element | Finding |
 |---|---|
@@ -174,6 +174,23 @@ Rewritten 2026-07-07 from a standard/generic version the user supplied, to match
 - **Session memory** (assistant-side, not in the repo) — mirrors the sections above for quick recall across sessions; this file is the source of truth if they ever diverge.
 - **This file** — the one place to look for "what's the current brand/content plan," independent of chat history.
 
+## Audit 2026-07-31 — full project + market analysis
+
+Complete analysis (concept, website walkthrough, international + Romanian market deep dive, SWOT, prioritized plan) lives in [`docs/project-analysis-2026-07.md`](project-analysis-2026-07.md) — that file is the detail; this section is the takeaways.
+
+**Verdict:** the strategy is right and market-validated; the gap is entirely execution around discovery and capture. "Astro-therapy"/psychological astrology is a named, growing movement (astrology market ≈ $15B, ~6%/yr; apps segment 20%+). Chani Nicholas built a $14M/yr business on essentially this positioning via free recurring content → email list → paid tiers. In Romanian, psycho-astrologie practitioners exist but **nobody owns a named archetype framework, an email funnel, or an evidence-respecting content voice** — all three are this project's declared strengths; first-mover on "arhetipurile AstroTherapia" is available.
+
+**What the audit confirmed as strong:** voice discipline is real and consistently executed; the five-pillar/angular-house logic is defensible astrology; the first Journal article ("The Clock You Didn't Know You Were Keeping", Jul 30) proves a category-of-one register — evidence-respecting astrology — that competitors in neither language can imitate.
+
+**Top defects found (new, beyond existing open items):** browser `<title>`s say "Laravel" (Home literally titled "Laravel"; logo alt too); test posts publicly listed in the Journal ("Exerpt", "Slug Slug Slug", space-containing slugs = broken URLs — verify prod); `/ro` serves English; Contact page renders no email/phone though copy and the pricing FAQ promise both; no pricing anywhere (RO norm: 250–400 lei, openly listed); footer says "© 2024"; zero audience capture (no newsletter/lead magnet/quiz/list).
+
+**Three moves that matter most, in order:**
+1. Fix the basics — titles, meta descriptions, test posts, footer, contact details (~a day of code).
+2. Build the **Archetype Quiz** + email list — quizzes convert ~40% as lead magnets vs low single digits for forms, and auto-segment the list by archetype from day one. Single highest-ROI build.
+3. Commit to cadence — 2 Journal posts/month (short archetype profile + short "sky right now" + monthly-ish evidence essay), each cross-posted to a renamed Facebook page.
+
+**Strategic notes adopted from the analysis (pending decisions, see Open items):** launch publicly with 5–6 hero archetypes (one per pillar) rather than all 15; prefer "The AstroTherapia Archetypes" as the system name with "your inner cast" as descriptive copy inside it; finalize the archetype→chart mechanics before scaling content on them (it's the core IP the quiz/sessions/book all hang on); a single "Pattern Session" offer may cover the four service-less pillars better than four new SKUs.
+
 ## Open items
 
 **Resolved since last check (2026-07-07):**
@@ -187,6 +204,9 @@ Rewritten 2026-07-07 from a standard/generic version the user supplied, to match
 - [x] Five-pillar flip-card idea for Services — built 2026-07-26 as the Archetypes tab (pentagon layout, flip interaction, restyled to the site's tokens).
 - [x] Services restructure (Archetypes tab + Methods tab + separate Tarot section) — built 2026-07-26. The originally-planned 3-tab wrap-bug CSS fix turned out unnecessary once Tarot moved out of the tab bar (only 2 tabs ship).
 - [x] Services FAQ missing item 8 (pricing) — copied in 2026-07-26, now matches About's 8 items exactly.
+- [x] Homepage hero subhead — confirmed this audit: `SiteSetting::heroDefaults()` now has the locked positioning statement. This file previously still described it as stale; it wasn't.
+- [x] About manifesto five-pillar rewrite — confirmed this audit: fully live on `about.blade.php`, word-for-word. This file previously said the live page still had the old four-pillar version; that was stale.
+- [x] Journal index subhead — confirmed this audit: "Reflections on the sky, the self, and the seen and unseen patterns" (the user's own draft) is live in `blog/index.blade.php`. This file previously listed it as still undecided/not shipped.
 
 **Still open, plus a few newly surfaced:**
 - [ ] No practitioner bio section anywhere on the site — the name is now known (Andrei), a proper bio still needs writing and a home (About page, per the plan).
@@ -195,19 +215,21 @@ Rewritten 2026-07-07 from a standard/generic version the user supplied, to match
 - [ ] Tarot discoverability — the section has `id="tarot"` (shipped 2026-07-26) but still no visible jump-link or nudge near the tabs pointing a tarot-seeking visitor down to it.
 - [ ] No pillars overview section on About, and no four/five-pillar teaser, differentiator strip, condensed social proof, or closing CTA band on the Homepage — the "minimal homepage" plan is only partly built.
 - [ ] Archetype placements are illustrative only — the chart mechanics behind each archetype are drafts, yours to finalize as the astrologer.
-- [ ] Framework name not finalized — "The AstroTherapia Archetypes" vs. "The Inner Cast."
+- [ ] Framework name not finalized — "The AstroTherapia Archetypes" vs. "The Inner Cast." 2026-07-31 audit recommendation: use "The AstroTherapia Archetypes" as the system name (SEO-safe, brand-reinforcing) and keep "your inner cast" as descriptive copy inside it — still yours to confirm.
 - [ ] Tighten the About/Services FAQ's "How is this different from therapy?" answer explicitly around "complementary tool" language (see Messaging pillars).
 - [ ] Romanian translation not started — the site is bilingual (en/ro); all live/drafted copy so far is English only.
 - [ ] Facebook page name, bio, and post voice are out of sync with the brand — see the Facebook page audit above; fixes drafted, not yet applied.
 - [ ] Confirm whether "Online classes" (currently on the Facebook page) is a real, current offering — if so it needs a place in the services/pillars plan.
 - [ ] Legal disclaimer — wording rewritten to match site voice (see section above), but where it should live is undecided: About, Services, Contact, footer, a dedicated legal/terms page, or more than one of these.
-- [ ] Journal index has no subhead at all (just the "Cosmic Journal" title) — still open, not yet decided whether to use on the site. User's own draft (2026-07-07), currently the leading candidate:
-  - **"Reflections on the sky, the self, and the seen and unseen patterns."**
-  
-  5 earlier candidates from Claude, still on the table too:
-  1. "Not a horoscope column — reflections on the sky, the self, and the patterns worth noticing."
-  2. "Notes on the sky and the why underneath it, not what's coming next."
-  3. "Where I write about the current sky, real patterns from the practice, and the occasional longer thought."
-  4. "A running notebook on astrology and self-understanding — no predictions, just what I'm noticing."
-  5. "The sky, the self, and the patterns between them — written here as I notice them, not as a forecast."
 - [ ] No `<meta name="description">` mechanism exists for Home, About, Services, or Contact (checked `layouts/app.blade.php`) — only Journal articles set one. Means sharing a Home/About/Services link on Facebook currently shows no description in the preview card. Once added, the positioning statement (or a trimmed version) is the natural content for it.
+- [ ] Services testimonials changed outside this file's knowledge (found this audit) — new names/cities and avatar photos removed entirely. Not flagged as wrong, just previously undocumented; worth confirming this was intentional and deciding whether avatars come back in some form. The 2026-07-31 audit adds: the current names/cities read placeholder-ish (e.g. "Anca R — Boston"); decide on real anonymized testimonials with consistent geography.
+
+**Newly surfaced by the 2026-07-31 audit (details in [`project-analysis-2026-07.md`](project-analysis-2026-07.md)):**
+- [ ] Browser `<title>`s say "Laravel" on every page (Home is literally titled "Laravel"; logo alt/home-link label too) — worst single discovery/credibility defect; brand all page titles.
+- [ ] Test posts publicly listed in the Journal (space-containing slugs = broken URLs) — unpublish/delete, and verify prod is clean.
+- [ ] Contact page renders no email or phone, though its copy and the pricing FAQ promise both channels.
+- [ ] No pricing anywhere on the site — Romanian market norm is 250–400 lei openly listed; at minimum add a "sessions from…" line.
+- [ ] Footer year stale ("© 2024") — make it dynamic.
+- [ ] Zero audience capture — no newsletter, lead magnet, or email list. The **Archetype Quiz** (8–10 questions → one of 5 hero archetypes → email opt-in → session CTA) is the recommended flagship build.
+- [ ] Publishing cadence not established — recommendation: 2 posts/month (short archetype profile + "sky right now", monthly-ish evidence essay), cross-posted to Facebook.
+- [ ] Decide launch scope of the archetype set — recommendation: lead with 5–6 hero archetypes (one per pillar), reveal the rest through content.

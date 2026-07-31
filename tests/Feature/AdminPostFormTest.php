@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Author;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -145,5 +146,117 @@ class AdminPostFormTest extends TestCase
                 $content
             );
         }
+    }
+
+    public function test_create_form_shows_date_field_between_status_and_card_image(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $content = $this->actingAs($admin)->get('/admin/posts/create')->assertOk()->getContent();
+
+        $statusPos = strpos($content, 'name="status"');
+        $datePos = strpos($content, 'name="published_date"');
+        $cardImagePos = strpos($content, 'name="card_image"');
+
+        $this->assertNotFalse($statusPos);
+        $this->assertNotFalse($datePos);
+        $this->assertNotFalse($cardImagePos);
+        $this->assertTrue($statusPos < $datePos && $datePos < $cardImagePos);
+    }
+
+    public function test_create_form_date_field_has_expected_min_and_max(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)->get('/admin/posts/create')
+            ->assertOk()
+            ->assertSee('min="2026-01-01"', false)
+            ->assertSee('max="'.now()->toDateString().'"', false);
+    }
+
+    public function test_create_form_date_field_is_not_locked(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)->get('/admin/posts/create')
+            ->assertOk()
+            ->assertDontSee('class="date-locked"', false)
+            ->assertDontSee('<input type="checkbox" name="unlock_date"', false);
+    }
+
+    public function test_edit_form_date_field_is_editable_for_a_draft_post(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $post = Post::create(['status' => 'draft']);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Test', 'slug' => 'test']);
+
+        $this->actingAs($admin)->get(route('admin.posts.edit', $post))
+            ->assertOk()
+            ->assertDontSee('class="date-locked"', false)
+            ->assertDontSee('<input type="checkbox" name="unlock_date"', false);
+    }
+
+    public function test_edit_form_date_field_is_locked_and_red_for_a_published_post(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $post = Post::create(['status' => 'published', 'published_at' => '2026-02-10 00:00:00']);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Test', 'slug' => 'test']);
+
+        $content = $this->actingAs($admin)->get(route('admin.posts.edit', $post))->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/<input type="date" name="published_date"[^>]*readonly[^>]*class="date-locked"[^>]*value="2026-02-10"/',
+            $content
+        );
+        $this->assertStringContainsString('name="unlock_date"', $content);
+        $this->assertStringContainsString('already published', $content);
+    }
+
+    public function test_edit_form_author_dropdown_lists_authors_and_selects_current(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $andrei = Author::create(['name' => 'Andrei | AstroTherapia']);
+        $other = Author::create(['name' => 'Someone Else']);
+        $post = Post::create(['status' => 'draft', 'author_id' => $other->id]);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Test', 'slug' => 'test']);
+
+        $content = $this->actingAs($admin)->get(route('admin.posts.edit', $post))->assertOk()->getContent();
+
+        $this->assertStringContainsString('name="author_id"', $content);
+        $this->assertStringContainsString('>Andrei | AstroTherapia</option>', $content);
+        $this->assertMatchesRegularExpression(
+            '/<option value="'.$other->id.'" selected>Someone Else<\/option>/',
+            $content
+        );
+    }
+
+    public function test_edit_form_shows_reading_time_field_after_author(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $post = Post::create(['status' => 'draft', 'reading_time' => 7]);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Test', 'slug' => 'test']);
+
+        $content = $this->actingAs($admin)->get(route('admin.posts.edit', $post))->assertOk()->getContent();
+
+        $authorPos = strpos($content, 'name="author_id"');
+        $readingTimePos = strpos($content, 'name="reading_time"');
+        $cardImagePos = strpos($content, 'name="card_image"');
+
+        $this->assertNotFalse($authorPos);
+        $this->assertNotFalse($readingTimePos);
+        $this->assertNotFalse($cardImagePos);
+        $this->assertTrue($authorPos < $readingTimePos && $readingTimePos < $cardImagePos);
+        $this->assertStringContainsString('value="7"', $content);
+    }
+
+    public function test_reading_time_field_has_min_1_and_max_99(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)->get('/admin/posts/create')
+            ->assertOk()
+            ->assertSee('name="reading_time"', false)
+            ->assertSee('min="1"', false)
+            ->assertSee('max="99"', false);
     }
 }

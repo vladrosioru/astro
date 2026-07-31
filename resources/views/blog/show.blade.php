@@ -60,16 +60,19 @@
             </div>
         </article>
 
-        <div class="article-author">
-            <div class="article-author__media">
-                <img src="{{ asset('img/logo-nav.png') }}" alt="AstroTherapia">
+        @if ($post->author)
+            @php($nameParts = explode('|', $post->author->name, 2))
+            <div class="article-author">
+                <div class="article-author__media">
+                    <img src="{{ asset($post->author->picture) }}" alt="{{ $post->author->name }}">
+                </div>
+                <div class="article-author__body">
+                    <p class="article-author__label">Author</p>
+                    <h2 class="article-author__name"><span class="article-author__name-first">{{ trim($nameParts[0]) }}</span>@if (isset($nameParts[1]))<span class="article-author__name-rest"> | {{ trim($nameParts[1]) }}</span>@endif</h2>
+                    <p class="article-author__bio">{{ $post->author->description }}</p>
+                </div>
             </div>
-            <div class="article-author__body">
-                <p class="article-author__label">Author</p>
-                <h2 class="article-author__name"><span class="article-author__name-first">Andrei</span><span class="article-author__name-rest"> | AstroTherapia</span></h2>
-                <p class="article-author__bio">Associate Member of Faculty of Astrological Studies - London, UK</p>
-            </div>
-        </div>
+        @endif
 
         <div class="article-footer">
             <p class="article-date">{{ $post->published_at->format('M j, Y') }}</p>

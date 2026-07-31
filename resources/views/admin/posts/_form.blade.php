@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="{{ asset('vendor/ckeditor/ckeditor5.css') }}">
 <link rel="stylesheet" href="{{ versioned_asset('css/article.css') }}">
 <script src="{{ asset('vendor/ckeditor/ckeditor5.umd.js') }}"></script>
+<style>.date-locked { border-color: #c00; color: #c00; background: #fee; }</style>
 
 @if ($errors->any())
     <div class="form-errors">
@@ -18,6 +19,33 @@
         <option value="draft" @selected(old('status', isset($post) ? $post->status : 'draft') === 'draft')>Draft</option>
         <option value="published" @selected(old('status', isset($post) ? $post->status : 'draft') === 'published')>Published</option>
     </select>
+</label></p>
+
+@php($isPublished = isset($post) && $post->status === 'published')
+<p>
+    <label>Date
+        <input type="date" name="published_date" id="published_date_input"
+               min="2026-01-01" max="{{ now()->toDateString() }}"
+               @if ($isPublished) readonly class="date-locked" @endif
+               value="{{ old('published_date', isset($post) ? $post->published_at?->toDateString() : null) }}">
+    </label>
+    @if ($isPublished)
+        <label><input type="checkbox" name="unlock_date" value="1"> This post is already published &mdash; check to change its date</label>
+    @endif
+</p>
+
+<p><label>Author
+    <select name="author_id">
+        <option value="">&mdash; none &mdash;</option>
+        @foreach ($authors as $author)
+            <option value="{{ $author->id }}" @selected(old('author_id', isset($post) ? $post->author_id : null) == $author->id)>{{ $author->name }}</option>
+        @endforeach
+    </select>
+</label></p>
+
+<p><label>Minutes to read
+    <input type="number" name="reading_time" min="1" max="99" step="1"
+           value="{{ old('reading_time', isset($post) ? $post->reading_time : null) }}">
 </label></p>
 
 <fieldset>
@@ -161,4 +189,18 @@ function slugifyPreview(str) {
         });
     }
 });
+
+// Locked date field (already-published posts): the "unlock" checkbox toggles
+// readonly/styling client-side, but the server enforces the lock
+// independently (see PostController::postData()) so this is UX only.
+(function () {
+    var unlockCb = document.querySelector('input[name="unlock_date"]');
+    var dateInput = document.getElementById('published_date_input');
+    if (!unlockCb || !dateInput) return;
+
+    unlockCb.addEventListener('change', function () {
+        dateInput.readOnly = !unlockCb.checked;
+        dateInput.classList.toggle('date-locked', !unlockCb.checked);
+    });
+})();
 </script>
