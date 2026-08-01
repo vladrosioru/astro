@@ -467,6 +467,15 @@ each face in `theme.json` → `fonts[]` (`family`, `files`, optional
 `weights`/`style`/`used_for`). The default theme just uses system fonts and ships
 no `fonts/`.
 
+**Fonts belong to exactly one package.** Never place font files loose under
+`public/` — a theme must stay deletable and droppable-in as one folder, and a
+stray face has no owner telling you which theme still needs it. If two themes want
+the same family, each ships its own copy; the duplicated bytes are the price of
+self-containment. `tests/Unit/ThemeSelfContainmentTest.php` enforces this: any
+`.woff2`/`.woff`/`.ttf`/`.otf`/`.eot` under `public/` outside a
+`themes/theme_<name>/` folder fails the suite (`public/vendor/` and `public/storage/`
+are exempt — third-party bundles and user uploads).
+
 ---
 
 ## Build & validate
@@ -488,5 +497,6 @@ no `fonts/`.
 - [ ] All shared-view classes above are styled (nav, hero, journal hero, blog grid, article images).
 - [ ] `views/hero.blade.php` reads `SiteSetting::heroDefaults()` and guards optional keys.
 - [ ] `structure.css` has no colors/fonts; `skin.css` has no layout.
+- [ ] Every font file you ship sits under your own `fonts/` — nothing loose in `public/`.
 - [ ] Token `role` strings in `theme.json` match where you actually use each token.
 - [ ] The contract test passes and `/en` + blog + article render correctly.

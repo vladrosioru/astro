@@ -191,7 +191,11 @@ public/themes/theme_solarsystem/views/*.blade.php   (theme::hero, theme::cosmos)
 | **`solarsystem`** | `public/themes/theme_solarsystem/` | Dark celestial; animated orbiting-planets Home hero + shared cosmos backdrop. The shipped/active theme. |
 | `default` | `public/themes/theme_default/` | Light base theme (system fonts, static hero, no cosmic art). |
 
-> `mystik` (the former dark/gold token set) has not yet been repackaged as a folder — a follow-up.
+> `mystik` — the pre-packages dark/gold token set — was **archived, not repackaged**: it
+> never had CSS of its own (it re-skinned the shared stylesheets that became
+> `theme_default/css/`), and Solar System superseded the look. Its design spec and plan
+> stay in `docs/superpowers/` as history; see [`docs/BACKLOG.md`](docs/BACKLOG.md) row 14
+> for the git coordinates if it is ever revived.
 
 ### The Solar System theme
 
@@ -227,7 +231,10 @@ Fonts are self-hosted WOFF2 **inside each theme package** (e.g. `public/themes/t
 - **Cormorant Garamond** (400/500 + 400 italic) — display/headings
 - **Cinzel** (400/600/700) — brand/chrome
 
-> The retired `mystik` token set used **EB Garamond**; those WOFF2 files still live in `public/fonts/` pending mystik's repackaging.
+> **Every font file belongs to exactly one theme package.** There is no app-level
+> `public/fonts/`; a face used by two themes is duplicated into each. `tests/Unit/ThemeSelfContainmentTest.php`
+> fails the suite on any font binary that sits loose under `public/` (`vendor/` and
+> `storage/` exempt), so a theme stays deletable as one folder.
 
 ---
 
@@ -283,7 +290,6 @@ public/
   css/back-to-top.css    app-level floating "back to top" button (not themed)
   js/back-to-top.js      scroll-triggered show/hide + smooth-scroll for the back-to-top button
   vendor/ckeditor/       self-hosted CKEditor 5 (GPL "sh" build)
-  fonts/                 retired mystik WOFF2 (pending repackage)
 resources/views/
   layouts/app.blade.php  master layout (loads theme assets from the manifest)
   partials/              nav, footer, back-to-top (app-level, public pages only), tokens (:root emitter)
