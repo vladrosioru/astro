@@ -16,6 +16,17 @@ class PageController extends Controller
     {
         $locale = app()->getLocale();
 
+        // Every link in the home page's Journal block points into /journal, which
+        // 404s while the blog section is off. Returning no posts collapses the
+        // whole block (it is wrapped in @if ($featuredPost)) and skips the query.
+        if (! SiteSetting::current()->sectionVisible('blog')) {
+            return view('pages.home', [
+                'featuredPost' => null,
+                'journalPosts' => collect(),
+                'locale' => $locale,
+            ]);
+        }
+
         // Same query the Journal page uses — every published post with a
         // translation for the current locale. The newest post is shown as a
         // featured card; the rest page through the "From the Journal" carousel.

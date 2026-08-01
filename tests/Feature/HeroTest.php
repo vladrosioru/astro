@@ -60,6 +60,48 @@ class HeroTest extends TestCase
             ->assertSee('AstroTherapia');      // eyebrow default
     }
 
+    public function test_hero_cta_hidden_when_its_target_section_is_disabled(): void
+    {
+        // The default theme is the one that renders hero CTAs. Its primary CTA
+        // points at /services, so disabling that section must drop the button
+        // rather than leave it pointing at a 404.
+        $setting = SiteSetting::current();
+        $setting->update([
+            'theme' => 'default',
+            'sections' => ['services' => false] + $setting->sections,
+        ]);
+
+        $this->get('/en')
+            ->assertOk()
+            ->assertDontSee('Begin Here')
+            ->assertDontSee('/en/services');
+    }
+
+    public function test_hero_cta_url_follows_the_request_locale(): void
+    {
+        // The stored default is /en/services; a Romanian visitor must not be
+        // bounced out of their locale.
+        SiteSetting::current()->update(['theme' => 'default']);
+
+        $this->get('/ro')
+            ->assertOk()
+            ->assertSee('/ro/services')
+            ->assertDontSee('/en/services');
+    }
+
+    public function test_hero_cta_keeps_an_external_url_untouched(): void
+    {
+        $setting = SiteSetting::current();
+        $setting->update([
+            'theme' => 'default',
+            'hero' => ['cta_url' => 'https://cal.example.com/book'] + $setting->hero,
+        ]);
+
+        $this->get('/en')
+            ->assertOk()
+            ->assertSee('https://cal.example.com/book', false);
+    }
+
     public function test_home_sets_page_home_body_class(): void
     {
         $this->get('/en')->assertSee('class="page-home"', false);

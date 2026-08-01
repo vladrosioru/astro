@@ -1,5 +1,5 @@
 @php
-    $hero = array_merge(\App\Models\SiteSetting::heroDefaults(), \App\Models\SiteSetting::current()->hero ?? []);
+    $hero = \App\Models\SiteSetting::current()->heroFor(app()->getLocale());
 @endphp
 <section class="stage">
     {{-- Cosmos background is shared site-wide (partials/cosmos.blade.php) and

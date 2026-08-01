@@ -221,15 +221,18 @@ link visibility rule.
 Read the hero copy from settings, then emit the conventional classes:
 
 ```blade
-@php $hero = array_merge(\App\Models\SiteSetting::heroDefaults(),
-                         \App\Models\SiteSetting::current()->hero ?? []); @endphp
+@php $hero = \App\Models\SiteSetting::current()->heroFor(app()->getLocale()); @endphp
 <section class="stage">
   <div class="container">
     <h1 class="title">{{ $hero['headline'] }}</h1>
     <p class="lede">{{ $hero['subhead'] }}</p>
     <div class="actions">
-      <a class="btn btn-primary" href="…">{{ $hero['cta_label'] }}</a>
-      <a class="btn btn-ghost"   href="…">{{ $hero['cta2_label'] }}</a>
+      @if (!empty($hero['cta_label']))
+        <a class="btn btn-primary" href="{{ $hero['cta_url'] }}">{{ $hero['cta_label'] }}</a>
+      @endif
+      @if (!empty($hero['cta2_label']))
+        <a class="btn btn-ghost" href="{{ $hero['cta2_url'] }}">{{ $hero['cta2_label'] }}</a>
+      @endif
     </div>
   </div>
 </section>
@@ -247,6 +250,19 @@ Hero data keys come from `SiteSetting::heroDefaults()`: `headline`, `subhead`,
 `cta_label`/`cta_url`, `cta2_label`/`cta2_url`. Guard optional keys with
 `@if(!empty(...))`. (`eyebrow` is also a hero key, but it's consumed by the shared
 nav's `.nav-eyebrow` wordmark — see Navigation — not emitted by the hero.)
+
+**Always read the hero through `heroFor($locale)`, never by merging
+`heroDefaults()` yourself.** `cta_url` is free-form admin input, so a theme can't
+guard it with an `@if` the way the nav and footer guard their own hardcoded links.
+`heroFor()` does two things a raw merge doesn't:
+
+- **Drops a CTA whose target section is disabled** — label and URL both, so
+  `@if(!empty($hero['cta_label']))` renders nothing rather than a button that
+  404s. The `/journal` segment maps to the `blog` section key.
+- **Rewrites the locale segment** to the active locale, so a stored
+  `/en/services` renders as `/ro/services` for a Romanian visitor.
+
+Off-site URLs (anything with a scheme or `//`) are passed through untouched.
 
 > **Shared with the admin Themes picker:** `resources/views/admin/themes/index.blade.php`
 > (an authenticated admin screen, not a public page) also renders through this

@@ -11,6 +11,10 @@
 @section('content')
     @includeIf('theme::hero')
 
+    @php
+        $aboutVisible = \App\Models\SiteSetting::current()->sectionVisible('about');
+    @endphp
+
     <main class="about">
 
         {{-- What is astrology --------------------------------------------------- --}}
@@ -28,7 +32,9 @@
                     <p>Far from cold prediction, a chart is a map — a way of reading your own patterns back to
                         you so you can move through the world with a little more self-knowledge and a little
                         more grace.</p>
-                    <a class="btn btn-primary" href="/{{ $locale }}/about">Learn More <span aria-hidden="true">→</span></a>
+                    @if ($aboutVisible)
+                        <a class="btn btn-primary" href="/{{ $locale }}/about">Learn More <span aria-hidden="true">→</span></a>
+                    @endif
                 </div>
             </div>
         </section>

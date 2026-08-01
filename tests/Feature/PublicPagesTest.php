@@ -23,6 +23,19 @@ class PublicPagesTest extends TestCase
         $this->get('/en/about')->assertNotFound();
     }
 
+    public function test_home_learn_more_cta_hidden_when_about_disabled(): void
+    {
+        // The home page's "Learn More" button links straight at /about; with the
+        // About section off that route 404s, so the button must not render.
+        $setting = SiteSetting::current();
+        $setting->update(['sections' => ['about' => false] + $setting->sections]);
+
+        $this->get('/en')
+            ->assertOk()
+            ->assertDontSee('Learn More')
+            ->assertDontSee('/en/about');
+    }
+
     public function test_about_page_has_single_schedule_session_cta_after_faq(): void
     {
         $response = $this->get('/en/about');

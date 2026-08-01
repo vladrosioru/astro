@@ -1,5 +1,5 @@
 @php
-    $hero = array_merge(\App\Models\SiteSetting::heroDefaults(), \App\Models\SiteSetting::current()->hero ?? []);
+    $hero = \App\Models\SiteSetting::current()->heroFor(app()->getLocale());
 @endphp
 <section class="stage">
     <div class="container">
