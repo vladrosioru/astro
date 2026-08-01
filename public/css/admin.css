@@ -1,0 +1,396 @@
+/* ============================================================
+   Admin design system — theme-independent by contract.
+
+   This file is the ONLY stylesheet layouts/admin.blade.php loads. It must
+   never reference a theme token — nothing from the --color-*, --font-*,
+   --radius, --space-unit family: the whole point of the admin's decoupling is
+   that switching the active theme cannot move a pixel here. The palette below
+   is the admin's own, namespaced --adm-* and declared on .adm-body rather than
+   :root so it can't leak into a themed page either.
+
+   Enforced by tests/Unit/AdminCssTest.php and
+   tests/Feature/AdminLayoutTest.php.
+   ============================================================ */
+
+.adm-body {
+    /* Neutrals are biased cool toward the accent — a picked grey, not a
+       default one. Semantic colors (ok/warn/danger) stay separate from the
+       accent so state never reads as "just another link". */
+    --adm-bg: #0f1216;
+    --adm-surface: #161b21;
+    --adm-raised: #1d242c;
+    --adm-line: #2a323c;
+    --adm-line-soft: #202730;
+    --adm-fg: #e3e8ef;
+    --adm-fg-dim: #93a0b0;
+    --adm-fg-faint: #66717f;
+    --adm-accent: #6f9dff;
+    --adm-accent-dim: #25324b;
+    --adm-ok: #4bbf92;
+    --adm-warn: #cf9a4e;
+    --adm-danger: #e2606b;
+    --adm-radius: 6px;
+    /* System fonts only: an admin page downloads nothing the theme owns. */
+    --adm-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --adm-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+
+    margin: 0;
+    background: var(--adm-bg);
+    color: var(--adm-fg);
+    font: 15px/1.5 var(--adm-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+.adm-body * { box-sizing: border-box; }
+.adm-body :focus-visible { outline: 2px solid var(--adm-accent); outline-offset: 2px; }
+.adm-body h1, .adm-body h2, .adm-body h3 { font-family: var(--adm-sans); color: var(--adm-fg); letter-spacing: -0.005em; }
+.adm-body a { color: var(--adm-accent); }
+
+/* ---------- top bar ---------- */
+
+.adm-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 0 16px;
+    background: var(--adm-surface);
+    border-bottom: 1px solid var(--adm-line);
+}
+.adm-bar__brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    align-self: stretch;
+    padding: 12px 16px 10px 2px;
+    margin-right: 6px;
+    border-right: 1px solid var(--adm-line-soft);
+    text-decoration: none;
+}
+.adm-bar__brand b { font-size: 0.92rem; font-weight: 600; letter-spacing: -0.01em; color: var(--adm-fg); }
+.adm-bar__brand span { font-size: 0.64rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--adm-fg-faint); }
+.adm-bar__brand--plain { border-right: 0; padding: 0; margin: 0 0 14px; }
+
+.adm-bar__link {
+    padding: 12px 12px 10px;
+    color: var(--adm-fg-dim);
+    font-size: 0.88rem;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+}
+.adm-bar__link:hover { color: var(--adm-fg); }
+.adm-bar__link.is-on { color: var(--adm-fg); border-bottom-color: var(--adm-accent); }
+
+.adm-bar__spacer { flex: 1; }
+.adm-bar__site { color: var(--adm-fg-faint); font-size: 0.8rem; text-decoration: none; padding: 0 10px; }
+.adm-bar__site:hover { color: var(--adm-accent); }
+.adm-bar__who { color: var(--adm-fg-faint); font-size: 0.78rem; font-family: var(--adm-mono); }
+.adm-bar form { margin: 0; }
+
+.adm-linkbtn {
+    font: inherit;
+    font-size: 0.8rem;
+    background: none;
+    border: 0;
+    color: var(--adm-fg-dim);
+    cursor: pointer;
+    padding: 6px 4px 6px 12px;
+}
+.adm-linkbtn:hover { color: var(--adm-danger); }
+
+/* ---------- page frame ---------- */
+
+.adm-main { max-width: 1180px; margin: 0 auto; padding: 26px 22px 48px; }
+
+.adm-head { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 14px; margin-bottom: 18px; }
+.adm-head__title { margin: 0; font-size: 1.2rem; font-weight: 600; }
+.adm-head__count { color: var(--adm-fg-faint); font-size: 0.82rem; font-family: var(--adm-mono); padding-bottom: 2px; }
+.adm-head__grow { flex: 1; }
+
+.adm-stack { display: flex; flex-direction: column; gap: 18px; }
+.adm-note { margin: 0; color: var(--adm-fg-dim); font-size: 0.85rem; }
+.adm-err {
+    margin: 0 0 14px;
+    padding: 8px 12px;
+    border-left: 2px solid var(--adm-danger);
+    border-radius: 0 4px 4px 0;
+    background: #1d1418;
+    color: #f0a8ae;
+    font-size: 0.84rem;
+}
+.adm-err ul { margin: 0; padding-left: 1.1em; }
+
+/* ---------- panels ---------- */
+
+.adm-panel { background: var(--adm-surface); border: 1px solid var(--adm-line); border-radius: var(--adm-radius); }
+.adm-panel__head { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--adm-line-soft); }
+.adm-panel__head h3 { margin: 0; font-size: 0.95rem; font-weight: 600; }
+.adm-panel__grow { flex: 1; }
+.adm-panel__body { padding: 16px; }
+.adm-panel__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+.adm-panel--danger { border-color: #3d2429; }
+.adm-panel--danger .adm-panel__head { border-bottom-color: #332025; }
+.adm-panel--danger h3 { color: var(--adm-danger); }
+
+/* ---------- stat tiles ---------- */
+
+.adm-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 22px; }
+.adm-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 14px 16px;
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-line);
+    border-radius: var(--adm-radius);
+}
+.adm-tile__k { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--adm-fg-faint); }
+.adm-tile__v { font-size: 1.7rem; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.adm-tile__v--text { font-size: 1.15rem; }
+.adm-tile__s { font-size: 0.8rem; color: var(--adm-fg-dim); }
+.adm-tile__s.is-warn { color: var(--adm-warn); }
+
+/* ---------- row lists (posts, authors, backups) ---------- */
+
+.adm-rows { display: flex; flex-direction: column; }
+.adm-row { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-top: 1px solid var(--adm-line-soft); }
+.adm-row:first-child { border-top: 0; }
+.adm-row:hover { background: var(--adm-raised); }
+.adm-row[hidden] { display: none; }
+
+.adm-row__thumb {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border: 1px solid var(--adm-line);
+    border-radius: 4px;
+    background: linear-gradient(135deg, #26303d, #161b21);
+}
+.adm-row__thumb.is-round { border-radius: 50%; }
+
+.adm-row__main { flex: 1; min-width: 0; }
+.adm-row__main a { display: block; color: var(--adm-fg); font-size: 0.93rem; text-decoration: none; }
+.adm-row__main a:hover { color: var(--adm-accent); }
+.adm-row__sub { display: block; color: var(--adm-fg-faint); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-row__meta { color: var(--adm-fg-dim); font-size: 0.8rem; font-family: var(--adm-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.adm-row__acts { display: flex; gap: 6px; }
+.adm-row__acts form { margin: 0; }
+
+/* ---------- status pills ---------- */
+
+.adm-pill {
+    padding: 2px 8px;
+    border: 1px solid;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.adm-pill--ok { color: var(--adm-ok); border-color: #23483d; background: #14251f; }
+.adm-pill--draft { color: var(--adm-warn); border-color: #453722; background: #241d12; }
+.adm-pill--neutral { color: var(--adm-fg-dim); border-color: var(--adm-line); background: var(--adm-raised); }
+
+/* ---------- buttons ---------- */
+
+.adm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    font: inherit;
+    font-size: 0.84rem;
+    color: var(--adm-fg);
+    background: var(--adm-raised);
+    border: 1px solid var(--adm-line);
+    border-radius: var(--adm-radius);
+    text-decoration: none;
+    cursor: pointer;
+}
+.adm-btn:hover { border-color: #3d4855; color: var(--adm-fg); }
+.adm-btn--primary { background: var(--adm-accent); border-color: var(--adm-accent); color: #0d1015; font-weight: 550; }
+.adm-btn--primary:hover { background: #82abff; border-color: #82abff; color: #0d1015; }
+.adm-btn--danger { color: var(--adm-danger); }
+.adm-btn--danger:hover { border-color: var(--adm-danger); background: #241a1d; color: var(--adm-danger); }
+.adm-btn--sm { padding: 4px 9px; font-size: 0.78rem; }
+.adm-btn--wide { width: 100%; justify-content: center; }
+.adm-btn[disabled] { opacity: 0.5; cursor: default; }
+
+/* ---------- forms ---------- */
+
+.adm-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.adm-field > label { font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--adm-fg-faint); }
+.adm-field__hint { font-size: 0.78rem; color: var(--adm-fg-faint); }
+.adm-field__hint label { text-transform: none; letter-spacing: 0; display: inline-flex; align-items: center; gap: 6px; }
+.adm-field__preview { display: block; max-width: 160px; height: auto; border-radius: var(--adm-radius); border: 1px solid var(--adm-line); }
+.adm-field__preview.is-round { border-radius: 50%; }
+.adm-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.adm-body input[type="text"],
+.adm-body input[type="email"],
+.adm-body input[type="password"],
+.adm-body input[type="date"],
+.adm-body input[type="number"],
+.adm-body input[type="file"],
+.adm-body select,
+.adm-body textarea {
+    width: 100%;
+    padding: 7px 10px;
+    font: inherit;
+    font-size: 0.88rem;
+    color: var(--adm-fg);
+    background: var(--adm-raised);
+    border: 1px solid var(--adm-line);
+    border-radius: var(--adm-radius);
+}
+.adm-body input:focus, .adm-body select:focus, .adm-body textarea:focus { border-color: var(--adm-accent); }
+.adm-body input[type="checkbox"] { width: auto; accent-color: var(--adm-accent); }
+.adm-body input[readonly] { color: var(--adm-fg-faint); background: #141920; }
+/* Kept as-is (not renamed to the adm- vocabulary): the post form's date-lock
+   JS toggles this exact class, and AdminPostFormTest asserts on it. */
+.date-locked { border-color: var(--adm-danger); color: var(--adm-danger); background: #241a1d; }
+.adm-locked { display: flex; align-items: center; gap: 7px; font-size: 0.78rem; color: var(--adm-warn); }
+
+/* ---------- tabs, filter chips ---------- */
+
+.adm-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--adm-line); margin-bottom: 16px; }
+.adm-tabs__btn {
+    padding: 7px 12px;
+    font: inherit;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    color: var(--adm-fg-dim);
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+.adm-tabs__btn.is-on { color: var(--adm-fg); border-bottom-color: var(--adm-accent); }
+
+.adm-filters { display: flex; align-items: center; gap: 8px; }
+.adm-chip {
+    padding: 5px 11px;
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--adm-fg-dim);
+    background: transparent;
+    border: 1px solid var(--adm-line);
+    border-radius: 999px;
+    cursor: pointer;
+}
+.adm-chip.is-on { color: var(--adm-fg); background: var(--adm-accent-dim); border-color: #3c4f75; }
+.adm-search { flex: 1; max-width: 260px; }
+
+/* ---------- post editor ---------- */
+
+.adm-grid { display: grid; grid-template-columns: minmax(0, 1fr) 268px; gap: 18px; align-items: start; }
+.adm-rail { position: sticky; top: 70px; display: flex; flex-direction: column; gap: 14px; }
+.adm-rail .adm-panel__body { padding: 14px; }
+.adm-rail .adm-field:last-of-type { margin-bottom: 0; }
+.adm-actions { display: flex; gap: 8px; }
+
+/* CKEditor chrome, re-skinned in --adm-* terms. The admin page no longer loads
+   article.css (which is token-driven and belongs to the themed article), so
+   the editor's own UI would otherwise paint in CKEditor's default light
+   palette. CKEditor derives properties like --ck-color-toolbar-background from
+   the --ck-color-base-* vars once, at :root — overriding only the base vars
+   here would leave the toolbar light, so every derived var an actual UI
+   element paints with is redeclared directly. */
+.adm-editor {
+    --ck-color-base-foreground: var(--adm-surface);
+    --ck-color-base-background: var(--adm-raised);
+    --ck-color-base-border: var(--adm-line);
+    --ck-color-base-text: var(--adm-fg);
+    --ck-color-base-action: var(--adm-accent);
+    --ck-color-base-focus: var(--adm-accent);
+    --ck-color-focus-border: var(--adm-accent);
+    --ck-color-button-default-hover-background: var(--adm-line);
+    --ck-color-button-default-active-background: var(--adm-line);
+    --ck-color-button-on-background: var(--adm-accent-dim);
+    --ck-color-button-on-hover-background: var(--adm-accent-dim);
+    --ck-color-button-on-color: var(--adm-accent);
+    --ck-color-toolbar-background: var(--adm-surface);
+    --ck-color-toolbar-border: var(--adm-line);
+    --ck-color-dropdown-panel-background: var(--adm-surface);
+    --ck-color-dropdown-panel-border: var(--adm-line);
+    --ck-color-panel-background: var(--adm-surface);
+    --ck-color-panel-border: var(--adm-line);
+    --ck-color-list-background: var(--adm-surface);
+    --ck-color-list-button-hover-background: var(--adm-raised);
+    --ck-color-list-button-on-background: var(--adm-accent-dim);
+    --ck-color-list-button-on-text: var(--adm-accent);
+    --ck-color-input-background: var(--adm-raised);
+    --ck-color-input-border: var(--adm-line);
+    --ck-color-input-text: var(--adm-fg);
+    --ck-color-text: var(--adm-fg);
+    --ck-color-tooltip-background: var(--adm-fg);
+    --ck-color-tooltip-text: var(--adm-bg);
+    --ck-color-editable-blur-selection: var(--adm-line);
+}
+.adm-editor .ck-content { color: var(--adm-fg); line-height: 1.6; min-height: 320px; }
+.adm-editor .ck-content :is(h1, h2, h3, h4, h5, h6) { color: var(--adm-fg); letter-spacing: normal; }
+.adm-editor .ck-content a { color: var(--adm-accent); }
+
+.adm-editor__frame {
+    display: block;
+    width: 100%;
+    min-height: 420px;
+    border: 1px solid var(--adm-line);
+    border-radius: var(--adm-radius);
+    background: var(--adm-bg);
+}
+.adm-editor__frame[hidden], .adm-editor[hidden] { display: none; }
+
+/* ---------- tables (database backups) ---------- */
+
+.adm-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.adm-table th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--adm-fg-faint);
+    border-bottom: 1px solid var(--adm-line);
+}
+.adm-table td { padding: 9px 16px; border-top: 1px solid var(--adm-line-soft); vertical-align: middle; }
+.adm-table tbody tr:hover { background: var(--adm-raised); }
+.adm-table td.is-data { font-family: var(--adm-mono); font-variant-numeric: tabular-nums; color: var(--adm-fg-dim); }
+.adm-table a { text-decoration: none; }
+.adm-table form { margin: 0; }
+
+/* ---------- themes picker ---------- */
+
+.adm-theme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+.adm-theme-card { display: flex; flex-direction: column; overflow: hidden; }
+.adm-theme-card .adm-panel__body { display: flex; flex-direction: column; gap: 8px; }
+.adm-theme-card h3 { display: flex; align-items: center; gap: 8px; }
+.adm-theme-shot { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-bottom: 1px solid var(--adm-line-soft); }
+
+/* ---------- login ---------- */
+
+.adm-login { display: flex; justify-content: center; padding: 64px 20px 90px; }
+.adm-login__card { width: 340px; max-width: 100%; }
+.adm-login__card h2 { margin: 0 0 4px; font-size: 1.1rem; }
+.adm-login__card .adm-note { margin-bottom: 18px; }
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 760px) {
+    .adm-grid { grid-template-columns: 1fr; }
+    .adm-rail { position: static; }
+    .adm-two { grid-template-columns: 1fr; }
+    .adm-bar { padding: 0 10px; }
+    .adm-bar__brand { width: 100%; border-right: 0; border-bottom: 1px solid var(--adm-line-soft); }
+    .adm-row { flex-wrap: wrap; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .adm-body * { transition: none !important; animation: none !important; }
+}
