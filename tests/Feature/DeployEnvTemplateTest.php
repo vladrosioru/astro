@@ -21,6 +21,22 @@ class DeployEnvTemplateTest extends TestCase
         $this->assertStringContainsString('MEDIA_FALLBACK_URL="${MEDIA_FALLBACK_URL:-}"', $this->script());
     }
 
+    public function test_the_deploy_template_falls_back_to_the_real_contact_form_sender(): void
+    {
+        // The placeholder default shipped every contact email with a From address
+        // on example.com, whose owner publishes "v=spf1 -all" and DMARC p=reject
+        // — so any filter evaluating the sender is told to reject the message.
+        // Delivery only survived because it stayed local (dovecot_virtual_delivery),
+        // which skips sender policy; it would break the moment mail leaves the box.
+        $script = $this->script();
+
+        $this->assertStringContainsString(
+            'MAIL_FROM_ADDRESS="${MAIL_FROM_ADDRESS:-contact-form@astrotherapia.com}"',
+            $script
+        );
+        $this->assertStringNotContainsString('no-reply@example.com', $script);
+    }
+
     public function test_the_example_env_documents_both_variables(): void
     {
         $example = (string) file_get_contents(base_path('.env.example'));
