@@ -25,6 +25,15 @@ class AdminTopBarTest extends TestCase
         $this->assertMatchesRegularExpression('/class="adm-bar__link"[^>]*>Posts</', $content);
     }
 
+    public function test_top_bar_marks_the_section_a_nested_route_belongs_to(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $content = $this->actingAs($admin)->get('/admin/posts/create')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/class="adm-bar__link is-on"[^>]*>Posts</', $content);
+    }
+
     public function test_top_bar_offers_the_public_site_the_account_and_log_out(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);

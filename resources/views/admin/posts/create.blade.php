@@ -1,12 +1,20 @@
-@extends('layouts.app')
-@section('title', 'New Post')
+@extends('layouts.admin')
+
+@section('title', 'New post')
+
 @section('content')
-    <div class="container">
-        <h1>New Post</h1>
+    @include('admin.partials._topbar')
+
+    <main class="adm-main">
+        <div class="adm-head">
+            <h2 class="adm-head__title">New post</h2>
+            <span class="adm-head__grow"></span>
+            <a class="adm-btn adm-btn--sm" href="{{ route('admin.posts.index') }}">&larr; All posts</a>
+        </div>
+
         <form method="POST" action="{{ route('admin.posts.store') }}" enctype="multipart/form-data">
             @csrf
-            @include('admin.posts._form')
-            <p><button type="submit">Save</button></p>
+            @include('admin.posts._form', ['submitLabel' => 'Save'])
         </form>
-    </div>
+    </main>
 @endsection

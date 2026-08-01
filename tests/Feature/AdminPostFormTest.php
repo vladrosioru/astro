@@ -92,34 +92,37 @@ class AdminPostFormTest extends TestCase
             ->assertSee('Locked (this post has been published)');
     }
 
-    public function test_create_form_loads_article_css_for_wysiwyg_match(): void
-    {
-        $admin = User::factory()->create(['is_admin' => true]);
-
-        // The published post view (blog/show.blade.php) loads css/article.css
-        // to give the body its real color/font/heading treatment; the editor
-        // must load the same file so it previews the way the post publishes.
-        $this->actingAs($admin)->get('/admin/posts/create')
-            ->assertOk()
-            ->assertSee('css/article.css', false);
-    }
-
-    public function test_create_form_wraps_each_editor_in_article_paper(): void
+    public function test_create_form_ships_article_css_to_the_preview_frame_only(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
 
         $content = $this->actingAs($admin)->get('/admin/posts/create')->assertOk()->getContent();
 
-        // blog/show.blade.php nests the CKEditor content under
-        // .article-paper .ck-content; mirror the same wrapper around each
-        // locale's textarea so article.css's .article-paper .ck-content
-        // rules apply to the editing surface too, not just published pages.
+        // article.css is token-driven, so it belongs to the themed article —
+        // not to the admin page, which is theme-free. It reaches the isolated
+        // preview frame through the asset manifest instead.
+        $this->assertDoesNotMatchRegularExpression('/<link[^>]+css\/article\.css/', $content);
         $this->assertMatchesRegularExpression(
-            '/<div class="article-paper"[^>]*>\s*<textarea[^>]*id="editor_en"/',
+            '/id="adm-preview-assets"[^>]*>.*?css\\\\?\/article\.css/s',
+            $content
+        );
+    }
+
+    public function test_create_form_wraps_each_editor_in_the_admin_editor_surface(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $content = $this->actingAs($admin)->get('/admin/posts/create')->assertOk()->getContent();
+
+        // The editing surface is admin-styled: admin.css re-skins CKEditor's
+        // chrome through .adm-editor, so the panel matches the rest of the
+        // module instead of the active theme.
+        $this->assertMatchesRegularExpression(
+            '/<div class="adm-editor"[^>]*>\s*<textarea[^>]*id="editor_en"/',
             $content
         );
         $this->assertMatchesRegularExpression(
-            '/<div class="article-paper"[^>]*>\s*<textarea[^>]*id="editor_ro"/',
+            '/<div class="adm-editor"[^>]*>\s*<textarea[^>]*id="editor_ro"/',
             $content
         );
     }
@@ -132,20 +135,33 @@ class AdminPostFormTest extends TestCase
 
         foreach (['en', 'ro'] as $locale) {
             // A button that swaps the live CKEditor view for a read-only
-            // render using blog/show.blade.php's own markup (.journal-hero,
-            // .article-paper > .ck-content), so the admin can see exactly
-            // what the post will look like once published, unsaved edits
-            // included.
-            $this->assertStringContainsString(
-                'class="preview-toggle" data-locale="'.$locale.'"',
+            // render of the themed article, so the admin can see exactly what
+            // the post will look like once published, unsaved edits included.
+            // The render happens inside an iframe so the theme's CSS can never
+            // touch the admin page around it.
+            $this->assertMatchesRegularExpression(
+                '/<button class="preview-toggle[^"]*"[^>]*data-locale="'.$locale.'"/',
                 $content
             );
-            $this->assertStringContainsString('id="preview_'.$locale.'"', $content);
-            $this->assertMatchesRegularExpression(
-                '/id="preview_'.$locale.'"[^>]*hidden[^>]*>.*?journal-hero__title/s',
+            $this->assertStringContainsString(
+                '<iframe class="adm-editor__frame" id="preview_'.$locale.'"',
                 $content
             );
         }
+    }
+
+    public function test_the_preview_frame_is_handed_the_active_theme_css(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $content = $this->actingAs($admin)->get('/admin/posts/create')->assertOk()->getContent();
+
+        // Preview must show the real published article, so the frame — and
+        // only the frame — receives the active theme's stylesheets and tokens.
+        foreach (app('theme.manager')->cssUrls() as $href) {
+            $this->assertStringContainsString(str_replace('/', '\/', $href), $content);
+        }
+        $this->assertDoesNotMatchRegularExpression('/<link[^>]+themes\/theme_/', $content);
     }
 
     public function test_create_form_shows_date_field_between_status_and_card_image(): void
