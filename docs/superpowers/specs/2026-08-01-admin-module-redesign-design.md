@@ -27,7 +27,7 @@ Properties of the existing code, not choices made here.
 | Theme nav rules are scoped to `body > nav`; global rules are not | `public/themes/theme_solarsystem/css/structure.css:12`, `.../skin.css:2-5` | Themes style bare `body`, `h1,h2,h3`, `a`, plus `.container` / `.card` / `.btn` / `.muted`. Any of those names reused in admin markup inherits theme appearance. The admin must avoid the shared class names entirely. |
 | `layouts/app.blade.php:18` suppresses footer and back-to-top on `admin.*` routes | same file | With a dedicated admin layout that branch is dead and gets removed; the public layout renders footer and back-to-top unconditionally. |
 | `public/css/article.css` makes 70 `var(--color-*)` / `var(--font-*)` / `var(--radius)` references | `public/css/article.css` | Article rendering is theme-token dependent by design. It cannot be loaded on a token-free admin page and still look right — hence the isolated preview frame. |
-| `article.css` also overrides CKEditor's `--ck-color-base-*` chrome vars on `.article-paper`, using theme tokens | `public/css/article.css`, asserted by `tests/Unit/ArticleCssTest.php` | That block exists only for the admin editor. It moves to the admin stylesheet, restated in `--adm-*` terms, and its test moves with it. |
+| `article.css` also overrides CKEditor's `--ck-color-base-*` chrome vars on `.article-paper`, using theme tokens | `public/css/article.css`, asserted by `tests/Unit/ArticleCssTest.php` | The admin page stops loading `article.css`, so `admin.css` must declare an equivalent block in `--adm-*` terms. `article.css` keeps its own, unchanged, for the preview frame. |
 | The post form's Preview reads live CKEditor data and injects it into `.ck-content` inside the page | `resources/views/admin/posts/_form.blade.php:80-89,132-154` | Moving the preview into an iframe changes how that data is delivered, not where it comes from. |
 | No test asserts the site nav, footer or theme assets on any `/admin*` route | `tests/Feature/AdminAccessTest.php`, `AdminAuthTest.php`, `NavBrandingTest.php` (hits `/en`) | Removing the nav from admin breaks no existing coverage. |
 | The Themes screen needs only each package's `screenshot.png` | `resources/views/admin/themes/index.blade.php:22-24` | Theme previews stay intact with zero theme CSS loaded. |
@@ -94,10 +94,11 @@ Rejected: keeping the typing surface themed (permanent partial coupling on the
 one screen with the most CSS surface area), and a permanent side-by-side split
 (crowds the form and needs its own phone fallback).
 
-Consequence: the `.article-paper` CKEditor chrome overrides move from
-`article.css` to `admin.css`, restated against `--adm-*` and scoped to the admin
-editor wrapper. `article.css` is left as pure article-rendering CSS, which is
-what the public page and the preview frame both want.
+Consequence: the admin page stops loading `article.css` altogether, so the
+editing surface's wrapper changes from `.article-paper` to `.adm-editor` and
+`admin.css` declares its own CKEditor chrome overrides in `--adm-*` terms.
+`article.css` itself is left untouched — it is still what the public article
+page and the preview frame render with.
 
 ### Component set
 
@@ -118,7 +119,7 @@ shape.
 | Authors index | Same row partial as Posts, round avatar. |
 | Authors create/edit | Admin form fields; no other change. |
 | Themes | Card grid on admin styling; screenshots unchanged; active theme marked with a pill. |
-| Database | Backups table in a panel; the prod → dev copy moves into its own danger-styled panel instead of sitting inline below the backup list. |
+| Database | Backups stay a real `<table>` (restyled `.adm-table`) inside a panel; the prod → dev copy moves into its own danger-styled panel instead of sitting inline below the backup list. |
 
 Behaviour is unchanged everywhere: same routes, same controllers, same
 validation, same confirm dialogs, same CKEditor plugin set and upload endpoint.
@@ -145,10 +146,14 @@ unless noted.
    and `article.css` — i.e. the preview stays truthful after decoupling.
 8. Unit: `admin.css` contains no `var(--color-`, `var(--font-`, `var(--radius`
    or other theme token reference.
-9. Unit: `admin.css` overrides CKEditor's `--ck-color-base-*` chrome vars in
-   `--adm-*` terms (the assertion moved out of `ArticleCssTest`).
-10. Unit: `article.css` no longer declares CKEditor `--ck-color-base-*`
-    overrides (the other half of that move).
+9. Unit: `admin.css` declares its own CKEditor chrome overrides
+   (`--ck-color-base-*` and the derived toolbar/panel vars) in `--adm-*` terms,
+   scoped to `.adm-editor`.
+
+`article.css` keeps its existing `.article-paper` CKEditor block untouched:
+that file still loads on the public article page and inside the preview frame,
+and the block is already inert wherever no CKEditor UI exists.
+`tests/Unit/ArticleCssTest.php` therefore stays as it is.
 
 Existing admin CRUD tests assert on text and routes rather than markup, so they
 must keep passing untouched; if one breaks, the markup change went further than
