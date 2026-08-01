@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Author;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,5 +56,29 @@ class AdminLayoutTest extends TestCase
         // The old index hand-rolled its layout with inline style attributes.
         $this->assertStringNotContainsString('style="display:flex', $content);
         $this->assertStringNotContainsString('/themes/theme_', $content);
+    }
+
+    public function test_authors_index_uses_round_row_avatars_and_no_theme_css(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        Author::create(['name' => 'Ioana P.']);
+
+        $content = $this->actingAs($admin)->get('/admin/authors')->assertOk()->getContent();
+
+        $this->assertStringContainsString('adm-row__thumb is-round', $content);
+        $this->assertStringNotContainsString('style="display:flex', $content);
+        $this->assertStringNotContainsString('/themes/theme_', $content);
+    }
+
+    public function test_author_form_uses_admin_fields(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)->get('/admin/authors/create')
+            ->assertOk()
+            ->assertSee('adm-field', false)
+            ->assertSee('name="name"', false)
+            ->assertSee('name="description"', false)
+            ->assertSee('name="picture"', false);
     }
 }

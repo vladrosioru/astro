@@ -1,5 +1,5 @@
 @if ($errors->any())
-    <div class="form-errors">
+    <div class="adm-err">
         <ul>
             @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -8,21 +8,22 @@
     </div>
 @endif
 
-<p><label>Name
-    <input type="text" name="name" value="{{ old('name', isset($author) ? $author->name : '') }}">
-</label></p>
+<div class="adm-field">
+    <label for="author-name">Name</label>
+    <input id="author-name" type="text" name="name" value="{{ old('name', isset($author) ? $author->name : '') }}">
+</div>
 
-<p><label>Description
-    <textarea name="description" rows="4">{{ old('description', isset($author) ? $author->description : '') }}</textarea>
-</label></p>
+<div class="adm-field">
+    <label for="author-description">Description</label>
+    <textarea id="author-description" name="description" rows="4">{{ old('description', isset($author) ? $author->description : '') }}</textarea>
+</div>
 
-<fieldset>
-    <legend>Picture</legend>
+<div class="adm-field">
+    <label for="author-picture">Picture</label>
     @if (isset($author) && $author->picture)
-        <p><img src="{{ $author->picture }}" alt="" style="max-width:160px;height:auto;display:block;border-radius:50%"></p>
-        <p><label><input type="checkbox" name="remove_picture" value="1"> Remove picture</label></p>
+        <img class="adm-field__preview is-round" src="{{ $author->picture }}" alt="">
+        <span class="adm-field__hint"><label><input type="checkbox" name="remove_picture" value="1"> Remove picture</label></span>
     @endif
-    <p><label>{{ isset($author) && $author->picture ? 'Replace image' : 'Upload image' }}
-        <input type="file" name="picture" accept="image/*"></label></p>
-    <p class="muted">Cropped to a square (400&times;400).</p>
-</fieldset>
+    <input id="author-picture" type="file" name="picture" accept="image/*">
+    <span class="adm-field__hint">{{ isset($author) && $author->picture ? 'Replaces the current picture.' : 'Cropped to a square (400×400).' }}</span>
+</div>
