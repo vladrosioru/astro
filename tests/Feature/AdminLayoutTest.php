@@ -70,6 +70,31 @@ class AdminLayoutTest extends TestCase
         $this->assertStringNotContainsString('/themes/theme_', $content);
     }
 
+    public function test_themes_page_is_itself_unthemed(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $content = $this->actingAs($admin)->get('/admin/themes')->assertOk()->getContent();
+
+        // Screenshots are plain images out of each package; no theme
+        // stylesheet is loaded to render this page.
+        $this->assertDoesNotMatchRegularExpression('/<link[^>]+themes\/theme_[^>]+\.css/', $content);
+        $this->assertStringContainsString('adm-theme-grid', $content);
+    }
+
+    public function test_database_page_keeps_destructive_actions_in_a_danger_panel(): void
+    {
+        config(['database_admin.restore_enabled' => true]);
+        config(['database.connections.source.database' => 'prod_db']);
+
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $content = $this->actingAs($admin)->get('/admin/database')->assertOk()->getContent();
+
+        $this->assertStringContainsString('adm-panel--danger', $content);
+        $this->assertStringNotContainsString('/themes/theme_', $content);
+    }
+
     public function test_author_form_uses_admin_fields(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
