@@ -42,7 +42,14 @@ php artisan test
 ```
 
 > **Windows toolchain note:** PHP 8.3 + Composer were installed via winget under
-> `…/WinGet/Packages/PHP.PHP.8.3_…`. That dir is not always on PATH — prepend it before running `php`/`composer` if the command isn't found.
+> `%LOCALAPPDATA%\Microsoft\WinGet\Packages\PHP.PHP.8.3_Microsoft.Winget.Source_8wekyb3d8bbwe\`.
+> That dir is not always on PATH — prepend it before running `php`/`composer` if the
+> command isn't found (Git Bash:
+> `export PATH="/c/Users/<you>/AppData/Local/Microsoft/WinGet/Packages/PHP.PHP.8.3_Microsoft.Winget.Source_8wekyb3d8bbwe:$PATH"`).
+> Composer lives in that same dir as `composer.phar`, wrapped by `composer.bat`
+> (cmd/PowerShell) and a `composer` shell script (Git Bash). `php.ini` is a copy of
+> `php.ini-development` with these extensions enabled: `pdo_sqlite`, `sqlite3`,
+> `mbstring`, `openssl`, `fileinfo`, `gd`, `curl`, `pdo_mysql`.
 
 ---
 
@@ -287,6 +294,8 @@ routes/web.php
 docs/
   superpowers/specs/     design specs
   superpowers/plans/     implementation plans
+  DEPLOY-CPANEL.md       one-time host setup + CI/CD pipeline configuration
+  OPERATIONS.md          live-site runbook (panel, host WAF, contact-form mail)
   BACKLOG.md             follow-ups & ideas
 tests/                   Feature + Unit (PHPUnit, in-memory SQLite)
 ```
@@ -296,6 +305,16 @@ tests/                   Feature + Unit (PHPUnit, in-memory SQLite)
 ## Testing
 
 PHPUnit, configured by [`phpunit.xml`](phpunit.xml) to run against an **in-memory SQLite** DB (separate from the dev DB — a passing suite does not imply the dev DB is migrated). Run with `php artisan test`. Coverage spans page rendering, locale routing, section visibility, theming/token emission, the hero, blog publishing, admin auth, and the CSS/JS asset contracts.
+
+> **Mail is never really sent outside production.** Tests use `Mail::fake()` and the
+> local `.env` uses `MAIL_MAILER=log`, so **no test exercises the real SMTP
+> transport** — contact-form delivery can only be proven on the live host. See
+> [`docs/OPERATIONS.md`](docs/OPERATIONS.md#contact-form-mail) for how to verify it
+> there.
+
+Dependency advisories are a **blocking** CI gate (`composer audit --no-dev` in the
+pipeline's `security` job), so a flagged package fails the pipeline instead of
+shipping.
 
 ---
 
@@ -313,7 +332,9 @@ token-guarded [`public/deploy.php`](public/deploy.php) hook. Dev and prod are
 separate cPanel subdomains/databases; the `production` GitHub environment's
 required-reviewer rule is the manual approval gate. Full setup — cPanel
 prerequisites, GitHub environments, secrets/variables — is in
-[`docs/DEPLOY-CPANEL.md`](docs/DEPLOY-CPANEL.md).
+[`docs/DEPLOY-CPANEL.md`](docs/DEPLOY-CPANEL.md); running the live site (panel
+access, the host WAF's `Accept`-header requirement, contact-form mail checks) is
+in [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
 **Manual (fallback):**
 

@@ -25,6 +25,23 @@ Bug fixes always get a regression test that reproduces the bug before the fix
 lands. Exceptions (throwaway prototypes, generated code, config-only changes)
 — ask before skipping.
 
+## Live infrastructure: ask first
+
+**Never connect to the live host or take an outward-facing action without
+explicit, per-action confirmation** — no FTP/FTPS, SSH, cPanel, SMTP or live-URL
+probing, not even read-only checks, and not even when credentials are at hand
+(they are in the git-ignored `docs/DEPLOY-SECRETS.local.md` and in GitHub
+environment secrets).
+
+Diagnose from evidence the owner supplies — logs, screenshots, output of commands
+they ran. When a direct check would genuinely help, *offer* it and wait for an
+explicit yes. Deploys are pushed manually by the owner: commit the code and stop
+there. Approval for one probe does not carry to the next.
+
+Operational facts already learned about the live host — panel URL, the WAF's
+`Accept`-header requirement, how contact-form mail is verified — are written down
+in [`docs/OPERATIONS.md`](docs/OPERATIONS.md); read that before proposing a probe.
+
 ## Documentation upkeep
 
 1. **Keep each theme's manifest in sync.** Themes are self-contained packages

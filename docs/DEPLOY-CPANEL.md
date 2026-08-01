@@ -26,6 +26,10 @@ lint → test → security → build → deploy_dev → test_dev → [approve] d
 `deploy_prd` targets the GitHub `production` environment, whose **required
 reviewer** rule is the manual approval gate before production.
 
+> This file covers **setup and pipeline configuration**. For running the live
+> site — panel access, the host WAF quirk, contact-form mail verification — see
+> [`OPERATIONS.md`](OPERATIONS.md).
+
 > **Custom port for dev is not possible here.** Shared cPanel (Apache/LiteSpeed)
 > only serves apps on 80/443 through domain/subdomain vhosts. Dev therefore
 > lives on its own subdomain (e.g. `dev.astrotherapia.com`), still over HTTPS.
@@ -60,7 +64,9 @@ with separate databases and separate app directories.
 
 4. **FTP access** — use the main cPanel login, or cPanel → *FTP Accounts* to
    create a dedicated user. Confirm **FTPS on port 21** is allowed. The host is
-   `server20.romania-webhosting.com` (or as your host specifies).
+   `server20.romania-webhosting.com` (or as your host specifies); its cPanel
+   panel is at `https://server20.romania-webhosting.com:2083` (see
+   [`OPERATIONS.md`](OPERATIONS.md)).
 
 You do **not** need to upload `.env` or run any command by hand — CI writes the
 `.env` (from your GitHub secrets) and runs migrations via the deploy hook.
@@ -231,6 +237,14 @@ extraction only overlays files). See `config/filesystems.php`.
 
 ## Troubleshooting
 
+- **A CI/curl request to the live site returns `415 Unsupported Media Type`** →
+  the host WAF rejects datacenter-IP requests that send no explicit `Accept`
+  header. Add `-H "Accept: text/html"` (or `text/plain`) — `-A` alone is not
+  enough, and it is not reproducible from a local machine. Full explanation in
+  [`OPERATIONS.md`](OPERATIONS.md#host-waf-bare-curl-gets-http-415).
+- **Contact form reported "not working"** → check the
+  `office@astrotherapia.com` mailbox in cPanel webmail before touching code, then
+  follow the diagnostics in [`OPERATIONS.md`](OPERATIONS.md#contact-form-mail).
 - **Upload fails `curl (60) SSL: no alternative certificate subject name`** →
   `FTP_HOST` doesn't match the FTPS server's TLS cert. Use the server hostname
   the cert is issued for (e.g. `server20.romania-webhosting.com`), not the
