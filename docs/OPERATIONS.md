@@ -50,17 +50,55 @@ local machine** — do not spend time trying.
 `User-Agent` alone does not fix it (`-A "astro-deploy-bot/1.0"` still 415s). The
 decisive header is `Accept`.
 
-**Rule:** every script or CI step that hits the live site must send both:
+**Rule:** every script or CI step that hits the live site must send both a
+`User-Agent` and an explicit `Accept`. See the next section for the values that
+currently work — a bot-shaped UA is no longer enough.
 
-```bash
-curl -A "astro-deploy-bot/1.0" -H "Accept: text/html" "$URL"     # page checks
-curl -A "astro-deploy-bot/1.0" -H "Accept: text/plain" "$URL"    # deploy hooks
+---
+
+## Host WAF, part two: the silent 200 challenge page (2026-08-01)
+
+Worse than the 415, because it **succeeds**. The WAF answers requests it doesn't
+like with **HTTP 200** and this body instead of proxying to PHP:
+
+```html
+<title>One moment, please...</title>
+<script>(function(){ setTimeout(function(){ window.location.reload(); }, 5000); }())</script>
 ```
 
-The smoke tests and deploy-hook calls in
-[`.github/workflows/cicd.yml`](../.github/workflows/cicd.yml) already do. If a
-415 appears on a **new** script, this is the cause — check it before
-re-diagnosing anything else.
+An Imunify360-style JS challenge. Consequences, all observed:
+
+- `curl -fsS` only fails on 4xx/5xx, so **a challenged deploy hook reported
+  success**. `deploy_dev` went green in 19 s with the challenge page in its log,
+  `extract.php` never ran, and the site kept serving the previous build — with
+  no failure anywhere to point at it. It cost a "why doesn't my deploy show up"
+  round trip; assume it will again if the check below is ever removed.
+- Smoke tests that only read `%{http_code}` pass against a challenged site for
+  the same reason.
+
+What passes and what gets challenged (measured, same host, same minute):
+
+| Request | Result |
+|---|---|
+| `-A "astro-deploy-bot/1.0" -H "Accept: text/plain"` | challenge page (200) |
+| `-A "Mozilla/5.0 …Chrome/126…" -H "Accept: text/html,application/xhtml+xml"` | the real page (200) |
+
+**Rules now enforced in CI** — do not weaken these:
+
+1. Deploy hooks go through
+   [`.github/scripts/run-deploy-hook.sh`](../.github/scripts/run-deploy-hook.sh),
+   which sends browser-shaped headers **and fails the step unless the body
+   contains the hook's own success marker** (`Archive removed.` for
+   `extract.php`, `Deploy hook finished.` for `deploy.php`).
+2. Every site-facing smoke curl sends `-A "$UA" -H "Accept: text/html,…"` and
+   greps the body for `$WAF_CHALLENGE_MARKER`; both are workflow-level `env` in
+   `cicd.yml` and `rollback-prod.yml`.
+3. `tests/Feature/DeployHookVerificationTest.php` fails the suite if any of that
+   is undone.
+
+If a deploy ever "succeeds" but the site doesn't change, read the hook step's
+body first — that is this failure, and the fix is to re-run the workflow (the
+FTPS upload is idempotent, so re-running is safe).
 
 ---
 
