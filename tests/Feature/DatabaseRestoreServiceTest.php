@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Author;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\PostTranslation;
@@ -110,6 +111,18 @@ class DatabaseRestoreServiceTest extends TestCase
         $this->assertSame('<img src="https://prod.example.com/storage/media/a.jpg">', PostTranslation::first()->body);
     }
 
+    public function test_it_rewrites_the_post_card_image_when_a_fallback_url_is_configured(): void
+    {
+        config(['database_admin.media_fallback_url' => 'https://prod.example.com']);
+
+        $this->seedPost('With Card')->update(['featured_image' => '/storage/media/card.jpg']);
+        $name = app(DatabaseBackupService::class)->create('manual');
+
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+
+        $this->assertSame('https://prod.example.com/storage/media/card.jpg', Post::first()->featured_image);
+    }
+
     public function test_it_leaves_media_paths_alone_without_a_fallback_url(): void
     {
         config(['database_admin.media_fallback_url' => null]);
@@ -120,6 +133,34 @@ class DatabaseRestoreServiceTest extends TestCase
         app(DatabaseRestoreService::class)->restore($this->backupPath($name));
 
         $this->assertSame('/storage/media/a.jpg', Media::first()->url);
+    }
+
+    public function test_it_restores_authors_so_post_author_links_survive(): void
+    {
+        $author = Author::create(['name' => 'Ana Pop']);
+        $this->seedPost('By Ana')->update(['author_id' => $author->id]);
+        $name = app(DatabaseBackupService::class)->create('manual');
+
+        PostTranslation::query()->delete();
+        Post::query()->delete();
+        Author::query()->delete();
+
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+
+        $this->assertSame('Ana Pop', Author::first()->name);
+        $this->assertSame(Author::first()->id, Post::first()->author_id);
+    }
+
+    public function test_it_rewrites_the_author_picture_when_a_fallback_url_is_configured(): void
+    {
+        config(['database_admin.media_fallback_url' => 'https://prod.example.com']);
+
+        Author::create(['name' => 'Ana Pop', 'picture' => '/storage/media/ana.jpg']);
+        $name = app(DatabaseBackupService::class)->create('manual');
+
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+
+        $this->assertSame('https://prod.example.com/storage/media/ana.jpg', Author::first()->picture);
     }
 
     public function test_it_rejects_a_file_that_is_not_gzipped(): void

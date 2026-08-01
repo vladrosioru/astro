@@ -28,7 +28,8 @@ return [
      * so a mistaken restore cannot damage accounts or log anyone out.
      *
      * Order matters: parents first. Inserts follow this order; deletes use the
-     * reverse, so post_translations goes before its parent posts.
+     * reverse, so post_translations goes before its parent posts, and authors
+     * (referenced by posts.author_id) is inserted first and deleted last.
      */
-    'tables' => ['posts', 'post_translations', 'media', 'site_settings'],
+    'tables' => ['authors', 'posts', 'post_translations', 'media', 'site_settings'],
 ];

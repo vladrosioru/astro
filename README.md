@@ -90,9 +90,11 @@ parsing SQL (CKEditor bodies are full of semicolons). Driver-specific quoting
 (`MySqlQuoter`/`SqliteQuoter`, chosen by `QuoterFactory`) keeps every value on
 its line.
 
-- **Scope:** content tables only — `posts`, `post_translations`, `media`,
-  `site_settings`. `users`, sessions, cache and queue tables are never touched,
-  so a copy never moves password hashes or logs anyone out.
+- **Scope:** content tables only — `authors`, `posts`, `post_translations`,
+  `media`, `site_settings`. `authors` leads the list because `posts.author_id`
+  is a foreign key to it, so it must be inserted first and deleted last.
+  `users`, sessions, cache and queue tables are never touched, so a copy never
+  moves password hashes or logs anyone out.
 - **Config:** [`config/database_admin.php`](config/database_admin.php) —
   `restore_enabled` (from `DB_RESTORE_ENABLED`), `media_fallback_url` (from
   `MEDIA_FALLBACK_URL`), `retention` (10), and the `tables` list
@@ -110,7 +112,11 @@ its line.
   resolves false, returns **404** for the `pull` route and renders no button —
   **production content is never overwritten by this feature.** On import,
   root-relative `/storage/media/...` paths are rewritten to `MEDIA_FALLBACK_URL`
-  (prod's origin) so dev renders prod's images without transferring files. A
+  (prod's origin) so dev renders prod's images without transferring files —
+  covering `media.url`, `posts.featured_image`, `authors.picture` and the inline
+  `<img src>` paths inside `post_translations.body`. The rewrite only touches
+  rows the copy just imported; images later uploaded on dev keep their own
+  root-relative paths and resolve against dev's disk. A
   copy always writes an automatic pre-restore snapshot of dev first and runs in
   a single transaction.
 - **One-click copy (`POST admin/database/pull`, `admin.database.pull`):** the

@@ -100,10 +100,24 @@ class DatabaseRestoreService
     {
         $rewriter = new MediaPathRewriter(config('database_admin.media_fallback_url'));
 
+        DB::table('authors')->orderBy('id')->chunkById(200, function ($rows) use ($rewriter) {
+            foreach ($rows as $row) {
+                DB::table('authors')->where('id', $row->id)
+                    ->update(['picture' => $rewriter->rewriteUrl($row->picture)]);
+            }
+        });
+
         DB::table('media')->orderBy('id')->chunkById(200, function ($rows) use ($rewriter) {
             foreach ($rows as $row) {
                 DB::table('media')->where('id', $row->id)
                     ->update(['url' => $rewriter->rewriteUrl($row->url)]);
+            }
+        });
+
+        DB::table('posts')->orderBy('id')->chunkById(200, function ($rows) use ($rewriter) {
+            foreach ($rows as $row) {
+                DB::table('posts')->where('id', $row->id)
+                    ->update(['featured_image' => $rewriter->rewriteUrl($row->featured_image)]);
             }
         });
 

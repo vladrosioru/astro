@@ -22,7 +22,10 @@ class MediaPathRewriter
         $this->base = rtrim((string) $base, '/');
     }
 
-    /** For media.url, which holds a bare root-relative path. */
+    /**
+     * For columns holding a bare root-relative path: media.url,
+     * posts.featured_image, authors.picture.
+     */
     public function rewriteUrl(?string $value): ?string
     {
         if ($value === null || $this->base === '') {
