@@ -123,7 +123,10 @@ its line.
   only copy mechanism — there is no manual upload form. `DatabaseController::pull()`
   dumps the **live** prod database straight over a second, read-only `source` DB
   connection (`config/database.php`, env `PROD_DB_HOST`/`PROD_DB_PORT`/
-  `PROD_DB_DATABASE`/`PROD_DB_USERNAME`/`PROD_DB_PASSWORD`) to a throwaway temp
+  `PROD_DB_DATABASE`/`PROD_DB_USERNAME`/`PROD_DB_PASSWORD`). `PROD_DB_USERNAME`
+  is a **dedicated MySQL user granted only `SELECT`** on the prod database — the
+  read-only guarantee is enforced by the grant, not just by the code, so the copy
+  cannot write to prod even if the feature is misused. It dumps to a throwaway temp
   `.sql.gz`, feeds it into `DatabaseRestoreService::restore()` (dev snapshot
   first, validate, transactional replay, media URL rewrite), then deletes the
   temp file. This works because dev and prod live under **one cPanel account**,

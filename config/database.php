@@ -67,6 +67,9 @@ return [
          * Populated from PROD_DB_* on the dev deploy only; unset elsewhere, so
          * `database` is null and DatabaseController::pull() refuses to run.
          * Same cPanel account as prod, so this reaches prod's MySQL directly.
+         * PROD_DB_USERNAME is a dedicated MySQL user holding only SELECT on the
+         * prod database, so the copy cannot write to prod even if misused. The
+         * dumper (DatabaseBackupService) never issues anything but SELECT.
          */
         'source' => [
             'driver' => 'mysql',

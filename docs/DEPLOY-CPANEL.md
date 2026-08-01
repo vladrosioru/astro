@@ -97,11 +97,11 @@ Set these on **each** environment (dev values on `dev`, prod values on
 | `MAIL_FROM_ADDRESS` | variable | `contact-form@astrotherapia.com` — the envelope/From sender for contact-form mail. Must be **on a domain you control**: the SPF record `v=spf1 +a +mx +ip4:86.107.43.20 ~all` authorizes this server for `astrotherapia.com`, so mail from it passes. Left unset it falls back to the same address in `make-env.sh`. Never point it at a domain you don't own — the previous `no-reply@example.com` placeholder failed SPF/DMARC by design (`example.com` publishes `v=spf1 -all` and `p=reject`), which silently junked contact mail anywhere it was filtered. No mailbox exists behind this address, so bounces are discarded. |
 | `DB_RESTORE_ENABLED` | variable | **dev only** — set `true` on the `dev` environment to enable the prod→dev restore. Leave **unset on `production`**; it defaults to `false`, so prod returns 404 for the restore route. |
 | `MEDIA_FALLBACK_URL` | variable | **dev only** — prod's origin, e.g. `https://astrotherapia.com`. Restored content on dev loads its images from here. Leave unset on `production`. |
-| `PROD_DB_HOST` | variable | **dev only** — read-only prod DB credentials so dev can dump live prod content for the one-click **Copy prod → dev** button; copied from prod's own `.env`. Dev and prod share one cPanel account and MySQL server, so dev connects to prod's database directly. Leave unset on `production`, so the button 404s/hides. |
+| `PROD_DB_HOST` | variable | **dev only** — read-only prod DB credentials so dev can dump live prod content for the one-click **Copy prod → dev** button. Dev and prod share one cPanel account and MySQL server, so dev connects to prod's database directly (host stays `localhost`). Leave unset on `production`, so the button 404s/hides. |
 | `PROD_DB_PORT` | variable | **dev only** — same prod-source credentials as `PROD_DB_HOST`. Leave unset on `production`. |
-| `PROD_DB_DATABASE` | secret | **dev only** — same prod-source credentials as `PROD_DB_HOST`. Leave unset on `production`. |
-| `PROD_DB_USERNAME` | secret | **dev only** — same prod-source credentials as `PROD_DB_HOST`. Leave unset on `production`. |
-| `PROD_DB_PASSWORD` | secret | **dev only** — same prod-source credentials as `PROD_DB_HOST`. Leave unset on `production`. |
+| `PROD_DB_DATABASE` | secret | **dev only** — prod's database name (same value as prod's own `DB_DATABASE`). Leave unset on `production`. |
+| `PROD_DB_USERNAME` | secret | **dev only** — a **dedicated MySQL user with `SELECT` only** on the prod database (named like `<cpanel_account>_astro_dev_prod_user`), **not** prod's app DB user. See [Creating the read-only prod user](#creating-the-read-only-prod-user). Leave unset on `production`. |
+| `PROD_DB_PASSWORD` | secret | **dev only** — that read-only user's password. Leave unset on `production`. |
 
 `APP_KEY` must stay **stable** per environment — changing it invalidates
 existing sessions and any encrypted data.
@@ -122,6 +122,34 @@ restore pipeline — dev snapshots its own content first, the dump is validated,
 replayed in a transaction, and media URLs are rewritten to `MEDIA_FALLBACK_URL`
 — then the temp file is deleted. The button requires both `DB_RESTORE_ENABLED`
 true (404 on prod) **and** `PROD_DB_*` set; without them it is hidden/refused.
+
+#### Creating the read-only prod user
+
+`PROD_DB_USERNAME` is its own MySQL user, created once in cPanel, holding
+**`SELECT` and nothing else** on the prod database. Dev never needs to write to
+prod, and the dumper (`DatabaseBackupService`) only ever issues `SELECT`, so the
+grant makes "read-only" a database-enforced fact rather than a code convention:
+even a bug or a misused route cannot modify prod content.
+
+In cPanel → **MySQL® Databases**:
+
+1. **Add New User** — e.g. `astro_dev_prod_user`; cPanel prefixes it with the
+   account name, giving the full user in `PROD_DB_USERNAME`.
+2. **Add User To Database** — pick that user and the **prod** database.
+3. On the privileges screen tick **SELECT only** (not ALL PRIVILEGES).
+
+Equivalent SQL, if you use phpMyAdmin instead:
+
+```sql
+CREATE USER '<prefixed_user>'@'localhost' IDENTIFIED BY '<password>';
+GRANT SELECT ON `<prod_database>`.* TO '<prefixed_user>'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+Then set `PROD_DB_USERNAME` / `PROD_DB_PASSWORD` on the **dev** GitHub
+environment only and re-run the dev deploy so `.env` is regenerated. Rotating
+this user's password is safe: it is unrelated to prod's own `DB_PASSWORD`, and
+the only thing that breaks is the copy button.
 
 Backups (the **Back up now** button) live in `database/backups/` on each server
 (retention: 10), created via a pure-PHP dumper (the host disables `exec()`, so
