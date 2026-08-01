@@ -119,14 +119,16 @@ class AdminAuthorCrudTest extends TestCase
             ->post('/admin/authors', ['name' => 'Nope'])->assertForbidden();
     }
 
-    public function test_dashboard_lists_authors_link_after_blog_posts(): void
+    public function test_dashboard_lists_authors_link_after_posts(): void
     {
         $response = $this->actingAs($this->admin())->get('/admin');
 
         $response->assertOk();
         $html = $response->getContent();
-        $postsPos = strpos($html, 'Blog posts');
-        $authorsPos = strpos($html, 'Authors');
+        // Both live in the admin top bar (admin/partials/_topbar.blade.php),
+        // which orders sections Posts → Authors.
+        $postsPos = strpos($html, '>Posts</a>');
+        $authorsPos = strpos($html, '>Authors</a>');
 
         $this->assertNotFalse($postsPos);
         $this->assertNotFalse($authorsPos);
