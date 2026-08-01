@@ -104,6 +104,18 @@ responsible for styling them. The Home hero is the one block of markup you autho
 yourself (`views/hero.blade.php`); follow the convention below so it matches the
 rest of the site and so a persisted hero (`SiteSetting.hero`) renders.
 
+> **Public pages only.** The admin module (`/admin*`) renders through its own
+> layout and its own stylesheet (`public/css/admin.css`, an `adm-`-prefixed
+> vocabulary on an `--adm-*` palette) and loads **no theme asset at all** — not
+> your CSS, not your JS, not your fonts, not the token block. Nothing in this
+> guide applies there, and you never need to consider admin screens.
+>
+> The one exception is the post editor's **Preview**, which renders the article
+> inside an isolated `<iframe>` that *does* load your theme's CSS and tokens.
+> That is why `.journal-hero`, `.article-paper` and `.ck-content` below stay
+> part of the contract: an admin checking a draft sees exactly what your theme
+> will publish.
+
 ### Global / layout — every page
 
 | Selector | Where | Notes |
@@ -264,14 +276,13 @@ guard it with an `@if` the way the nav and footer guard their own hardcoded link
 
 Off-site URLs (anything with a scheme or `//`) are passed through untouched.
 
-> **Shared with the admin Themes picker:** `resources/views/admin/themes/index.blade.php`
-> (an authenticated admin screen, not a public page) also renders through this
-> same `layouts.app` and reuses the bare `.blog-grid` / `.card` / `.card__media` /
-> `.card__body` classes unmodified for its own 3-up theme-switcher grid. Restyle
-> those four base classes carefully — anything you change there also reflows the
-> admin picker. The journal-specific look below is layered on **top** via a
-> `.blog-grid--journal` modifier and new `.card__*` elements the admin page never
-> emits, so it can't affect that screen.
+> **No longer shared with the admin Themes picker.** That screen
+> (`resources/views/admin/themes/index.blade.php`) used to render through
+> `layouts.app` and reuse the bare `.blog-grid` / `.card` classes; it now uses
+> the admin module's own `adm-` vocabulary and loads no theme CSS. Restyling
+> `.blog-grid` / `.card` therefore affects public pages only. The
+> journal-specific look below is still layered on top via a
+> `.blog-grid--journal` modifier and its own `.card__*` elements.
 
 ### Journal / Article hero — `blog/index.blade.php` and `blog/show.blade.php`
 
@@ -371,7 +382,7 @@ untouched.
 
 | Selector | Notes |
 |---|---|
-| `.blog-grid` | base wrapper — see the admin-sharing note above |
+| `.blog-grid` | base wrapper (public pages only — see the note above) |
 | `.blog-grid--journal` | modifier added alongside `.blog-grid` on the public Journal page only — turns the base grid into a single-column stacked list of full-width cards, capped to a readable max-width |
 | `.card` | a card (also used as a plain text panel for image-less posts) |
 | `.card--media` | card variant with an image (flush edges, clipped corners) |
@@ -417,8 +428,14 @@ whichever theme is active (same panel look as a Journal `.card`) — there is
 surface's literal colors**. `public/css/article.css` still loads the editor's
 own `ckeditor5.css` so structural rich-text rules (lists, tables, spacing)
 match, only the colors are re-themed. Because this file is app-level and
-token-driven, adding a theme does **not** require touching it — the theme
-only owns:
+token-driven, adding a theme does **not** require touching it.
+
+The same three selectors — `.journal-hero__title`, `.article-image` and
+`.article-paper > .ck-content` — are what the post editor's **Preview** frame
+renders, with your theme's CSS and tokens loaded inside the frame. Style them
+well and an admin reviewing a draft sees the real published article.
+
+The theme only owns:
 
 | Selector | Notes |
 |---|---|
