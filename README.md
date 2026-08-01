@@ -336,3 +336,8 @@ No `npm`/Vite step is required or expected.
 - Keep `structure.css` colour-free and `skin.css` token-driven.
 - Hero/site copy is data-driven via `SiteSetting`; don't hardcode marketing text in Blade.
 - Stay Node-free: no build tooling, CDN runtime deps, or JS libraries in the front end.
+- Don't cache PHP objects. [`config/cache.php`](config/cache.php) sets
+  `serializable_classes => false`, which blocks object unserialization out of the
+  cache store (hardening against deserialization gadget chains if `APP_KEY` leaks).
+  Cache arrays/scalars; if you ever must cache an object, add its class to that
+  list rather than removing the setting.
