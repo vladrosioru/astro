@@ -1,3 +1,5 @@
+{{-- Public master layout. The admin module has its own (layouts/admin.blade.php)
+     and loads none of the theme assets wired up here. --}}
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
 <head>
@@ -15,10 +17,8 @@
     @includeIf('theme::cosmos')
     @include('partials.nav')
     @yield('content')
-    @unless(request()->routeIs('admin.*'))
-        @include('partials.footer')
-        @include('partials.back-to-top')
-    @endunless
+    @include('partials.footer')
+    @include('partials.back-to-top')
     @foreach (app('theme.manager')->jsAssets() as $js)
         <script src="{{ $js['url'] }}" @if($js['defer'])defer @endif @if($js['async'])async @endif></script>
     @endforeach

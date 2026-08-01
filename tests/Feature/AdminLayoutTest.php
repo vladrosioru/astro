@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Author;
 use App\Models\Post;
+use App\Models\SiteSetting;
 use App\Models\User;
+use App\Services\ThemeManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -68,6 +70,33 @@ class AdminLayoutTest extends TestCase
         $this->assertStringContainsString('adm-row__thumb is-round', $content);
         $this->assertStringNotContainsString('style="display:flex', $content);
         $this->assertStringNotContainsString('/themes/theme_', $content);
+    }
+
+    public function test_the_active_theme_has_no_effect_on_admin_pages(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $render = function (string $theme, string $url) use ($admin) {
+            SiteSetting::current()->switchTheme($theme);
+            // ThemeManager memoises the active theme for the lifetime of the
+            // singleton, so replace the instance rather than just the pointer.
+            app()->instance('theme.manager', new ThemeManager);
+
+            $html = $this->actingAs($admin)->get($url)->assertOk()->getContent();
+
+            // CSRF tokens are per-request; everything else must be identical.
+            return preg_replace('/name="_token" value="[^"]+"/', 'name="_token"', $html);
+        };
+
+        $names = array_column(app('theme.manager')->available(), 'name');
+        $this->assertContains('default', $names);
+        $this->assertContains('solarsystem', $names);
+
+        $this->assertSame($render('default', '/admin/posts'), $render('solarsystem', '/admin/posts'));
+
+        // Control: the same comparison on a public page must show a
+        // difference, otherwise the assertion above proves nothing.
+        $this->assertNotSame($render('default', '/en'), $render('solarsystem', '/en'));
     }
 
     public function test_themes_page_is_itself_unthemed(): void
