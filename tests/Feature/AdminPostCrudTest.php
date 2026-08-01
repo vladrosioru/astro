@@ -57,13 +57,13 @@ class AdminPostCrudTest extends TestCase
         $response = $this->actingAs($this->admin())->get('/admin/posts');
 
         $response->assertOk();
-        $response->assertSee('class="btn btn-primary"', false);
-        $response->assertSee('New Post');
-        $response->assertSee('<img src="/storage/media/thumb.jpg"', false);
+        $response->assertSee('class="adm-btn adm-btn--primary"', false);
+        $response->assertSee('New post');
+        $response->assertSee('src="/storage/media/thumb.jpg"', false);
         $response->assertSee('A punchy subtitle');
     }
 
-    public function test_posts_index_shows_subtitle_italic_under_title_and_status_above_delete(): void
+    public function test_posts_index_shows_the_subtitle_under_the_title_and_the_status_before_delete(): void
     {
         $post = Post::create(['status' => 'draft', 'featured_image' => '/storage/media/thumb.jpg']);
         $post->translations()->create([
@@ -75,18 +75,24 @@ class AdminPostCrudTest extends TestCase
         $html = $response->getContent();
 
         $response->assertOk();
-        $response->assertSee('font-style:italic', false);
-        $response->assertSee('flex-direction:column', false);
-        $response->assertDontSee('calc(1em - 3pt)', false);
 
-        $statusPos = strpos($html, 'draft');
+        // Row anatomy (admin/partials/_row.blade.php): title link, then the
+        // subtitle beneath it, then the status pill, then the actions. Styling
+        // lives in public/css/admin.css — no inline style attributes.
+        $titlePos = strpos($html, 'A Great Post');
+        $subtitlePos = strpos($html, 'class="adm-row__sub">A punchy subtitle');
+        $statusPos = strpos($html, 'adm-pill--draft');
         $deletePos = strpos($html, '>Delete<');
+
+        $this->assertNotFalse($titlePos);
+        $this->assertNotFalse($subtitlePos);
         $this->assertNotFalse($statusPos);
         $this->assertNotFalse($deletePos);
-        $this->assertLessThan($deletePos, $statusPos, 'status should render above the Delete button');
+        $this->assertLessThan($subtitlePos, $titlePos);
+        $this->assertLessThan($deletePos, $statusPos);
     }
 
-    public function test_posts_index_draws_a_divider_line_after_every_row(): void
+    public function test_posts_index_renders_one_row_per_post(): void
     {
         $first = Post::create(['status' => 'draft']);
         $first->translations()->create(['locale' => 'en', 'title' => 'First', 'slug' => 'first']);
@@ -98,12 +104,9 @@ class AdminPostCrudTest extends TestCase
 
         $response->assertOk();
 
-        // Divider is a border-bottom on each row's own <li> (not a border-top),
-        // so it can only ever appear after a row, never above the first one.
-        $rowCount = substr_count($html, '<li style="display:flex;align-items:center;gap:1em;line-height:1.4;');
-        $dividerCount = substr_count($html, 'border-bottom:1px solid var(--color-muted);');
-        $this->assertSame(2, $rowCount);
-        $this->assertSame($rowCount, $dividerCount);
+        // The separator between rows is a border-top on .adm-row, suppressed on
+        // the first one (admin.css), so it can never appear above the list.
+        $this->assertSame(2, substr_count($html, '<div class="adm-row" '));
     }
 
     public function test_non_admin_cannot_create_a_post(): void
