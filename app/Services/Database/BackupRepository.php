@@ -64,6 +64,16 @@ class BackupRepository
         Storage::disk('backups')->delete(self::DIRECTORY.'/'.$this->assertValid($name));
     }
 
+    /**
+     * Unlike path() and delete(), this never throws: callers use it to decide
+     * whether to 404, and an invalid name is a "no" rather than an error.
+     */
+    public function exists(string $name): bool
+    {
+        return (bool) preg_match(self::FILENAME_PATTERN, $name)
+            && Storage::disk('backups')->exists(self::DIRECTORY.'/'.$name);
+    }
+
     /** Absolute filesystem path to a backup. */
     public function path(string $name): string
     {

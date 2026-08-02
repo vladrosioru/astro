@@ -35,11 +35,15 @@ class DatabaseController extends Controller
 
     public function download(string $file)
     {
+        abort_unless($this->backups->exists($file), 404);
+
         return response()->download($this->backups->path($file));
     }
 
     public function destroy(string $file)
     {
+        abort_unless($this->backups->exists($file), 404);
+
         $this->backups->delete($file);
 
         return redirect()->route('admin.database.index')->with('status', 'Backup deleted.');

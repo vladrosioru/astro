@@ -90,6 +90,19 @@ class BackupRepositoryTest extends TestCase
         $this->repository->path('../../.env');
     }
 
+    public function test_exists_distinguishes_a_present_backup_from_a_missing_one(): void
+    {
+        $this->putBackup('backup-20260101-000000-example.com-manual.sql.gz');
+
+        $this->assertTrue($this->repository->exists('backup-20260101-000000-example.com-manual.sql.gz'));
+        $this->assertFalse($this->repository->exists('backup-20260102-000000-example.com-manual.sql.gz'));
+    }
+
+    public function test_exists_returns_false_for_a_traversal_attempt_without_throwing(): void
+    {
+        $this->assertFalse($this->repository->exists('../../.env'));
+    }
+
     public function test_filename_encodes_origin_and_is_pattern_valid(): void
     {
         $name = $this->repository->filename('auto');
