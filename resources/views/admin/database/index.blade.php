@@ -48,12 +48,17 @@
                                     <td class="is-data">{{ $backup['origin'] }}</td>
                                     <td class="is-data">{{ number_format($backup['size'] / 1024, 1) }} KB</td>
                                     <td>
-                                        <form method="POST" action="{{ route('admin.database.destroy', $backup['name']) }}"
-                                              onsubmit="return confirm('Delete this backup?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="adm-btn adm-btn--sm adm-btn--danger" type="submit">Delete</button>
-                                        </form>
+                                        <div class="adm-actions">
+                                            @if ($backup['restorable'])
+                                                <a class="adm-btn adm-btn--sm" href="{{ route('admin.database.restore.confirm', $backup['name']) }}">Restore</a>
+                                            @endif
+                                            <form method="POST" action="{{ route('admin.database.destroy', $backup['name']) }}"
+                                                  onsubmit="return confirm('Delete this backup?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="adm-btn adm-btn--sm adm-btn--danger" type="submit">Delete</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

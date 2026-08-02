@@ -63,7 +63,7 @@ class DatabaseRestoreServiceTest extends TestCase
         Post::query()->delete();
         $this->seedPost('Replaced Later');
 
-        app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name), config('database_admin.media_fallback_url'));
 
         $this->assertSame(1, PostTranslation::count());
         $translation = PostTranslation::first();
@@ -76,7 +76,7 @@ class DatabaseRestoreServiceTest extends TestCase
         $this->seedPost('Original');
         $name = app(DatabaseBackupService::class)->create('manual');
 
-        $result = app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+        $result = app(DatabaseRestoreService::class)->restore($this->backupPath($name), config('database_admin.media_fallback_url'));
 
         $this->assertStringEndsWith('-auto.sql.gz', $result['snapshot']);
         $this->assertTrue(Storage::disk('backups')->exists(BackupRepository::DIRECTORY.'/'.$result['snapshot']));
@@ -91,7 +91,7 @@ class DatabaseRestoreServiceTest extends TestCase
         $this->seedPost('Two');
         $name = app(DatabaseBackupService::class)->create('manual');
 
-        $result = app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+        $result = app(DatabaseRestoreService::class)->restore($this->backupPath($name), config('database_admin.media_fallback_url'));
 
         // 2 posts + 2 translations + 1 site_settings row + 0 media.
         $this->assertSame(5, $result['rows']);
@@ -105,7 +105,7 @@ class DatabaseRestoreServiceTest extends TestCase
         $this->seedPost('With Image', '<img src="/storage/media/a.jpg">');
         $name = app(DatabaseBackupService::class)->create('manual');
 
-        app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name), config('database_admin.media_fallback_url'));
 
         $this->assertSame('https://prod.example.com/storage/media/a.jpg', Media::first()->url);
         $this->assertSame('<img src="https://prod.example.com/storage/media/a.jpg">', PostTranslation::first()->body);
@@ -118,7 +118,7 @@ class DatabaseRestoreServiceTest extends TestCase
         $this->seedPost('With Card')->update(['featured_image' => '/storage/media/card.jpg']);
         $name = app(DatabaseBackupService::class)->create('manual');
 
-        app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name), config('database_admin.media_fallback_url'));
 
         $this->assertSame('https://prod.example.com/storage/media/card.jpg', Post::first()->featured_image);
     }
@@ -130,7 +130,7 @@ class DatabaseRestoreServiceTest extends TestCase
         Media::create(['path' => 'media/a.jpg', 'url' => '/storage/media/a.jpg']);
         $name = app(DatabaseBackupService::class)->create('manual');
 
-        app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name), config('database_admin.media_fallback_url'));
 
         $this->assertSame('/storage/media/a.jpg', Media::first()->url);
     }
@@ -145,7 +145,7 @@ class DatabaseRestoreServiceTest extends TestCase
         Post::query()->delete();
         Author::query()->delete();
 
-        app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name), config('database_admin.media_fallback_url'));
 
         $this->assertSame('Ana Pop', Author::first()->name);
         $this->assertSame(Author::first()->id, Post::first()->author_id);
@@ -158,9 +158,37 @@ class DatabaseRestoreServiceTest extends TestCase
         Author::create(['name' => 'Ana Pop', 'picture' => '/storage/media/ana.jpg']);
         $name = app(DatabaseBackupService::class)->create('manual');
 
-        app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name), config('database_admin.media_fallback_url'));
 
         $this->assertSame('https://prod.example.com/storage/media/ana.jpg', Author::first()->picture);
+    }
+
+    public function test_a_null_fallback_leaves_media_paths_alone_even_when_one_is_configured(): void
+    {
+        // Configured, and deliberately ignored: this is the restore-from-file
+        // path, where the backup came from this host and its paths already
+        // resolve here. Rewriting them would point dev at prod for its own
+        // uploads.
+        config(['database_admin.media_fallback_url' => 'https://prod.example.com']);
+
+        Media::create(['path' => 'media/a.jpg', 'url' => '/storage/media/a.jpg']);
+        $name = app(DatabaseBackupService::class)->create('manual');
+
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name), null);
+
+        $this->assertSame('/storage/media/a.jpg', Media::first()->url);
+    }
+
+    public function test_the_argument_decides_the_rewrite_not_the_config(): void
+    {
+        config(['database_admin.media_fallback_url' => null]);
+
+        Media::create(['path' => 'media/a.jpg', 'url' => '/storage/media/a.jpg']);
+        $name = app(DatabaseBackupService::class)->create('manual');
+
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name), 'https://prod.example.com');
+
+        $this->assertSame('https://prod.example.com/storage/media/a.jpg', Media::first()->url);
     }
 
     public function test_it_rejects_a_file_that_is_not_gzipped(): void
@@ -170,7 +198,7 @@ class DatabaseRestoreServiceTest extends TestCase
 
         $this->expectException(InvalidBackupException::class);
 
-        app(DatabaseRestoreService::class)->restore($this->backupPath($name));
+        app(DatabaseRestoreService::class)->restore($this->backupPath($name), config('database_admin.media_fallback_url'));
     }
 
     public function test_it_rejects_a_statement_against_an_unlisted_table(): void
@@ -179,7 +207,7 @@ class DatabaseRestoreServiceTest extends TestCase
 
         $this->expectException(InvalidBackupException::class);
 
-        app(DatabaseRestoreService::class)->restore($path);
+        app(DatabaseRestoreService::class)->restore($path, config('database_admin.media_fallback_url'));
     }
 
     public function test_it_rejects_a_statement_that_is_not_an_insert_or_delete(): void
@@ -188,7 +216,7 @@ class DatabaseRestoreServiceTest extends TestCase
 
         $this->expectException(InvalidBackupException::class);
 
-        app(DatabaseRestoreService::class)->restore($path);
+        app(DatabaseRestoreService::class)->restore($path, config('database_admin.media_fallback_url'));
     }
 
     public function test_a_rejected_file_leaves_existing_rows_untouched(): void
@@ -197,7 +225,7 @@ class DatabaseRestoreServiceTest extends TestCase
         $path = $this->fakeArchive("DROP TABLE `posts`;\n");
 
         try {
-            app(DatabaseRestoreService::class)->restore($path);
+            app(DatabaseRestoreService::class)->restore($path, config('database_admin.media_fallback_url'));
         } catch (InvalidBackupException) {
             // expected
         }
@@ -214,7 +242,7 @@ class DatabaseRestoreServiceTest extends TestCase
         $path = $this->fakeArchive("DELETE FROM `posts`;\nINSERT INTO `posts` (`nope`) VALUES (1);\n");
 
         try {
-            app(DatabaseRestoreService::class)->restore($path);
+            app(DatabaseRestoreService::class)->restore($path, config('database_admin.media_fallback_url'));
         } catch (\Throwable) {
             // expected
         }

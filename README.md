@@ -65,7 +65,7 @@ Defined in [`routes/web.php`](routes/web.php).
   - `/{locale}/journal`, `/{locale}/journal/{slug}` — the blog feature (`BlogController`), presented as **Journal**; route names stay `blog.*`. Legacy `/{locale}/blog`, `/{locale}/blog/{slug}`, `/{locale}/articles` and `/{locale}/articles/{slug}` **301-redirect** to the `/journal` equivalents.
 - `/admin/login`, `/admin/logout` — session auth (`Admin\AuthController`).
 - `/admin/*` (`admin` middleware) — dashboard, `posts` resource (no `show`), `authors` resource, `attachments` upload, **Themes** (`GET /admin/themes` list + `PATCH /admin/themes` apply), and **Database** (see below). Every admin screen renders through `layouts/admin.blade.php` and loads no theme asset (see [CSS / asset layering](#css--asset-layering)); its navigation is the admin's own top bar, `admin/partials/_topbar.blade.php`.
-  - **Database** (`Admin\DatabaseController`): `GET /admin/database` page, `POST /admin/database/backup` (create), `GET /admin/database/backup/{file}` (download), `DELETE /admin/database/backup/{file}` (delete), and `POST /admin/database/pull` (`admin.database.pull` — one-click copy prod content into dev, dumping the live prod DB directly over the `source` connection). The `{file}` param is constrained to the backup filename pattern so it cannot traverse the disk.
+  - **Database** (`Admin\DatabaseController`): `GET /admin/database` page, `POST /admin/database/backup` (create), `GET /admin/database/backup/{file}` (download), `DELETE /admin/database/backup/{file}` (delete), `GET /admin/database/restore/{file}` (`admin.database.restore.confirm` — confirmation screen), `POST /admin/database/restore/{file}` (`admin.database.restore` — roll this site back to that backup), and `POST /admin/database/pull` (`admin.database.pull` — one-click copy prod content into dev, dumping the live prod DB directly over the `source` connection). The `{file}` param is constrained to the backup filename pattern so it cannot traverse the disk.
 
 Middleware aliases are registered in [`bootstrap/app.php`](bootstrap/app.php):
 - `setlocale` → `App\Http\Middleware\SetLocale` (sets `app()->setLocale()` from the route prefix)
@@ -86,10 +86,11 @@ Middleware aliases are registered in [`bootstrap/app.php`](bootstrap/app.php):
 
 ---
 
-## Database backups and prod → dev copy
+## Database backups, restore and prod → dev copy
 
-The admin **Database** page (`/admin/database`) backs up the site's content and
-copies production content down to the dev subdomain. The host is shell-less
+The admin **Database** page (`/admin/database`) backs up the site's content,
+restores it from one of those backups, and copies production content down to the
+dev subdomain. The host is shell-less
 (`exec()` disabled), so there is no `mysqldump`: the dumper is pure PHP over PDO
 (`App\Services\Database\DatabaseBackupService`), writing a gzipped `.sql` with
 **one statement per physical line** so restore can split on newlines without
@@ -117,7 +118,9 @@ its line.
   `APP_ENV=production`, so the app cannot tell dev from prod. The copy is gated
   on `DB_RESTORE_ENABLED`, set true only on the **dev** GitHub environment; prod
   resolves false, returns **404** for the `pull` route and renders no button —
-  **production content is never overwritten by this feature.** On import,
+  **production content is never overwritten by a copy.** (Rolling prod back to
+  one of prod's own backups is a separate operation with its own gate; see
+  Restore below.) On import,
   root-relative `/storage/media/...` paths are rewritten to `MEDIA_FALLBACK_URL`
   (prod's origin) so dev renders prod's images without transferring files —
   covering `media.url`, `posts.featured_image`, `authors.picture` and the inline
@@ -126,6 +129,22 @@ its line.
   root-relative paths and resolve against dev's disk. A
   copy always writes an automatic pre-restore snapshot of dev first and runs in
   a single transaction.
+- **Restore (`GET`/`POST admin/database/restore/{file}`):** rolls this site back
+  to one of its own backups. The `GET` shows the backup's per-table row counts
+  beside the live ones and asks for the site host to be typed; the `POST` replays
+  it through `DatabaseRestoreService` — automatic pre-restore snapshot, statement
+  allow-list, one transaction. Media paths are **not** rewritten on this path
+  (the caller passes `null`): the backup came from this host, so its paths
+  already resolve.
+
+  **There is no environment flag.** A backup is restorable when the host segment
+  of its filename matches the host of `APP_URL`
+  (`BackupRepository::isRestorable()`), so production restores production's
+  backups and dev restores dev's — a mismatch is a **404**. That rule is what
+  makes rolling back live content possible while `DB_RESTORE_ENABLED` stays
+  false on prod; the flag now gates only the prod → dev copy. There is no upload
+  form, so no file from another host can reach either box's backup directory to
+  begin with.
 - **One-click copy (`POST admin/database/pull`, `admin.database.pull`):** the
   only copy mechanism — there is no manual upload form. `DatabaseController::pull()`
   dumps the **live** prod database straight over a second, read-only `source` DB

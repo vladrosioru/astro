@@ -90,6 +90,90 @@ class BackupRepositoryTest extends TestCase
         $this->repository->path('../../.env');
     }
 
+    public function test_exists_distinguishes_a_present_backup_from_a_missing_one(): void
+    {
+        $this->putBackup('backup-20260101-000000-example.com-manual.sql.gz');
+
+        $this->assertTrue($this->repository->exists('backup-20260101-000000-example.com-manual.sql.gz'));
+        $this->assertFalse($this->repository->exists('backup-20260102-000000-example.com-manual.sql.gz'));
+    }
+
+    public function test_exists_returns_false_for_a_traversal_attempt_without_throwing(): void
+    {
+        $this->assertFalse($this->repository->exists('../../.env'));
+    }
+
+    public function test_it_restores_a_backup_written_by_this_host(): void
+    {
+        config(['app.url' => 'https://example.com']);
+        $this->putBackup('backup-20260101-000000-example.com-manual.sql.gz');
+
+        $this->assertTrue($this->repository->isRestorable('backup-20260101-000000-example.com-manual.sql.gz'));
+    }
+
+    public function test_it_refuses_a_backup_written_by_another_host(): void
+    {
+        config(['app.url' => 'https://example.com']);
+        $this->putBackup('backup-20260101-000000-dev.example.com-manual.sql.gz');
+
+        $this->assertFalse($this->repository->isRestorable('backup-20260101-000000-dev.example.com-manual.sql.gz'));
+    }
+
+    public function test_it_refuses_an_own_host_backup_that_is_missing(): void
+    {
+        config(['app.url' => 'https://example.com']);
+
+        $this->assertFalse($this->repository->isRestorable('backup-20260101-000000-example.com-manual.sql.gz'));
+    }
+
+    public function test_a_hyphenated_host_survives_the_filename_round_trip(): void
+    {
+        config(['app.url' => 'https://dev-2.example.com']);
+
+        $this->assertSame('dev-2.example.com', $this->repository->hostOf($this->repository->filename('manual')));
+    }
+
+    public function test_host_of_returns_empty_for_a_name_that_is_not_a_backup(): void
+    {
+        $this->assertSame('', $this->repository->hostOf('notes.txt'));
+    }
+
+    public function test_header_reads_the_created_date_and_row_counts(): void
+    {
+        $name = 'backup-20260101-000000-example.com-manual.sql.gz';
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, (string) gzencode(
+            "-- Content backup\n-- created: 2026-01-01T09:30:00+00:00\n-- rows: posts=41, media=210\nDELETE FROM `posts`;\n"
+        ));
+
+        $header = $this->repository->header($name);
+
+        $this->assertSame('2026-01-01 09:30', $header['created']->format('Y-m-d H:i'));
+        $this->assertSame(['posts' => 41, 'media' => 210], $header['rows']);
+    }
+
+    public function test_header_returns_null_counts_for_a_backup_written_before_they_existed(): void
+    {
+        $name = 'backup-20260101-000000-example.com-manual.sql.gz';
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, (string) gzencode(
+            "-- Content backup\nDELETE FROM `posts`;\n"
+        ));
+
+        $header = $this->repository->header($name);
+
+        $this->assertNull($header['rows']);
+        $this->assertNull($header['created']);
+    }
+
+    public function test_header_stops_at_the_first_statement(): void
+    {
+        $name = 'backup-20260101-000000-example.com-manual.sql.gz';
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, (string) gzencode(
+            "-- rows: posts=1\nINSERT INTO `posts` (`body`) VALUES ('-- rows: posts=999');\n"
+        ));
+
+        $this->assertSame(['posts' => 1], $this->repository->header($name)['rows']);
+    }
+
     public function test_filename_encodes_origin_and_is_pattern_valid(): void
     {
         $name = $this->repository->filename('auto');

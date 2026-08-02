@@ -57,21 +57,35 @@ class DatabaseBackupService
         $tables = (array) config('database_admin.tables');
         $quoter = QuoterFactory::for($db->getDriverName());
 
-        $this->line($handle, '-- Content backup');
-        $this->line($handle, '-- source: '.config('app.url'));
-        $this->line($handle, '-- created: '.now()->toIso8601String());
-        $this->line($handle, '-- tables: '.implode(', ', $tables));
+        // One transaction over the counts and the reads. The header has to
+        // describe the file, and without it a write landing between two tables
+        // could put a child row in the dump whose parent was never read.
+        // Read-only, so on InnoDB this is a REPEATABLE READ snapshot and costs
+        // nothing.
+        $db->transaction(function () use ($handle, $db, $tables, $quoter) {
+            $counts = [];
 
-        // Children first so the cascading foreign key on post_translations is
-        // never the thing doing the deleting.
-        foreach (array_reverse($tables) as $table) {
-            $this->line($handle, 'DELETE FROM `'.$table.'`;');
-        }
+            foreach ($tables as $table) {
+                $counts[] = $table.'='.$db->table($table)->count();
+            }
 
-        // Parents first, so every child row has its parent present.
-        foreach ($tables as $table) {
-            $this->writeTable($handle, $db, $table, $quoter);
-        }
+            $this->line($handle, '-- Content backup');
+            $this->line($handle, '-- source: '.config('app.url'));
+            $this->line($handle, '-- created: '.now()->toIso8601String());
+            $this->line($handle, '-- tables: '.implode(', ', $tables));
+            $this->line($handle, '-- rows: '.implode(', ', $counts));
+
+            // Children first so the cascading foreign key on post_translations
+            // is never the thing doing the deleting.
+            foreach (array_reverse($tables) as $table) {
+                $this->line($handle, 'DELETE FROM `'.$table.'`;');
+            }
+
+            // Parents first, so every child row has its parent present.
+            foreach ($tables as $table) {
+                $this->writeTable($handle, $db, $table, $quoter);
+            }
+        });
     }
 
     /** @param  resource  $handle */

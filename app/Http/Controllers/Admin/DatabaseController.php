@@ -7,6 +7,7 @@ use App\Services\Database\BackupRepository;
 use App\Services\Database\DatabaseBackupService;
 use App\Services\Database\DatabaseRestoreService;
 use App\Services\Database\InvalidBackupException;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseController extends Controller
 {
@@ -35,14 +36,71 @@ class DatabaseController extends Controller
 
     public function download(string $file)
     {
+        abort_unless($this->backups->exists($file), 404);
+
         return response()->download($this->backups->path($file));
     }
 
     public function destroy(string $file)
     {
+        abort_unless($this->backups->exists($file), 404);
+
         $this->backups->delete($file);
 
         return redirect()->route('admin.database.index')->with('status', 'Backup deleted.');
+    }
+
+    /**
+     * The screen that stands between a click and overwriting live content.
+     * Row counts are the part that catches a wrong file — a filename does not.
+     */
+    public function confirm(string $file)
+    {
+        abort_unless($this->backups->isRestorable($file), 404);
+
+        return view('admin.database.confirm', [
+            'file' => $file,
+            'header' => $this->backups->header($file),
+            'live' => $this->liveCounts(),
+            'host' => $this->backups->hostOf($file),
+            'tables' => (array) config('database_admin.tables'),
+        ]);
+    }
+
+    /**
+     * Roll this site back to one of its own backups. The gate is the host in
+     * the filename (BackupRepository::isRestorable), not an env flag: prod is
+     * where a rollback is most needed and DB_RESTORE_ENABLED is false there.
+     *
+     * Media paths are deliberately not rewritten — this backup came from this
+     * host, so they already resolve.
+     */
+    public function restore(string $file)
+    {
+        abort_unless($this->backups->isRestorable($file), 404);
+
+        try {
+            $result = $this->restoreService->restore($this->backups->path($file), null);
+        } catch (InvalidBackupException $e) {
+            return back()->withErrors(['restore' => $e->getMessage()]);
+        }
+
+        return redirect()->route('admin.database.index')->with(
+            'status',
+            "Restored {$file}: {$result['rows']} rows. Snapshot before overwrite: {$result['snapshot']}",
+        );
+    }
+
+    /** @return array<string, int> */
+    private function liveCounts(): array
+    {
+        $counts = [];
+
+        foreach ((array) config('database_admin.tables') as $table) {
+            $counts[$table] = DB::table($table)->count();
+        }
+
+        return $counts;
     }
 
     /**
@@ -65,7 +123,7 @@ class DatabaseController extends Controller
 
         try {
             $this->backupService->dumpTo($temp, 'source');
-            $result = $this->restoreService->restore($temp);
+            $result = $this->restoreService->restore($temp, config('database_admin.media_fallback_url'));
         } catch (InvalidBackupException $e) {
             return back()->withErrors(['pull' => $e->getMessage()]);
         } finally {

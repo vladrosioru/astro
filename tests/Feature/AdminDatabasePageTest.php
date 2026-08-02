@@ -104,6 +104,24 @@ class AdminDatabasePageTest extends TestCase
         $this->assertCount(0, Storage::disk('backups')->files(BackupRepository::DIRECTORY));
     }
 
+    public function test_downloading_a_backup_that_is_gone_is_not_found(): void
+    {
+        Storage::fake('backups');
+
+        $this->actingAs($this->admin())
+            ->get('/admin/database/backup/backup-20260101-000000-example.com-manual.sql.gz')
+            ->assertNotFound();
+    }
+
+    public function test_deleting_a_backup_that_is_gone_is_not_found(): void
+    {
+        Storage::fake('backups');
+
+        $this->actingAs($this->admin())
+            ->delete('/admin/database/backup/backup-20260101-000000-example.com-manual.sql.gz')
+            ->assertNotFound();
+    }
+
     public function test_creating_a_backup_prunes_beyond_the_retention_limit(): void
     {
         Storage::fake('backups');

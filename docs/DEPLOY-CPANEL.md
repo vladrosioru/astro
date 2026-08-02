@@ -102,7 +102,7 @@ Set these on **each** environment (dev values on `dev`, prod values on
 | `MAIL_USERNAME` | secret | SMTP user |
 | `MAIL_PASSWORD` | secret | SMTP password |
 | `MAIL_FROM_ADDRESS` | variable | `contact-form@astrotherapia.com` — the envelope/From sender for contact-form mail. Must be **on a domain you control**: the SPF record `v=spf1 +a +mx +ip4:86.107.43.20 ~all` authorizes this server for `astrotherapia.com`, so mail from it passes. Left unset it falls back to the same address in `make-env.sh`. Never point it at a domain you don't own — the previous `no-reply@example.com` placeholder failed SPF/DMARC by design (`example.com` publishes `v=spf1 -all` and `p=reject`), which silently junked contact mail anywhere it was filtered. No mailbox exists behind this address, so bounces are discarded. |
-| `DB_RESTORE_ENABLED` | variable | **dev only** — set `true` on the `dev` environment to enable the prod→dev restore. Leave **unset on `production`**; it defaults to `false`, so prod returns 404 for the restore route. |
+| `DB_RESTORE_ENABLED` | variable | **dev only** — set `true` on the `dev` environment to enable the prod→dev copy. Leave **unset on `production`**; it defaults to `false`, so prod returns 404 for the `pull` route. It does **not** gate restoring a backup: that is gated by the host in the backup's filename, and works on production by design. |
 | `MEDIA_FALLBACK_URL` | variable | **dev only** — prod's origin, e.g. `https://astrotherapia.com`. Restored content on dev loads its images from here. Leave unset on `production`. |
 | `PROD_DB_HOST` | variable | **dev only** — read-only prod DB credentials so dev can dump live prod content for the one-click **Copy prod → dev** button. Dev and prod share one cPanel account and MySQL server, so dev connects to prod's database directly (host stays `localhost`). Leave unset on `production`, so the button 404s/hides. |
 | `PROD_DB_PORT` | variable | **dev only** — same prod-source credentials as `PROD_DB_HOST`. Leave unset on `production`. |
@@ -120,6 +120,11 @@ to dev with a single button. Both boxes run the same code with
 `APP_ENV=production`, so the copy is gated purely on `DB_RESTORE_ENABLED` — set
 `true` on the **dev** environment only. **Production is never a copy target:**
 with the flag unset there, the `pull` route 404s and the button is not rendered.
+
+Restoring a backup is a different operation and is not gated by this flag — see
+[`OPERATIONS.md`](OPERATIONS.md) "Rolling back site content". Each box restores
+only backups it wrote itself, so prod can roll itself back without ever becoming
+reachable from dev's data.
 
 **One-click Copy prod → dev:** on **dev** `/admin/database`, click
 **Copy prod → dev now**. This posts to `admin.database.pull`, which dumps the

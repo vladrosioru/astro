@@ -241,3 +241,27 @@ bugs:
 - `admin@astrotherapia.com` does not exist, so the server's own cron mail has
   bounced "No Such User Here" since at least 2026-07-04. Unrelated to the
   contact form.
+
+## Rolling back site content
+
+Content only — `authors`, `posts`, `post_translations`, `media`,
+`site_settings`. Accounts, sessions and uploaded files are never touched, so a
+rollback cannot log anyone out and cannot bring back a deleted image file.
+
+1. Admin → **Database**. Pick the backup from before the mistake. Backups are
+   listed newest first; `auto (pre-restore)` ones were written automatically
+   just before an earlier restore or pull.
+2. **Restore** opens a confirmation page. Check the row counts against what is
+   live now — that is what catches a wrong file.
+3. Type the site host and confirm. A snapshot of current content is written
+   first; its filename is in the message afterwards, so the restore itself is
+   reversible.
+
+Only backups this site wrote are offered. A dev backup is not restorable on
+production and vice versa — the host segment of the filename must match
+`APP_URL`, and a mismatch is a 404. This works on production; it is not gated by
+`DB_RESTORE_ENABLED`, which now covers only the prod → dev copy.
+
+If the admin page is unreachable, a backup is plain gzipped SQL and can be
+imported through cPanel's phpMyAdmin. It carries data only — no `CREATE TABLE` —
+so the schema must already exist.
