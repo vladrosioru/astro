@@ -42,6 +42,34 @@ Operational facts already learned about the live host — panel URL, the WAF's
 `Accept`-header requirement, how contact-form mail is verified — are written down
 in [`docs/OPERATIONS.md`](docs/OPERATIONS.md); read that before proposing a probe.
 
+## Never point a bare `curl` at the live site
+
+The host's WAF (LiteSpeed + Imunify360) does not answer plain `curl`. It has two
+distinct failure modes, both already paid for once, so any `curl` at
+`astrotherapia.com` / `dev.astrotherapia.com` — in CI, in a script, or in a
+one-off probe the owner approved — must satisfy **all four** rules:
+
+1. **Send a browser `User-Agent` *and* an explicit `Accept`.** No `Accept` header
+   from a datacenter IP is answered `415 Unsupported Media Type`; a bot-shaped
+   UA gets the challenge page. Use the `$UA` / `Accept: text/html,…` pair the
+   workflows already define.
+2. **Never trust the status code.** The WAF's "One moment, please…" JS challenge
+   is served as **HTTP 200**, so `curl -fsS` and `-w "%{http_code}"` both call it
+   success. Always write the body somewhere and grep it — for the command's own
+   expected marker, or at minimum for `One moment, please`.
+3. **Keep a cookie jar and retry.** The challenge sets a cookie and its own JS
+   reloads after 5 s; the reload passes. A single challenged request is not a
+   verdict — `-c/-b <jar>` plus a few spaced retries is. Only give up (loudly)
+   after the retries.
+4. **For deploy hooks, don't hand-roll any of it** — call
+   [`.github/scripts/run-deploy-hook.sh`](.github/scripts/run-deploy-hook.sh),
+   which does all three above and fails the step unless the hook's own success
+   marker comes back.
+
+`tests/Feature/DeployHookVerificationTest.php` and
+`tests/Feature/DeployHookRetryTest.php` fail the suite if any of this is undone.
+Details and the measurements behind it: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
+
 ## Documentation upkeep
 
 1. **Keep each theme's manifest in sync.** Themes are self-contained packages

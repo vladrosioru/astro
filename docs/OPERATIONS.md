@@ -100,6 +100,31 @@ If a deploy ever "succeeds" but the site doesn't change, read the hook step's
 body first — that is this failure, and the fix is to re-run the workflow (the
 FTPS upload is idempotent, so re-running is safe).
 
+### Browser-shaped headers are necessary, not sufficient (2026-08-02)
+
+`deploy_dev` failed in 18 s with the challenge page in the log — the guard above
+working exactly as intended, but the challenge now fires against the
+Chrome-shaped request too. The header table above still holds (a bot UA is
+*always* challenged); it just no longer buys immunity.
+
+So `run-deploy-hook.sh` now does what the challenge page itself does: it keeps a
+**cookie jar** (`-c`/`-b`), and on a marker-less 200 it waits and **asks again**
+— the challenge sets a cookie and its own JS reloads after 5 s, and that reload
+is proxied through. Four attempts, 15 s apart by default (`HOOK_ATTEMPTS`,
+`HOOK_RETRY_DELAY`). Only after all of them does the step go red.
+
+Retrying cannot mask a real failure: a retry only happens when the marker is
+absent, i.e. PHP was never reached. `extract.php` re-extracts the same uploaded
+archive and `deploy.php`'s migrate/cache work is idempotent.
+
+`tests/Feature/DeployHookRetryTest.php` drives the real script against a local
+stub that challenges first and answers second, pinning both halves — that it
+gets through, and that it still fails when every attempt is challenged.
+
+Still exposed: the **smoke-test** steps in `cicd.yml` treat a single challenge as
+a failure (the "Wait for … to come up" step retries, the smoke loops don't). A
+transient challenge there fails a deploy that actually worked. Not yet changed.
+
 ---
 
 ## Contact-form mail
