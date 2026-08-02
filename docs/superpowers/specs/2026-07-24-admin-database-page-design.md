@@ -2,6 +2,13 @@
 
 Date: 2026-07-24
 
+> **Restore superseded** by
+> [`2026-08-02-database-restore-design.md`](2026-08-02-database-restore-design.md).
+> The upload-based transfer described below never shipped: prod → dev became a
+> direct pull over the `source` connection, and restore is now gated by the host
+> in the backup filename rather than by `DB_RESTORE_ENABLED`. The backup half of
+> this document still describes what ships.
+
 ## Goal
 
 Add a `Database` link to the admin dashboard leading to a page with two
