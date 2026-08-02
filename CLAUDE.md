@@ -25,6 +25,22 @@ Bug fixes always get a regression test that reproduces the bug before the fix
 lands. Exceptions (throwaway prototypes, generated code, config-only changes)
 — ask before skipping.
 
+## Run the whole CI gate before committing
+
+`php artisan test` is not the gate — it is one of three jobs. Run **all** of them
+locally before every commit, in the order CI does, and don't commit on a red one:
+
+```
+vendor/bin/pint --test     # style; `vendor/bin/pint` to fix, then re-run --test
+php artisan test           # full suite
+composer audit --no-dev    # blocking advisory scan on prod dependencies
+```
+
+`lint` runs first in the pipeline and `test` / `security` need it, so a style nit
+in a test file fails the run before a single test executes and costs a whole
+round trip. Pint reformats new test files (import order, `!` spacing) far more
+often than it touches application code — new tests are exactly where this bites.
+
 ## Live infrastructure: ask first
 
 **Never connect to the live host or take an outward-facing action without

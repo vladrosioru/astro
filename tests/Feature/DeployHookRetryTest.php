@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Symfony\Component\Process\Process;
 use Tests\Support\StubsTheWafSite;
 use Tests\TestCase;
 
@@ -35,7 +36,7 @@ class DeployHookRetryTest extends TestCase
         parent::tearDown();
     }
 
-    private function runHook(): \Symfony\Component\Process\Process
+    private function runHook(): Process
     {
         return $this->runScript(
             sprintf(

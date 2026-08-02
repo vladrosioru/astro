@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\Process\Process;
 use Tests\Support\StubsTheWafSite;
 use Tests\TestCase;
 
@@ -40,7 +41,7 @@ class SiteFetchRetryTest extends TestCase
         parent::tearDown();
     }
 
-    private function fetch(string $path = '/up'): \Symfony\Component\Process\Process
+    private function fetch(string $path = '/up'): Process
     {
         return $this->runScript(
             sprintf(
