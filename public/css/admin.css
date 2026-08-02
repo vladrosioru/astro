@@ -44,7 +44,9 @@
 .adm-body * { box-sizing: border-box; }
 .adm-body :focus-visible { outline: 2px solid var(--adm-accent); outline-offset: 2px; }
 .adm-body h1, .adm-body h2, .adm-body h3 { font-family: var(--adm-sans); color: var(--adm-fg); letter-spacing: -0.005em; }
-.adm-body a { color: var(--adm-accent); }
+/* Scoped off .adm-btn: `.adm-body a` outranks the button colour rules, which
+   would paint an anchor button's label in the accent it sits on. */
+.adm-body a:not(.adm-btn) { color: var(--adm-accent); }
 
 /* ---------- top bar ---------- */
 

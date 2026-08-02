@@ -22,6 +22,25 @@ class AdminCssTest extends TestCase
         }
     }
 
+    public function test_generic_link_colour_does_not_swallow_button_labels(): void
+    {
+        $css = file_get_contents(public_path('css/admin.css'));
+
+        // `.adm-body a` scores (0,1,1) and beats `.adm-btn--primary` (0,1,0),
+        // so an unscoped link rule paints anchor buttons accent-on-accent —
+        // the label only appears on :hover, where (0,2,0) wins the cascade
+        // back. Keep the link colour off anything carrying .adm-btn.
+        $this->assertDoesNotMatchRegularExpression(
+            '/\.adm-body\s+a\s*\{/',
+            $css,
+            '.adm-body a must exclude .adm-btn or it overrides every anchor button colour'
+        );
+        $this->assertMatchesRegularExpression(
+            '/\.adm-body\s+a:not\(\.adm-btn\)\s*\{[^}]*color:/',
+            $css
+        );
+    }
+
     public function test_admin_css_reskins_ckeditor_chrome_in_admin_terms(): void
     {
         $css = file_get_contents(public_path('css/admin.css'));
