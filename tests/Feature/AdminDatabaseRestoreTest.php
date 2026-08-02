@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Media;
+use App\Models\Post;
+use App\Models\PostTranslation;
 use App\Models\User;
 use App\Services\Database\BackupRepository;
+use App\Services\Database\DatabaseBackupService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -118,5 +122,109 @@ class AdminDatabaseRestoreTest extends TestCase
             ->get('/admin/database')
             ->assertOk()
             ->assertDontSee('Restore');
+    }
+
+    /** A real dump of current content, written through the production path. */
+    private function backupCurrentContent(): string
+    {
+        return app(DatabaseBackupService::class)->create('manual');
+    }
+
+    public function test_restoring_brings_back_the_content_in_the_backup(): void
+    {
+        $post = Post::create(['status' => 'published']);
+        PostTranslation::create([
+            'post_id' => $post->id, 'locale' => 'en',
+            'title' => 'Original', 'slug' => 'original', 'body' => '<p>Body</p>',
+        ]);
+
+        $name = $this->backupCurrentContent();
+
+        PostTranslation::query()->update(['title' => 'Wrecked']);
+
+        $this->actingAs($this->admin())
+            ->post('/admin/database/restore/'.$name)
+            ->assertRedirect('/admin/database');
+
+        $this->assertSame('Original', PostTranslation::first()->title);
+    }
+
+    public function test_restoring_snapshots_the_current_content_first(): void
+    {
+        $name = $this->backupCurrentContent();
+
+        $this->actingAs($this->admin())
+            ->post('/admin/database/restore/'.$name)
+            ->assertSessionHas('status', fn (string $status) => str_contains($status, '-auto.sql.gz'));
+    }
+
+    public function test_restoring_a_backup_from_another_host_is_not_found(): void
+    {
+        $name = $this->putBackup('backup-20260101-000000-dev.example.com-manual.sql.gz');
+
+        $this->actingAs($this->admin())
+            ->post('/admin/database/restore/'.$name)
+            ->assertNotFound();
+    }
+
+    public function test_restoring_a_missing_backup_is_not_found(): void
+    {
+        $this->actingAs($this->admin())
+            ->post('/admin/database/restore/backup-20260101-000000-example.com-manual.sql.gz')
+            ->assertNotFound();
+    }
+
+    public function test_a_corrupt_backup_is_refused_and_changes_nothing(): void
+    {
+        $post = Post::create(['status' => 'published']);
+        PostTranslation::create([
+            'post_id' => $post->id, 'locale' => 'en',
+            'title' => 'Untouched', 'slug' => 'untouched', 'body' => '<p>Body</p>',
+        ]);
+
+        $name = 'backup-20260101-000000-example.com-manual.sql.gz';
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, 'not gzip at all');
+
+        $this->actingAs($this->admin())
+            ->post('/admin/database/restore/'.$name)
+            ->assertRedirect()
+            ->assertSessionHasErrors('restore');
+
+        $this->assertSame('Untouched', PostTranslation::first()->title);
+    }
+
+    public function test_a_backup_naming_a_table_outside_the_allow_list_is_refused(): void
+    {
+        $name = 'backup-20260101-000000-example.com-manual.sql.gz';
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, (string) gzencode(
+            "-- Content backup\nDELETE FROM `users`;\n"
+        ));
+
+        $this->actingAs($this->admin())
+            ->post('/admin/database/restore/'.$name)
+            ->assertRedirect()
+            ->assertSessionHasErrors('restore');
+
+        $this->assertDatabaseCount('users', 1);
+    }
+
+    public function test_restoring_leaves_media_paths_alone(): void
+    {
+        config(['database_admin.media_fallback_url' => 'https://astrotherapia.com']);
+        Media::create(['path' => 'media/photo.jpg', 'url' => '/storage/media/photo.jpg']);
+
+        $name = $this->backupCurrentContent();
+
+        $this->actingAs($this->admin())
+            ->post('/admin/database/restore/'.$name)
+            ->assertRedirect('/admin/database');
+
+        $this->assertSame('/storage/media/photo.jpg', Media::first()->url);
+    }
+
+    public function test_guests_cannot_restore(): void
+    {
+        $this->post('/admin/database/restore/backup-20260101-000000-example.com-manual.sql.gz')
+            ->assertRedirect('/admin/login');
     }
 }

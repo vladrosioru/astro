@@ -67,9 +67,28 @@ class DatabaseController extends Controller
         ]);
     }
 
+    /**
+     * Roll this site back to one of its own backups. The gate is the host in
+     * the filename (BackupRepository::isRestorable), not an env flag: prod is
+     * where a rollback is most needed and DB_RESTORE_ENABLED is false there.
+     *
+     * Media paths are deliberately not rewritten — this backup came from this
+     * host, so they already resolve.
+     */
     public function restore(string $file)
     {
-        abort(404);
+        abort_unless($this->backups->isRestorable($file), 404);
+
+        try {
+            $result = $this->restoreService->restore($this->backups->path($file), null);
+        } catch (InvalidBackupException $e) {
+            return back()->withErrors(['restore' => $e->getMessage()]);
+        }
+
+        return redirect()->route('admin.database.index')->with(
+            'status',
+            "Restored {$file}: {$result['rows']} rows. Snapshot before overwrite: {$result['snapshot']}",
+        );
     }
 
     /** @return array<string, int> */
