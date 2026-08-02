@@ -103,7 +103,16 @@ class DeployHookVerificationTest extends TestCase
         // the deploy never reached.
         $this->assertStringNotContainsString('astro-deploy-bot', $yaml);
         $this->assertStringContainsString('WAF_CHALLENGE_MARKER', $yaml);
-        $this->assertStringContainsString('-A "$UA"', $yaml);
+
+        // The headers and the body check now live in fetch-site.sh, which the
+        // smoke steps call — see SiteFetchRetryTest for the rest of that
+        // contract. What the workflow still owns is the UA it hands over.
+        $this->assertStringContainsString('fetch-site.sh', $yaml);
+        $this->assertStringContainsString('UA:', $yaml);
+
+        $script = (string) file_get_contents(base_path('.github/scripts/fetch-site.sh'));
+        $this->assertStringContainsString('-A "$ua"', $script);
+        $this->assertStringContainsString('grep -qF "$marker"', $script);
 
         // Every site-facing status check must write a body somewhere greppable
         // rather than throwing it away.

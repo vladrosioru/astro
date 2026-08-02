@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use Symfony\Component\Process\Process;
+use Tests\Support\StubsTheWafSite;
 use Tests\TestCase;
 
 /**
@@ -12,108 +12,44 @@ use Tests\TestCase;
  * `run-deploy-hook.sh` has to do what the browser does — keep the cookie and
  * ask again — before it declares the deploy failed.
  *
- * These tests drive the real script against a local stub that challenges first
- * and answers properly afterwards.
+ * These tests drive the real script against a local stub that challenges any
+ * request arriving without the cookie it sets.
  */
 class DeployHookRetryTest extends TestCase
 {
+    use StubsTheWafSite;
+
     private const PORT = 8731;
-
-    private string $dir;
-
-    private string $counter;
-
-    private ?Process $server = null;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->dir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'hook-stub-'.getmypid();
-        if (! is_dir($this->dir)) {
-            mkdir($this->dir, 0777, true);
-        }
-        $this->counter = $this->dir.DIRECTORY_SEPARATOR.'hits';
-        @unlink($this->counter);
+        $this->bootStub();
     }
 
     protected function tearDown(): void
     {
-        $this->server?->stop();
-        $this->server = null;
+        $this->shutdownStub();
 
         parent::tearDown();
     }
 
-    /** Serves the WAF challenge page for the first $challenges hits, the hook's real output after. */
-    private function startStub(int $challenges): void
+    private function runHook(): \Symfony\Component\Process\Process
     {
-        $counter = str_replace('\\', '/', $this->counter);
-        file_put_contents($this->dir.'/router.php', <<<PHP
-        <?php
-        \$n = (int) @file_get_contents('{$counter}');
-        file_put_contents('{$counter}', \$n + 1);
-        if (\$n < {$challenges}) {
-            header('Set-Cookie: imunify360_test=1');
-            echo "<!DOCTYPE html><html><head><title>One moment, please...</title></head><body></body></html>";
-        } else {
-            echo "Extracted 42 files.\\nArchive removed.\\n";
-        }
-        PHP);
-
-        $this->server = Process::fromShellCommandline(
-            sprintf('php -S 127.0.0.1:%d -t "%s" "%s"', self::PORT, $this->dir, $this->dir.'/router.php')
-        );
-        $this->server->start();
-
-        for ($i = 0; $i < 100; $i++) {
-            $probe = @fsockopen('127.0.0.1', self::PORT, $errno, $errstr, 0.2);
-            if ($probe) {
-                fclose($probe);
-
-                return;
-            }
-            usleep(100_000);
-        }
-
-        $this->markTestSkipped('could not start the stub server on port '.self::PORT);
-    }
-
-    /** On Windows `bash` resolves to WSL, which cannot see the repo's paths — use Git's bash. */
-    private function bash(): string
-    {
-        if (PHP_OS_FAMILY !== 'Windows') {
-            return 'bash';
-        }
-
-        foreach (['C:\Program Files\Git\bin\bash.exe', 'C:\Program Files (x86)\Git\bin\bash.exe'] as $candidate) {
-            if (is_file($candidate)) {
-                return $candidate;
-            }
-        }
-
-        $this->markTestSkipped('no Git Bash found to run the hook script with');
-    }
-
-    private function runHook(): Process
-    {
-        $hook = Process::fromShellCommandline(
+        return $this->runScript(
             sprintf(
                 '"%s" .github/scripts/run-deploy-hook.sh "http://127.0.0.1:%d/extract.php" "Archive removed." "test-token" 20',
                 $this->bash(),
                 self::PORT
             ),
-            base_path(),
-            ['HOOK_RETRY_DELAY' => '1']
+            ['HOOK_RETRY_DELAY' => '1', 'HOOK_ATTEMPTS' => '3']
         );
-        $hook->run();
-
-        return $hook;
     }
 
     public function test_it_retries_past_a_challenge_page_and_succeeds(): void
     {
-        $this->startStub(challenges: 1);
+        $this->startStub(self::PORT, 'Extracted 42 files.\nArchive removed.');
 
         $hook = $this->runHook();
 
@@ -122,19 +58,19 @@ class DeployHookRetryTest extends TestCase
             $hook->getExitCode(),
             "hook gave up on the first challenge:\n".$hook->getOutput().$hook->getErrorOutput()
         );
-        $this->assertSame(2, (int) file_get_contents($this->counter), 'expected exactly one retry');
+        $this->assertSame(2, $this->stubHits(), 'expected exactly one retry');
         $this->assertStringContainsString('Verified', $hook->getOutput());
     }
 
     public function test_it_still_fails_when_every_attempt_is_challenged(): void
     {
-        $this->startStub(challenges: 99);
+        $this->startStub(self::PORT, 'Archive removed.', challengeClears: false);
 
         $hook = $this->runHook();
 
         // Retrying must not turn the silent-no-op back into a green deploy.
         $this->assertSame(1, $hook->getExitCode());
-        $this->assertGreaterThan(1, (int) file_get_contents($this->counter));
+        $this->assertSame(3, $this->stubHits());
         $this->assertStringContainsString('::error::', $hook->getOutput().$hook->getErrorOutput());
     }
 }

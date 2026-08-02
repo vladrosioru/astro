@@ -44,31 +44,42 @@ in [`docs/OPERATIONS.md`](docs/OPERATIONS.md); read that before proposing a prob
 
 ## Never point a bare `curl` at the live site
 
-The host's WAF (LiteSpeed + Imunify360) does not answer plain `curl`. It has two
-distinct failure modes, both already paid for once, so any `curl` at
-`astrotherapia.com` / `dev.astrotherapia.com` — in CI, in a script, or in a
-one-off probe the owner approved — must satisfy **all four** rules:
+The host's WAF (LiteSpeed + Imunify360) does not answer plain `curl`, and it has
+cost three separate round trips already. **Nothing may speak HTTP to
+`astrotherapia.com` / `dev.astrotherapia.com` directly** — not CI, not a script,
+not a one-off probe the owner approved. There are exactly two doors, and new code
+uses one of them rather than rolling its own:
 
-1. **Send a browser `User-Agent` *and* an explicit `Accept`.** No `Accept` header
-   from a datacenter IP is answered `415 Unsupported Media Type`; a bot-shaped
-   UA gets the challenge page. Use the `$UA` / `Accept: text/html,…` pair the
-   workflows already define.
-2. **Never trust the status code.** The WAF's "One moment, please…" JS challenge
-   is served as **HTTP 200**, so `curl -fsS` and `-w "%{http_code}"` both call it
-   success. Always write the body somewhere and grep it — for the command's own
-   expected marker, or at minimum for `One moment, please`.
-3. **Keep a cookie jar and retry.** The challenge sets a cookie and its own JS
-   reloads after 5 s; the reload passes. A single challenged request is not a
-   verdict — `-c/-b <jar>` plus a few spaced retries is. Only give up (loudly)
-   after the retries.
-4. **For deploy hooks, don't hand-roll any of it** — call
-   [`.github/scripts/run-deploy-hook.sh`](.github/scripts/run-deploy-hook.sh),
-   which does all three above and fails the step unless the hook's own success
-   marker comes back.
+| Need | Use |
+|---|---|
+| Call a deploy hook (`extract.php`, `deploy.php`) | [`.github/scripts/run-deploy-hook.sh`](.github/scripts/run-deploy-hook.sh) `URL MARKER TOKEN [MAX_TIME]` |
+| Any other request (health check, smoke test, probe) | [`.github/scripts/fetch-site.sh`](.github/scripts/fetch-site.sh) `URL OUT_FILE [MAX_TIME]` — prints the status code, body goes to `OUT_FILE` |
 
-`tests/Feature/DeployHookVerificationTest.php` and
-`tests/Feature/DeployHookRetryTest.php` fail the suite if any of this is undone.
-Details and the measurements behind it: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
+FTPS uploads are the one exception: different protocol, no WAF in front of it.
+
+Both scripts encode the same four hard-won rules. If you ever must write a new
+request path, it satisfies all four or it will fail in CI and waste a deploy:
+
+1. **Browser `User-Agent` *and* explicit `Accept`.** No `Accept` from a
+   datacenter IP is answered `415 Unsupported Media Type`; a bot-shaped UA is
+   always challenged.
+2. **One cookie jar, shared by every request in the job.** This is what actually
+   clears the challenge — `-c/-b "$WAF_COOKIE_JAR"`. A fresh curl per request is
+   challenged from scratch, which is how a 12-attempt retry loop produced 12
+   challenge pages while a cookie-carrying call in the same minute went straight
+   through.
+3. **Never trust the status code.** The "One moment, please…" challenge is an
+   **HTTP 200**, so `curl -fsS` and `-w "%{http_code}"` both call it success.
+   Write the body to a file and grep it — for the caller's own expected marker,
+   or at minimum for `One moment, please`.
+4. **Retry, then fail loudly.** One challenge is not a verdict; retry a few times
+   spaced apart. But when the retries run out, exit non-zero — never let a
+   challenged request pass for a healthy one.
+
+`tests/Feature/DeployHookVerificationTest.php`, `DeployHookRetryTest.php` and
+`SiteFetchRetryTest.php` fail the suite if any of this is undone — including a
+test that greps both workflows for a raw `curl` at the site.
+Measurements and history: [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
 ## Documentation upkeep
 

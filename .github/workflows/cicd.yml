@@ -23,11 +23,14 @@ permissions:
 env:
   PHP_VERSION: '8.4'   # match the cPanel subdomain PHP (Laravel 13 needs 8.3+)
   # The host WAF answers unrecognised clients with a 200 "One moment, please…"
-  # JS challenge page instead of the real response. Every curl aimed at the site
-  # — deploy hooks and smoke tests alike — sends browser-shaped headers so it
-  # reaches the app, and checks the body, since the challenge is itself a 200.
+  # JS challenge page instead of the real response. No step here talks to the
+  # site with a bare curl: deploy hooks go through run-deploy-hook.sh and every
+  # other request through fetch-site.sh, which between them send browser-shaped
+  # headers, share one cookie jar per job (the cookie is what actually clears
+  # the challenge), and check the body — the challenge is itself a 200.
   UA: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
   WAF_CHALLENGE_MARKER: 'One moment, please'
+  WAF_COOKIE_JAR: /tmp/waf-cookies.txt
 
 jobs:
   # 1. Code style
@@ -182,14 +185,12 @@ jobs:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5   # for .github/scripts/fetch-site.sh
       - name: Wait for dev to come up
         run: |
           BASE="${{ needs.deploy_dev.outputs.url }}"
           for i in $(seq 1 12); do
-            S=$(curl -s -A "$UA" -H "Accept: text/html,application/xhtml+xml" -o resp.html -w "%{http_code}" --max-time 10 "$BASE/up" || true)
-            if grep -qF "$WAF_CHALLENGE_MARKER" resp.html 2>/dev/null; then
-              echo "attempt $i: WAF challenge page, retrying in 5s..."; sleep 5; continue
-            fi
+            S=$(bash .github/scripts/fetch-site.sh "$BASE/up" resp.html 10 || true)
             if [ "$S" = "200" ]; then echo "dev up after ~$((i*5))s"; exit 0; fi
             echo "attempt $i: got $S, retrying in 5s..."; sleep 5
           done
@@ -199,12 +200,14 @@ jobs:
           BASE="${{ needs.deploy_dev.outputs.url }}"
           FAILED=0
           for path in / /en /en/about /en/services /en/contact /en/journal /ro; do
-            S=$(curl -s -A "$UA" -H "Accept: text/html,application/xhtml+xml" -o resp.html -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            # fetch-site.sh exits non-zero only when the challenge never
+            # cleared — a challenge page is a 200, so a status-only check would
+            # pass against a site the deploy never actually reached.
+            if ! S=$(bash .github/scripts/fetch-site.sh "$BASE$path" resp.html 30); then
+              echo "FAIL: $path never got past the WAF challenge"; FAILED=1; continue
+            fi
             echo "$S  $path"
             case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
-            # A challenge page is a 200: without this the smoke test passes
-            # against a site the deploy never actually reached.
-            if grep -qF "$WAF_CHALLENGE_MARKER" resp.html 2>/dev/null; then echo "FAIL: $path served the WAF challenge page"; FAILED=1; fi
           done
           [ "$FAILED" = 0 ] || exit 1
       - name: Smoke test admin/auth routes
@@ -212,12 +215,11 @@ jobs:
           BASE="${{ needs.deploy_dev.outputs.url }}"
           FAILED=0
           for path in /admin/login /admin; do
-            S=$(curl -s -A "$UA" -H "Accept: text/html,application/xhtml+xml" -o resp.html -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            if ! S=$(bash .github/scripts/fetch-site.sh "$BASE$path" resp.html 30); then
+              echo "FAIL: $path never got past the WAF challenge"; FAILED=1; continue
+            fi
             echo "$S  $path"
             case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
-            # A challenge page is a 200: without this the smoke test passes
-            # against a site the deploy never actually reached.
-            if grep -qF "$WAF_CHALLENGE_MARKER" resp.html 2>/dev/null; then echo "FAIL: $path served the WAF challenge page"; FAILED=1; fi
           done
           [ "$FAILED" = 0 ] || exit 1
 
@@ -304,14 +306,12 @@ jobs:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5   # for .github/scripts/fetch-site.sh
       - name: Wait for prod to come up
         run: |
           BASE="${{ needs.deploy_prd.outputs.url }}"
           for i in $(seq 1 12); do
-            S=$(curl -s -A "$UA" -H "Accept: text/html,application/xhtml+xml" -o resp.html -w "%{http_code}" --max-time 10 "$BASE/up" || true)
-            if grep -qF "$WAF_CHALLENGE_MARKER" resp.html 2>/dev/null; then
-              echo "attempt $i: WAF challenge page, retrying in 5s..."; sleep 5; continue
-            fi
+            S=$(bash .github/scripts/fetch-site.sh "$BASE/up" resp.html 10 || true)
             if [ "$S" = "200" ]; then echo "prod up after ~$((i*5))s"; exit 0; fi
             echo "attempt $i: got $S, retrying in 5s..."; sleep 5
           done
@@ -321,12 +321,14 @@ jobs:
           BASE="${{ needs.deploy_prd.outputs.url }}"
           FAILED=0
           for path in / /en /en/about /en/services /en/contact /en/journal /ro; do
-            S=$(curl -s -A "$UA" -H "Accept: text/html,application/xhtml+xml" -o resp.html -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            # fetch-site.sh exits non-zero only when the challenge never
+            # cleared — a challenge page is a 200, so a status-only check would
+            # pass against a site the deploy never actually reached.
+            if ! S=$(bash .github/scripts/fetch-site.sh "$BASE$path" resp.html 30); then
+              echo "FAIL: $path never got past the WAF challenge"; FAILED=1; continue
+            fi
             echo "$S  $path"
             case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
-            # A challenge page is a 200: without this the smoke test passes
-            # against a site the deploy never actually reached.
-            if grep -qF "$WAF_CHALLENGE_MARKER" resp.html 2>/dev/null; then echo "FAIL: $path served the WAF challenge page"; FAILED=1; fi
           done
           [ "$FAILED" = 0 ] || exit 1
       - name: Smoke test admin/auth routes
@@ -334,11 +336,10 @@ jobs:
           BASE="${{ needs.deploy_prd.outputs.url }}"
           FAILED=0
           for path in /admin/login /admin; do
-            S=$(curl -s -A "$UA" -H "Accept: text/html,application/xhtml+xml" -o resp.html -w "%{http_code}" --max-time 30 --retry 3 --retry-delay 5 "$BASE$path")
+            if ! S=$(bash .github/scripts/fetch-site.sh "$BASE$path" resp.html 30); then
+              echo "FAIL: $path never got past the WAF challenge"; FAILED=1; continue
+            fi
             echo "$S  $path"
             case "$S" in 200|302) ;; *) echo "FAIL: $path returned $S"; FAILED=1 ;; esac
-            # A challenge page is a 200: without this the smoke test passes
-            # against a site the deploy never actually reached.
-            if grep -qF "$WAF_CHALLENGE_MARKER" resp.html 2>/dev/null; then echo "FAIL: $path served the WAF challenge page"; FAILED=1; fi
           done
           [ "$FAILED" = 0 ] || exit 1

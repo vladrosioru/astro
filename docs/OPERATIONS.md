@@ -121,9 +121,34 @@ archive and `deploy.php`'s migrate/cache work is idempotent.
 stub that challenges first and answers second, pinning both halves — that it
 gets through, and that it still fails when every attempt is challenged.
 
-Still exposed: the **smoke-test** steps in `cicd.yml` treat a single challenge as
-a failure (the "Wait for … to come up" step retries, the smoke loops don't). A
-transient challenge there fails a deploy that actually worked. Not yet changed.
+### The cookie is the whole mechanism (2026-08-02, same day)
+
+The next run proved what the retry was really buying. `deploy_dev` passed — the
+cookie-carrying hook got through — and then `test_dev` failed 1 m 14 s later with
+**12 challenge pages in 12 attempts** on `/up`. Same runner, same IP, same
+minute, opposite outcomes.
+
+The difference was not patience: the wait loop had *more* retries than the hook.
+It was that each of its 12 curls was a fresh session with no cookie jar, so every
+attempt restarted the challenge. **The challenge is cleared by a cookie, not by
+waiting.** Retrying without a jar can never converge.
+
+So every site-facing request now goes through
+[`.github/scripts/fetch-site.sh`](../.github/scripts/fetch-site.sh) — browser
+headers, the shared jar (`WAF_COOKIE_JAR`, workflow-level `env`), body check,
+bounded retry, status code on stdout. Both smoke jobs in `cicd.yml` and the
+rollback's smoke job call it, and both now `actions/checkout` first because they
+need the script. The challenge is solved once per job and every later step rides
+on that cookie.
+
+`tests/Feature/SiteFetchRetryTest.php` pins it against a stub that challenges
+anything without the cookie: that the first request clears it, that a *second*
+request is not challenged again (the regression that caused this), that it fails
+when the challenge never clears — and that neither workflow contains a raw
+`curl` aimed at the site.
+
+The standing rule derived from all of this lives in
+[`../CLAUDE.md`](../CLAUDE.md): two scripts, no direct HTTP to the host.
 
 ---
 
