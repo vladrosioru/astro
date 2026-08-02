@@ -138,6 +138,42 @@ class BackupRepositoryTest extends TestCase
         $this->assertSame('', $this->repository->hostOf('notes.txt'));
     }
 
+    public function test_header_reads_the_created_date_and_row_counts(): void
+    {
+        $name = 'backup-20260101-000000-example.com-manual.sql.gz';
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, (string) gzencode(
+            "-- Content backup\n-- created: 2026-01-01T09:30:00+00:00\n-- rows: posts=41, media=210\nDELETE FROM `posts`;\n"
+        ));
+
+        $header = $this->repository->header($name);
+
+        $this->assertSame('2026-01-01 09:30', $header['created']->format('Y-m-d H:i'));
+        $this->assertSame(['posts' => 41, 'media' => 210], $header['rows']);
+    }
+
+    public function test_header_returns_null_counts_for_a_backup_written_before_they_existed(): void
+    {
+        $name = 'backup-20260101-000000-example.com-manual.sql.gz';
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, (string) gzencode(
+            "-- Content backup\nDELETE FROM `posts`;\n"
+        ));
+
+        $header = $this->repository->header($name);
+
+        $this->assertNull($header['rows']);
+        $this->assertNull($header['created']);
+    }
+
+    public function test_header_stops_at_the_first_statement(): void
+    {
+        $name = 'backup-20260101-000000-example.com-manual.sql.gz';
+        Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, (string) gzencode(
+            "-- rows: posts=1\nINSERT INTO `posts` (`body`) VALUES ('-- rows: posts=999');\n"
+        ));
+
+        $this->assertSame(['posts' => 1], $this->repository->header($name)['rows']);
+    }
+
     public function test_filename_encodes_origin_and_is_pattern_valid(): void
     {
         $name = $this->repository->filename('auto');

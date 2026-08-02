@@ -2,9 +2,11 @@
 
 namespace App\Services\Database;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
+use Throwable;
 
 /**
  * Backup files live on the private `backups` disk, rooted at the project's
@@ -56,6 +58,75 @@ class BackupRepository
     public function isRestorable(string $name): bool
     {
         return $this->exists($name) && $this->hostOf($name) === $this->currentHost();
+    }
+
+    /**
+     * The leading comment block of a dump. Reads only until the first
+     * statement, so it costs one gzip block regardless of archive size.
+     *
+     * Backups written before the `rows:` line existed return null counts
+     * rather than failing — refusing to restore them would break the exact
+     * rollback case this exists for.
+     *
+     * @return array{created: ?CarbonImmutable, rows: ?array<string, int>}
+     */
+    public function header(string $name): array
+    {
+        $handle = @gzopen($this->path($name), 'rb');
+
+        if ($handle === false) {
+            return ['created' => null, 'rows' => null];
+        }
+
+        $created = null;
+        $rows = null;
+
+        try {
+            while (($line = gzgets($handle)) !== false) {
+                $line = rtrim($line, "\r\n");
+
+                if (! str_starts_with($line, '--')) {
+                    break;
+                }
+
+                if (str_starts_with($line, '-- created: ')) {
+                    $created = $this->parseDate(substr($line, strlen('-- created: ')));
+                }
+
+                if (str_starts_with($line, '-- rows: ')) {
+                    $rows = $this->parseCounts(substr($line, strlen('-- rows: ')));
+                }
+            }
+        } finally {
+            gzclose($handle);
+        }
+
+        return ['created' => $created, 'rows' => $rows];
+    }
+
+    private function parseDate(string $value): ?CarbonImmutable
+    {
+        try {
+            return CarbonImmutable::parse($value);
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    /** @return array<string, int> */
+    private function parseCounts(string $list): array
+    {
+        $counts = [];
+
+        foreach (explode(', ', $list) as $pair) {
+            [$table, $count] = array_pad(explode('=', $pair, 2), 2, null);
+
+            if ($count !== null) {
+                $counts[$table] = (int) $count;
+            }
+        }
+
+        return $counts;
     }
 
     /** The host this site answers on, sanitised the same way for both uses. */
