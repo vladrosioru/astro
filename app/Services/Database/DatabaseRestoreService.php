@@ -23,17 +23,24 @@ class DatabaseRestoreService
         private DatabaseBackupService $backups,
     ) {}
 
-    /** @return array{snapshot: string, rows: int} */
-    public function restore(string $archivePath): array
+    /**
+     * @param  ?string  $mediaFallbackUrl  absolute origin to point media at, or
+     *                                     null to leave paths untouched. The
+     *                                     caller decides: rewriting is a
+     *                                     cross-host correction, and a backup
+     *                                     this host wrote needs none.
+     * @return array{snapshot: string, rows: int}
+     */
+    public function restore(string $archivePath, ?string $mediaFallbackUrl): array
     {
         $this->assertGzip($archivePath);
         $this->assertStatementsAllowed($archivePath);
 
         $snapshot = $this->backups->create('auto');
 
-        DB::transaction(function () use ($archivePath) {
+        DB::transaction(function () use ($archivePath, $mediaFallbackUrl) {
             $this->eachStatement($archivePath, fn (string $statement) => DB::unprepared($statement));
-            $this->rewriteMediaPaths();
+            $this->rewriteMediaPaths($mediaFallbackUrl);
         });
 
         return ['snapshot' => $snapshot, 'rows' => $this->countRows()];
@@ -96,9 +103,9 @@ class DatabaseRestoreService
         }
     }
 
-    private function rewriteMediaPaths(): void
+    private function rewriteMediaPaths(?string $mediaFallbackUrl): void
     {
-        $rewriter = new MediaPathRewriter(config('database_admin.media_fallback_url'));
+        $rewriter = new MediaPathRewriter($mediaFallbackUrl);
 
         DB::table('authors')->orderBy('id')->chunkById(200, function ($rows) use ($rewriter) {
             foreach ($rows as $row) {

@@ -69,7 +69,7 @@ class DatabaseController extends Controller
 
         try {
             $this->backupService->dumpTo($temp, 'source');
-            $result = $this->restoreService->restore($temp);
+            $result = $this->restoreService->restore($temp, config('database_admin.media_fallback_url'));
         } catch (InvalidBackupException $e) {
             return back()->withErrors(['pull' => $e->getMessage()]);
         } finally {
