@@ -151,6 +151,7 @@ class BackupRepository
                 'name' => $name,
                 'size' => $disk->size(self::DIRECTORY.'/'.$name),
                 'origin' => str_ends_with($name, '-auto.sql.gz') ? 'auto (pre-restore)' : 'manual',
+                'restorable' => $this->isRestorable($name),
             ]);
     }
 

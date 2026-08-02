@@ -40,6 +40,12 @@ Route::prefix('admin')->middleware('admin')->group(function () {
     Route::delete('database/backup/{file}', [DatabaseController::class, 'destroy'])
         ->where('file', '[A-Za-z0-9.\-]+\.sql\.gz')
         ->name('admin.database.destroy');
+    Route::get('database/restore/{file}', [DatabaseController::class, 'confirm'])
+        ->where('file', '[A-Za-z0-9.\-]+\.sql\.gz')
+        ->name('admin.database.restore.confirm');
+    Route::post('database/restore/{file}', [DatabaseController::class, 'restore'])
+        ->where('file', '[A-Za-z0-9.\-]+\.sql\.gz')
+        ->name('admin.database.restore');
     Route::post('database/pull', [DatabaseController::class, 'pull'])->name('admin.database.pull');
 });
 

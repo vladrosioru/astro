@@ -7,6 +7,7 @@ use App\Services\Database\BackupRepository;
 use App\Services\Database\DatabaseBackupService;
 use App\Services\Database\DatabaseRestoreService;
 use App\Services\Database\InvalidBackupException;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseController extends Controller
 {
@@ -47,6 +48,40 @@ class DatabaseController extends Controller
         $this->backups->delete($file);
 
         return redirect()->route('admin.database.index')->with('status', 'Backup deleted.');
+    }
+
+    /**
+     * The screen that stands between a click and overwriting live content.
+     * Row counts are the part that catches a wrong file — a filename does not.
+     */
+    public function confirm(string $file)
+    {
+        abort_unless($this->backups->isRestorable($file), 404);
+
+        return view('admin.database.confirm', [
+            'file' => $file,
+            'header' => $this->backups->header($file),
+            'live' => $this->liveCounts(),
+            'host' => $this->backups->hostOf($file),
+            'tables' => (array) config('database_admin.tables'),
+        ]);
+    }
+
+    public function restore(string $file)
+    {
+        abort(404);
+    }
+
+    /** @return array<string, int> */
+    private function liveCounts(): array
+    {
+        $counts = [];
+
+        foreach ((array) config('database_admin.tables') as $table) {
+            $counts[$table] = DB::table($table)->count();
+        }
+
+        return $counts;
     }
 
     /**
