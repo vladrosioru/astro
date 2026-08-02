@@ -152,6 +152,36 @@ The standing rule derived from all of this lives in
 
 ---
 
+## FTPS upload: `curl: (28) Failed to connect ... port 21` (2026-08-02)
+
+A `deploy_dev` run failed in the **upload** step, before any hook or smoke test:
+
+```
+curl: (28) Failed to connect to *** port 21 after 134234 ms: Couldn't connect to server
+```
+
+A connect **timeout**, not a refusal — the SYN was dropped rather than rejected,
+which means either FTP was down on the host or something in front of it was
+blackholing the runner's IP. Unrelated to the WAF work above: FTPS is a different
+protocol on a different port and does not pass through the WAF at all.
+
+The upload is now capped and retried (`--connect-timeout 25 --retry 4
+--retry-delay 15 --retry-connrefused`, pinned by
+`tests/Feature/FtpsUploadTest.php`), so a dropped connection costs a retry
+instead of the build. `--ssl-reqd` stays on it — without that curl falls back to
+plaintext FTP with the deploy credentials on the wire; never trade it for
+reliability.
+
+**If it repeats after a re-run** (a re-run gets a different runner IP, which by
+itself distinguishes an IP block from an outage), it is host-side. In cPanel:
+
+- **Imunify360 → Incidents / Blocked IPs** — the likeliest cause of a silent
+  drop; look for GitHub Actions ranges.
+- **cPHulk Brute Force Protection → blocked IPs** — blocks reach the port before
+  any login is attempted.
+- The FTP service's own status, and whether plain FTP from your own machine
+  connects (your residential IP is scored differently — see the WAF sections).
+
 ## Contact-form mail
 
 The public contact form (`POST /{locale}/contact` → `App\Mail\ContactMessage`)
