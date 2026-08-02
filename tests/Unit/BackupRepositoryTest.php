@@ -103,6 +103,41 @@ class BackupRepositoryTest extends TestCase
         $this->assertFalse($this->repository->exists('../../.env'));
     }
 
+    public function test_it_restores_a_backup_written_by_this_host(): void
+    {
+        config(['app.url' => 'https://example.com']);
+        $this->putBackup('backup-20260101-000000-example.com-manual.sql.gz');
+
+        $this->assertTrue($this->repository->isRestorable('backup-20260101-000000-example.com-manual.sql.gz'));
+    }
+
+    public function test_it_refuses_a_backup_written_by_another_host(): void
+    {
+        config(['app.url' => 'https://example.com']);
+        $this->putBackup('backup-20260101-000000-dev.example.com-manual.sql.gz');
+
+        $this->assertFalse($this->repository->isRestorable('backup-20260101-000000-dev.example.com-manual.sql.gz'));
+    }
+
+    public function test_it_refuses_an_own_host_backup_that_is_missing(): void
+    {
+        config(['app.url' => 'https://example.com']);
+
+        $this->assertFalse($this->repository->isRestorable('backup-20260101-000000-example.com-manual.sql.gz'));
+    }
+
+    public function test_a_hyphenated_host_survives_the_filename_round_trip(): void
+    {
+        config(['app.url' => 'https://dev-2.example.com']);
+
+        $this->assertSame('dev-2.example.com', $this->repository->hostOf($this->repository->filename('manual')));
+    }
+
+    public function test_host_of_returns_empty_for_a_name_that_is_not_a_backup(): void
+    {
+        $this->assertSame('', $this->repository->hostOf('notes.txt'));
+    }
+
     public function test_filename_encodes_origin_and_is_pattern_valid(): void
     {
         $name = $this->repository->filename('auto');
