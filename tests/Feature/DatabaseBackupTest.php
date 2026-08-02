@@ -85,6 +85,27 @@ class DatabaseBackupTest extends TestCase
         }
     }
 
+    public function test_the_header_records_a_row_count_per_table(): void
+    {
+        $post = Post::create(['status' => 'published']);
+        PostTranslation::create([
+            'post_id' => $post->id,
+            'locale' => 'en',
+            'title' => 'Counted',
+            'slug' => 'counted',
+            'body' => '<p>Body</p>',
+        ]);
+
+        $sql = $this->contents(app(DatabaseBackupService::class)->create('manual'));
+
+        $rows = collect(explode("\n", $sql))->first(fn (string $line) => str_starts_with($line, '-- rows: '));
+
+        $this->assertNotNull($rows, 'The dump has no "-- rows:" header line.');
+        $this->assertStringContainsString('authors=0', $rows);
+        $this->assertStringContainsString('posts=1', $rows);
+        $this->assertStringContainsString('post_translations=1', $rows);
+    }
+
     public function test_the_origin_is_recorded_in_the_filename(): void
     {
         $this->assertStringEndsWith('-auto.sql.gz', app(DatabaseBackupService::class)->create('auto'));
