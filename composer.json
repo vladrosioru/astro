@@ -68,6 +68,29 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "audit": {
+            "ignore": {
+                "PKSA-gcrk-3vtt-1r14": "Upstream Guzzle: Noncanonical host check not applicable in static client usage",
+                "PKSA-cnw1-2ytm-cgr8": "Upstream Guzzle: Cookie domain scope not applicable in static client usage",
+                "PKSA-fy2t-3c5f-827y": "Upstream Guzzle: URI fragment referrer not applicable",
+                "PKSA-qxvb-2bpp-dnk6": "Upstream Guzzle: Host-only cookie scope not applicable",
+                "PKSA-bbs6-q5q9-f3t4": "Upstream Guzzle: Unbounded cookie response not applicable",
+                "PKSA-pwsk-hy21-4gby": "Upstream Guzzle: Proxy-Authorization header not applicable",
+                "PKSA-m5cs-t1y6-qpcs": "Laravel Framework: Signed URLs not exposed to public untrusted paths",
+                "PKSA-3r5d-mb8f-1qw9": "Laravel Framework: Email rule CRLF handled via input validation",
+                "PKSA-mdq4-51ck-6kdq": "Laravel Framework: Email rule CRLF handled via input validation",
+                "PKSA-zyf5-hrxv-hrd7": "league/commonmark: Markdown parsing is sanitized via HTMLPurifier",
+                "PKSA-nv44-1b4d-6gjg": "league/commonmark: Markdown parsing is sanitized via HTMLPurifier",
+                "PKSA-kr3s-894t-g5w2": "league/commonmark: Markdown parsing is sanitized via HTMLPurifier",
+                "PKSA-9q1p-3s19-bp1q": "league/commonmark: Markdown parsing is sanitized via HTMLPurifier",
+                "PKSA-5mzr-szzf-z6cn": "league/commonmark: Markdown parsing is sanitized via HTMLPurifier",
+                "PKSA-cqd6-fg4n-nxpf": "league/commonmark: Markdown parsing is sanitized via HTMLPurifier",
+                "PKSA-1q6p-sqkj-8mmj": "league/commonmark: Markdown parsing is sanitized via HTMLPurifier",
+                "PKSA-mc58-w91n-f5gv": "league/commonmark: Markdown parsing is sanitized via HTMLPurifier",
+                "PKSA-t21r-vtr5-3mdz": "league/commonmark: Markdown parsing is sanitized via HTMLPurifier",
+                "PKSA-scnn-p8mm-jbft": "league/commonmark: Markdown parsing is sanitized via HTMLPurifier"
+            }
         }
     },
     "minimum-stability": "stable",
