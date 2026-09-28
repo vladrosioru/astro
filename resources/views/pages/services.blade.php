@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Services — ' . config('app.name'))
+@section('title', app()->getLocale() === 'ro'
+    ? 'Servicii Astrologie — Astrogramă Natală, Tarot și Sinastrie · ' . config('app.name')
+    : 'Astrology Services — Natal Chart, Tarot & Relationship Readings · ' . config('app.name'))
+@section('meta_description', app()->getLocale() === 'ro'
+    ? 'Descoperă serviciile astrologice: astrogramă natală, etalări tarot, sinastrie de cuplu și previziuni anuale. Alege consultația potrivită pentru tine.'
+    : 'Explore astrology services from natal chart analysis to tarot readings, relationship synastry, and yearly forecasts. Find the right reading for your question.')
 @section('body_class', 'page-services')
 
 @push('head')

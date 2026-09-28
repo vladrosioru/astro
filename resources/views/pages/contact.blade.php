@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Contact — ' . config('app.name'))
+@section('title', app()->getLocale() === 'ro'
+    ? 'Contact ' . config('app.name') . ' — Programează o Consultație'
+    : 'Contact ' . config('app.name') . ' — Book Your Astrology Session')
+@section('meta_description', app()->getLocale() === 'ro'
+    ? 'Contactează AstroTherapia. Află detalii despre consultații, programează o sesiune sau trimite un mesaj. Suntem disponibili pe email, telefon și social media.'
+    : 'Get in touch with AstroTherapia. Ask about readings, book a session, or send a message. Email, phone, and social media contact options available.')
 
 @push('head')
     <link rel="stylesheet" href="{{ versioned_asset('css/contact.css') }}">

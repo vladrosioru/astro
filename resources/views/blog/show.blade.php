@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', $t->seo_title ?? $t->title)
+@section('title', ($t->seo_title ?? $t->title) . ' · ' . config('app.name'))
 
 @php
     $post = $t->post;
@@ -8,14 +8,30 @@
     $ogImage = $post->featured_image ? url($post->featured_image) : null;
 @endphp
 
+@if ($ogDescription)
+    @section('meta_description', $ogDescription)
+@endif
+
+@section('hreflangs')
+    @php
+        $enTrans = $post->translation('en');
+        $roTrans = $post->translation('ro');
+    @endphp
+    @if ($enTrans)
+        <link rel="alternate" hreflang="en" href="{{ url('en/journal/' . $enTrans->slug) }}">
+    @endif
+    @if ($roTrans)
+        <link rel="alternate" hreflang="ro" href="{{ url('ro/journal/' . $roTrans->slug) }}">
+    @endif
+    @if ($enTrans)
+        <link rel="alternate" hreflang="x-default" href="{{ url('en/journal/' . $enTrans->slug) }}">
+    @endif
+@endsection
+
 @push('head')
     <link rel="stylesheet" href="{{ asset('vendor/ckeditor/ckeditor5.css') }}">
     <link rel="stylesheet" href="{{ versioned_asset('css/article.css') }}">
     <script src="{{ asset('js/article-share.js') }}" defer></script>
-
-    @if ($ogDescription)
-        <meta name="description" content="{{ $ogDescription }}">
-    @endif
 
     {{-- Open Graph / Twitter Card: Facebook's and X's share dialogs build
          their link-preview card by scraping these tags from the target URL

@@ -1,5 +1,10 @@
 @extends('layouts.app')
-@section('title', 'Journal')
+@section('title', app()->getLocale() === 'ro'
+    ? 'Jurnal Cosmic — Articole și Perspective Astrologice · ' . config('app.name')
+    : 'Cosmic Journal — Astrology Insights & Reflections · ' . config('app.name'))
+@section('meta_description', app()->getLocale() === 'ro'
+    ? 'Reflecții despre astrologie, autocunoaștere și tiparele care îți ghidează viața. Citește cele mai recente articole din Jurnalul Cosmic AstroTherapia.'
+    : 'Reflections on astrology, self-knowledge, and the patterns that shape your life. Read the latest entries from the AstroTherapia Cosmic Journal.')
 @section('content')
     <header class="journal-hero">
         <h1 class="journal-hero__title">Cosmic Journal</h1>

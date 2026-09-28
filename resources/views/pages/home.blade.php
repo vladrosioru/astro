@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
-@section('title', config('app.name'))
+@section('title', app()->getLocale() === 'ro'
+    ? 'AstroTherapia — Consultații Astrologice și Astrogramă Natală'
+    : 'AstroTherapia — Astrology Readings & Birth Chart Analysis')
+@section('meta_description', app()->getLocale() === 'ro'
+    ? 'AstroTherapia te ajută să înțelegi tiparele din spatele alegerilor tale prin consultații astrologice, astrogramă natală și tarot. Programează o sesiune.'
+    : 'AstroTherapia helps you understand the patterns behind your choices through astrology readings, birth chart analysis, and tarot. Book a session today.')
 @section('body_class', 'page-home')
 
 @push('head')

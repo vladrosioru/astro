@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Astrology — ' . config('app.name'))
+@section('title', app()->getLocale() === 'ro'
+    ? 'Despre AstroTherapia — Înțelege tiparele din spatele deciziilor · ' . config('app.name')
+    : 'About AstroTherapia — Understanding the Why Behind Your Choices · ' . config('app.name'))
+@section('meta_description', app()->getLocale() === 'ro'
+    ? 'Ce este AstroTherapia? O abordare bazată pe harta natală ce dezvăluie tiparele din spatele deciziilor tale — nu predicții, ci claritate. Descoperă filosofia.'
+    : 'What is AstroTherapia? A birth-chart-based practice that reveals the patterns behind your decisions — not predictions, but clarity. Discover the philosophy.')
 @section('body_class', 'page-about')
 
 @push('head')
@@ -40,7 +45,7 @@
         <div class="about-shell about-shell--narrow">
             @include('partials.about-chart-motif')
             <p class="about-eyebrow about-eyebrow--center">Discover</p>
-            <h2 class="about-h2 about-h2--center">Understanding the Why Behind Your Choices</h2>
+            <h1 class="about-h2 about-h2--center">Understanding the Why Behind Your Choices</h1>
             <p class="about-hero__sub">Your birth chart is the key to help you understand why you
                 think, feel, and choose the way you do — so you can make your next decision with
                 clarity, not guesswork.</p>
