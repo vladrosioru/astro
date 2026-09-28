@@ -119,9 +119,12 @@ class PublicBlogTest extends TestCase
             ->assertSee('Like it? Tell the world!')
             ->assertSee('https://www.facebook.com/sharer/sharer.php', false)
             ->assertSee('aria-label="Share on X"', false)
-            ->assertSee('https://www.linkedin.com/sharing/share-offsite', false)
-            ->assertSee('data-share="copy"', false)
-            ->assertDontSee('instagram', false);
+            ->assertSee('data-share="copy"', false);
+
+        // Instagram has no web share intent; verify it is not in the article share bar
+        $shareList = explode('class="article-share"', $response->getContent())[1] ?? '';
+        $shareList = explode('</ul>', $shareList)[0] ?? '';
+        $this->assertStringNotContainsString('instagram', strtolower($shareList));
     }
 
     public function test_article_page_shows_author_cassette(): void

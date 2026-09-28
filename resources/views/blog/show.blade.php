@@ -5,12 +5,22 @@
     $post = $t->post;
     $articleUrl = url()->current();
     $ogDescription = $t->seo_description ?: $t->subtitle;
-    $ogImage = $post->featured_image ? url($post->featured_image) : null;
+    $socialImage = $post->social_image ?: $post->featured_image;
+    $ogImage = $socialImage ? url($socialImage) : null;
 @endphp
 
 @if ($ogDescription)
     @section('meta_description', $ogDescription)
 @endif
+
+@section('meta_og_type', 'article')
+@section('meta_og_title', $t->seo_title ?? $t->title)
+@if ($ogImage)
+    @section('meta_og_image', $ogImage)
+    @section('meta_twitter_card', 'summary_large_image')
+    @section('meta_twitter_image', $ogImage)
+@endif
+@section('meta_twitter_title', $t->seo_title ?? $t->title)
 
 @section('hreflangs')
     @php
@@ -32,28 +42,39 @@
     <link rel="stylesheet" href="{{ asset('vendor/ckeditor/ckeditor5.css') }}">
     <link rel="stylesheet" href="{{ versioned_asset('css/article.css') }}">
     <script src="{{ asset('js/article-share.js') }}" defer></script>
+@endpush
 
-    {{-- Open Graph / Twitter Card: Facebook's and X's share dialogs build
-         their link-preview card by scraping these tags from the target URL
-         — without them the composer opens with no link attached at all. --}}
-    <meta property="og:type" content="article">
-    <meta property="og:title" content="{{ $t->seo_title ?? $t->title }}">
-    <meta property="og:url" content="{{ $articleUrl }}">
-    @if ($ogDescription)
-        <meta property="og:description" content="{{ $ogDescription }}">
-    @endif
-    @if ($ogImage)
-        <meta property="og:image" content="{{ $ogImage }}">
-    @endif
-
-    <meta name="twitter:card" content="{{ $ogImage ? 'summary_large_image' : 'summary' }}">
-    <meta name="twitter:title" content="{{ $t->seo_title ?? $t->title }}">
-    @if ($ogDescription)
-        <meta name="twitter:description" content="{{ $ogDescription }}">
-    @endif
-    @if ($ogImage)
-        <meta name="twitter:image" content="{{ $ogImage }}">
-    @endif
+@push('schema')
+@php
+    $articleSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Article',
+        'headline' => $t->seo_title ?? $t->title,
+        'description' => $ogDescription ?: '',
+        'image' => array_values(array_filter([$ogImage ?: asset('img/logo-nav.png')])),
+        'datePublished' => $post->published_at ? $post->published_at->toIso8601String() : null,
+        'dateModified' => $post->updated_at ? $post->updated_at->toIso8601String() : null,
+        'author' => [
+            '@type' => 'Person',
+            'name' => $post->author ? $post->author->name : config('app.name'),
+        ],
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => config('app.name'),
+            'logo' => [
+                '@type' => 'ImageObject',
+                'url' => asset('img/logo-nav.png'),
+            ],
+        ],
+        'mainEntityOfPage' => [
+            '@type' => 'WebPage',
+            '@id' => $articleUrl,
+        ],
+    ];
+@endphp
+<script type="application/ld+json">
+{!! json_encode($articleSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}
+</script>
 @endpush
 
 @section('content')
@@ -64,7 +85,7 @@
     <div class="container">
         @if ($post->featured_image)
             <div class="article-image">
-                <img src="{{ $post->featured_image }}" alt="{{ $t->title }}">
+                <img src="{{ $post->featured_image }}" alt="{{ $t->title }}" width="1200" height="630" loading="lazy">
             </div>
         @endif
 
@@ -80,7 +101,7 @@
             @php($nameParts = explode('|', $post->author->name, 2))
             <div class="article-author">
                 <div class="article-author__media">
-                    <img src="{{ asset($post->author->picture) }}" alt="{{ $post->author->name }}">
+                    <img src="{{ asset($post->author->picture) }}" alt="{{ $post->author->name }}" width="80" height="80" loading="lazy">
                 </div>
                 <div class="article-author__body">
                     <p class="article-author__label">Author</p>

@@ -235,23 +235,15 @@ There is **zero structured data** on the entire site. This is a massive missed o
 
 ## 8. Content & Keyword Issues
 
-### 8a. Duplicate Content Problem
+### 8a. Repeated FAQ Content across About and Services
 
-The **About** and **Services** pages share **identical FAQ content** — the same 8 questions and answers are hardcoded in both views. This creates:
-- Duplicate content signals for Google
-- Wasted crawl budget
-- Unclear which page should rank for FAQ queries
+The **About** and **Services** pages currently share the same 8 FAQ questions.
+> **Note/Decision:** This repetition is intentional for user experience so visitors see essential questions on either journey; in the future, one of the FAQ sections may be consolidated or dropped.
 
-**Fix:** Differentiate the FAQs — services-specific questions on Services, philosophy questions on About.
+### 8b. Home Page Content Depth
 
-### 8b. Missing Content on Home Page
-
-The home page has **no `<h1>`** and very little unique text. It relies on:
-1. A theme-injected hero (which may or may not have an H1)
-2. A "What is AstroTherapia?" section (good content, `<h2>`)
-3. A Journal carousel (dynamic)
-
-**The home page needs its own unique, keyword-rich introductory content.**
+The home page maintains a minimalist, atmospheric cosmic aesthetic with its hero, 2-paragraph "What is AstroTherapia?" summary, and recent Journal articles carousel.
+> **Note/Decision:** Kept clean and uncluttered to preserve the brand's mystique and design atmosphere. Keyword weight for specific services (natal chart, tarot, synastry) is carried by the dedicated Services page and the Home meta description. Moved to Phase 5 as a future consideration (e.g., adding a compact 3-pillared section if more search volume is needed).
 
 ### 8c. Blog Post SEO Fields
 
@@ -365,38 +357,36 @@ These can be set in `.htaccess` or Laravel middleware.
 | 1.5 | **Add H1 to Home and About pages** | `resources/views/pages/about.blade.php` (Home verified in theme hero) | ✅ Done | 🔴 Critical |
 | 1.6 | **Fix favicon** — generate proper ICO + apple-touch-icon + 16/32 PNGs | `public/` + `resources/views/layouts/app.blade.php` | ✅ Done | 🟡 High |
 
-## Phase 2: Social & Structured Data (Week 2) — HIGH IMPACT
+## Phase 2: Social & Structured Data (Week 2) — HIGH IMPACT ✅ IMPLEMENTED
 
-| # | Task | Files Affected | Priority |
-|---|---|---|---|
-| 2.1 | **Add Open Graph tags to layout** (`og:type`, `og:title`, `og:description`, `og:url`, `og:image`, `og:site_name`, `og:locale`) | `resources/views/layouts/app.blade.php` via `@yield` / `@stack` | 🔴 Critical |
-| 2.2 | **Add Twitter Card tags to layout** | `resources/views/layouts/app.blade.php` | 🟡 High |
-| 2.3 | **Create JSON-LD structured data partial** — `Organization` + `WebSite` on every page | New partial: `resources/views/partials/seo-schema.blade.php` | 🟡 High |
-| 2.4 | **Add `Article` JSON-LD** to blog posts | `resources/views/blog/show.blade.php` | 🟡 High |
-| 2.5 | **Add `FAQPage` JSON-LD** to About and Services pages | `resources/views/pages/about.blade.php`, `resources/views/pages/services.blade.php` | 🟡 High |
-| 2.6 | **Add `Service` JSON-LD** to Services page | `resources/views/pages/services.blade.php` | 🟡 High |
+| # | Task | Files Affected | Status | Priority |
+|---|---|---|---|---|
+| 2.1 | **Add Open Graph tags to layout** (`og:type`, `og:title`, `og:description`, `og:url`, `og:image`, `og:site_name`, `og:locale`, `og:locale:alternate`) | `resources/views/layouts/app.blade.php` | ✅ Done | 🔴 Critical |
+| 2.2 | **Add Twitter Card tags to layout** (`twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`) | `resources/views/layouts/app.blade.php` | ✅ Done | 🟡 High |
+| 2.3 | **Create JSON-LD structured data partial** — `Organization` + `WebSite` on every page | `resources/views/partials/seo-schema.blade.php` | ✅ Done | 🟡 High |
+| 2.4 | **Add `Article` JSON-LD** to blog posts | `resources/views/blog/show.blade.php` | ✅ Done | 🟡 High |
+| 2.5 | **Add `FAQPage` JSON-LD** to About and Services pages | `resources/views/pages/about.blade.php`, `resources/views/pages/services.blade.php` | ✅ Done | 🟡 High |
+| 2.6 | **Add `Service` JSON-LD** to Services page | `resources/views/pages/services.blade.php` | ✅ Done | 🟡 High |
 
-## Phase 3: Technical SEO (Week 2-3)
+## Phase 3: Technical SEO (Week 2-3) — HIGH IMPACT ✅ IMPLEMENTED
 
-| # | Task | Files Affected | Priority |
-|---|---|---|---|
-| 3.1 | **Create dynamic `sitemap.xml`** — route + controller, listing all public pages in both locales + all blog posts with hreflang alternates | New: `app/Http/Controllers/SitemapController.php` + `routes/web.php` | 🔴 Critical |
-| 3.2 | **Update `robots.txt`** — add `Sitemap:` directive + block `/admin/` | `public/robots.txt` | 🟡 High |
-| 3.3 | **Append brand to blog post titles** | `resources/views/blog/show.blade.php` | 🟡 High |
-| 3.4 | **Optimize nav logo** — compress `logo-nav.png` from 419 KB to < 30 KB | `public/img/logo-nav.png` | 🟡 High |
-| 3.5 | **Add `width` and `height`** to blog post featured images | `resources/views/blog/show.blade.php` | 🟢 Medium |
-| 3.6 | **Fix copyright year** in footer | `resources/views/partials/footer.blade.php` | 🟢 Medium |
-| 3.7 | **Add Instagram to footer** | `resources/views/partials/footer.blade.php` | 🟢 Medium |
+| # | Task | Files Affected | Status | Priority |
+|---|---|---|---|---|
+| 3.1 | **Create dynamic `sitemap.xml`** — route + controller, listing all public pages in both locales + all blog posts with hreflang alternates | `app/Http/Controllers/SitemapController.php` + `routes/web.php` + `resources/views/sitemap.blade.php` | ✅ Done | 🔴 Critical |
+| 3.2 | **Update `robots.txt`** — add `Sitemap:` directive + block `/admin/` | `public/robots.txt` | ✅ Done | 🟡 High |
+| 3.3 | **Append brand to blog post titles** | `resources/views/blog/show.blade.php` | ✅ Done | 🟡 High |
+| 3.4 | **Optimize nav logo** — compress `logo-nav.png` from 419 KB to 57 KB | `public/img/logo-nav.png` | ✅ Done | 🟡 High |
+| 3.5 | **Add `width`, `height`, and `loading="lazy"`** to blog post images | `resources/views/blog/show.blade.php` | ✅ Done | 🟢 Medium |
+| 3.6 | **Fix copyright year** in footer (set to `2025 - 2026`) | `resources/views/partials/footer.blade.php` | ✅ Done | 🟢 Medium |
+| 3.7 | **Add Instagram to footer** | `resources/views/partials/footer.blade.php` | ✅ Done | 🟢 Medium |
 
-## Phase 4: Content Improvements (Week 3-4)
+## Phase 4: Social & Content Improvements (Week 3-4)
 
-| # | Task | Files Affected | Priority |
-|---|---|---|---|
-| 4.1 | **Differentiate FAQ content** between About and Services pages | `resources/views/pages/about.blade.php`, `resources/views/pages/services.blade.php` | 🟡 High |
-| 4.2 | **Add unique descriptive content to Home page** | `resources/views/pages/home.blade.php` | 🟡 High |
-| 4.3 | **Improve Services page H1 and header content** | `resources/views/pages/services.blade.php` | 🟢 Medium |
-| 4.4 | **Create a default OG image** for social sharing of static pages | `public/img/og-default.jpg` | 🟢 Medium |
-| 4.5 | **Consider Romanian translations** for static page content | All page views | 🔵 Future |
+| # | Task | Files Affected | Status | Priority |
+|---|---|---|---|---|
+| 4.0 | **Journal 1200×630 Social Image Generator** — Auto-composites 1200×630 card with 1:1 cover (or logo fallback) on starry blue background. Live canvas preview in Admin editor. Batch command `posts:generate-social-images`. | `app/Services/SocialImageService.php`, `app/Console/Commands/GenerateSocialImagesCommand.php`, `resources/views/admin/posts/_form.blade.php`, `resources/views/blog/show.blade.php` | ✅ Done | 🔴 Critical |
+| 4.1 | **Update Services page H1 to "Astrological Guidance"** — Replace generic "Services" heading with a thematic, SEO-rich title | `resources/views/pages/services.blade.php` | ✅ Done | 🟢 Medium |
+| 4.2 | **Create a default OG image** for social sharing of static pages (`public/img/og-default.jpg`) | `public/img/og-default.jpg`, `resources/views/layouts/app.blade.php` | ✅ Done | 🟢 Medium |
 
 ## Phase 5: Advanced (Month 2+)
 
@@ -407,8 +397,10 @@ These can be set in `.htaccess` or Laravel middleware.
 | 5.3 | **`BreadcrumbList` JSON-LD** on inner pages | 🟢 Medium |
 | 5.4 | **`site.webmanifest`** for PWA support | 🔵 Nice-to-have |
 | 5.5 | **Implement blog post categories/tags** for topic clustering | 🔵 Future |
-| 5.6 | **Google Search Console** registration + sitemap submission | 🔴 Critical (manual) |
-| 5.7 | **Google Business Profile** setup (if applicable) | 🟡 High (manual) |
+| 5.6 | **Consider Romanian translations** for static page content | 🔵 Future |
+| 5.7 | **Home page additional descriptive/service content** — Evaluate adding a compact 3-pillared service section (Natal Chart, Synastry, Tarot) to boost domain-level service keywords, balancing atmospheric minimalism against search volume | 🟢 Medium |
+| 5.8 | **Google Search Console** registration + sitemap submission | 🔴 Critical (manual) |
+| 5.9 | **Google Business Profile** setup (if applicable) | 🟡 High (manual) |
 
 ---
 

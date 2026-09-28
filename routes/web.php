@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/admin/login', [AuthController::class, 'show'])->name('admin.login');
@@ -48,6 +49,8 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         ->name('admin.database.restore');
     Route::post('database/pull', [DatabaseController::class, 'pull'])->name('admin.database.pull');
 });
+
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 Route::get('/', fn () => redirect('/'.config('app.locale')));
 

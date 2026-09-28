@@ -17,9 +17,10 @@ class FooterTest extends TestCase
             ->assertOk()
             ->assertSee('site-footer', false)
             ->assertSee('Every man and every woman is a Star')
-            ->assertSee('AstroTherapia © 2024')
+            ->assertSee('AstroTherapia © 2025 - 2026')
             ->assertSee('/en/contact', false)
-            ->assertSee('https://www.facebook.com/astrotherapia.ro', false);
+            ->assertSee('https://www.facebook.com/astrotherapia.ro', false)
+            ->assertSee('https://www.instagram.com/astrotherapia/', false);
     }
 
     public function test_footer_contact_link_hidden_when_contact_section_disabled(): void

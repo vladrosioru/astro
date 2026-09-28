@@ -37,6 +37,30 @@
     ];
 @endphp
 
+@push('schema')
+@php
+    $faqEntities = [];
+    foreach ($faqs as $faq) {
+        $faqEntities[] = [
+            '@type' => 'Question',
+            'name' => $faq['q'],
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => $faq['a'],
+            ],
+        ];
+    }
+    $faqSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'FAQPage',
+        'mainEntity' => $faqEntities,
+    ];
+@endphp
+<script type="application/ld+json">
+{!! json_encode($faqSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
+
 @section('content')
 <main class="about">
 

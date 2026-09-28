@@ -109,13 +109,62 @@
     ];
 @endphp
 
+@push('schema')
+@php
+    $faqEntities = [];
+    foreach ($faqs as $faq) {
+        $faqEntities[] = [
+            '@type' => 'Question',
+            'name' => $faq['q'],
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text' => $faq['a'],
+            ],
+        ];
+    }
+    $faqSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'FAQPage',
+        'mainEntity' => $faqEntities,
+    ];
+
+    $allServices = array_merge($services, $tarotServices);
+    $servicesListSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'ItemList',
+        'itemListElement' => array_map(function ($svc, $idx) {
+            return [
+                '@type' => 'ListItem',
+                'position' => $idx + 1,
+                'item' => [
+                    '@type' => 'Service',
+                    'name' => $svc['title'],
+                    'description' => $svc['desc'],
+                    'provider' => [
+                        '@type' => 'Organization',
+                        'name' => config('app.name'),
+                        'url' => url('/'),
+                    ],
+                ],
+            ];
+        }, $allServices, array_keys($allServices)),
+    ];
+@endphp
+<script type="application/ld+json">
+{!! json_encode($faqSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}
+</script>
+<script type="application/ld+json">
+{!! json_encode($servicesListSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}
+</script>
+@endpush
+
 @section('content')
 <main class="about services">
 
     {{-- Title band --------------------------------------------------------- --}}
     <header class="about-hero">
         <div class="about-shell">
-            <h1 class="about-hero__title">Services</h1>
+            <h1 class="about-hero__title">Astrological Guidance</h1>
             <p class="about-hero__sub">Your birth chart is the key to help you understand why you think, feel, and choose the way you do — so you can make your next decision with clarity, not guesswork.</p>
             <p class="about-lede about-center">Every reading starts with a conversation about what you actually want to know. Browse by category below, or book a session and we'll work out the right fit together.</p>
         </div>

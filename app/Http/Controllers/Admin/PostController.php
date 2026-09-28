@@ -7,6 +7,7 @@ use App\Models\Author;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\PostTranslation;
+use App\Services\SocialImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -86,11 +87,18 @@ class PostController extends Controller
         ];
 
         $cardImage = $this->cardImageUrl($request);
+        $featuredImage = $post?->featured_image;
+
         if ($cardImage !== null) {
             $data['featured_image'] = $cardImage;
+            $featuredImage = $cardImage;
         } elseif ($request->boolean('remove_card_image')) {
             $data['featured_image'] = null;
+            $featuredImage = null;
         }
+
+        $socialService = app(SocialImageService::class);
+        $data['social_image'] = $socialService->generateForPost($featuredImage);
 
         return $data;
     }

@@ -126,18 +126,37 @@
         </div>
 
         <div class="adm-panel">
-            <div class="adm-panel__head"><h3>Card image</h3></div>
+            <div class="adm-panel__head"><h3>Card &amp; Social Images</h3></div>
             <div class="adm-panel__body">
+                <div class="adm-images-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+                    <div>
+                        <span class="adm-field__hint" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.78rem; color: var(--adm-fg-dim);">Cover (1:1)</span>
+                        <div id="cover-preview-box" style="aspect-ratio: 1/1; background: var(--adm-surface-alt, #0b1426); border: 1px solid var(--adm-line); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            <img id="cover-preview-img" class="adm-field__preview" src="{{ isset($post) && $post->featured_image ? $post->featured_image : '' }}"
+                                 alt="Cover Preview" style="width: 100%; height: 100%; object-fit: cover; {{ isset($post) && $post->featured_image ? '' : 'display: none;' }}">
+                            <span id="cover-empty-label" style="font-size: 0.75rem; color: var(--adm-fg-dim); text-align: center; padding: 4px; {{ isset($post) && $post->featured_image ? 'display: none;' : '' }}">No cover</span>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="adm-field__hint" style="display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.78rem; color: var(--adm-fg-dim);">Social Card (16:9)</span>
+                        <div id="social-preview-box" style="aspect-ratio: 1200/630; background: var(--adm-surface-alt, #0b1426); border: 1px solid var(--adm-line); border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            <canvas id="social-preview-canvas" width="1200" height="630" style="width: 100%; height: 100%; object-fit: cover; display: none;"></canvas>
+                            <img id="social-preview-img" src="{{ isset($post) && $post->social_image ? $post->social_image : '' }}"
+                                 alt="Social Preview" style="width: 100%; height: 100%; object-fit: cover; {{ isset($post) && $post->social_image ? '' : 'display: none;' }}">
+                        </div>
+                    </div>
+                </div>
+
                 @if (isset($post) && $post->featured_image)
-                    <div class="adm-field">
-                        <img class="adm-field__preview" src="{{ $post->featured_image }}" alt="">
-                        <span class="adm-field__hint"><label><input type="checkbox" name="remove_card_image" value="1"> Remove card image</label></span>
+                    <div class="adm-field" style="margin-bottom: 10px;">
+                        <span class="adm-field__hint"><label><input type="checkbox" id="remove-card-image" name="remove_card_image" value="1"> Remove card image</label></span>
                     </div>
                 @endif
+
                 <div class="adm-field">
                     <label for="card-image">{{ isset($post) && $post->featured_image ? 'Replace image' : 'Upload image' }}</label>
                     <input id="card-image" type="file" name="card_image" accept="image/*">
-                    <span class="adm-field__hint">Shown on the blog listing card. Cropped to a square (1200×1200).</span>
+                    <span class="adm-field__hint">Cover is square (1200×1200). The 1200×630 social card is automatically composited onto the starry background on Save.</span>
                 </div>
             </div>
         </div>
@@ -308,6 +327,106 @@ function slugifyPreview(str) {
         dateInput.readOnly = !unlockCb.checked;
         dateInput.classList.toggle('date-locked', !unlockCb.checked);
     });
+})();
+
+// Dynamic Social & Cover Image Live Preview
+(function () {
+    var fileInput = document.getElementById('card-image');
+    var removeCb = document.getElementById('remove-card-image');
+    var coverImg = document.getElementById('cover-preview-img');
+    var coverEmpty = document.getElementById('cover-empty-label');
+    var socialImg = document.getElementById('social-preview-img');
+    var socialCanvas = document.getElementById('social-preview-canvas');
+
+    if (!socialCanvas) return;
+
+    var ctx = socialCanvas.getContext('2d');
+    var bgStars = new Image();
+    bgStars.src = '{{ asset("img/social-bg-stars.jpg") }}';
+
+    var siteLogo = new Image();
+    siteLogo.src = '{{ asset("img/logo-nav.png") }}';
+
+    function renderDefaultSocial() {
+        if (!bgStars.complete || !siteLogo.complete) {
+            bgStars.onload = renderDefaultSocial;
+            siteLogo.onload = renderDefaultSocial;
+            return;
+        }
+        if (socialImg) socialImg.style.display = 'none';
+        socialCanvas.style.display = 'block';
+        ctx.clearRect(0, 0, 1200, 630);
+        ctx.drawImage(bgStars, 0, 0, 1200, 630);
+        var logoSize = 500;
+        var lx = (1200 - logoSize) / 2;
+        var ly = (630 - logoSize) / 2;
+        ctx.drawImage(siteLogo, lx, ly, logoSize, logoSize);
+    }
+
+    function renderCoverSocial(sourceImg) {
+        if (!bgStars.complete) {
+            bgStars.onload = function () { renderCoverSocial(sourceImg); };
+            return;
+        }
+        if (socialImg) socialImg.style.display = 'none';
+        socialCanvas.style.display = 'block';
+        ctx.clearRect(0, 0, 1200, 630);
+        ctx.drawImage(bgStars, 0, 0, 1200, 630);
+
+        var targetSize = 630;
+        var tx = (1200 - targetSize) / 2;
+        var ty = 0;
+
+        var sw = sourceImg.naturalWidth || sourceImg.width;
+        var sh = sourceImg.naturalHeight || sourceImg.height;
+        var size = Math.min(sw, sh);
+        var sx = (sw - size) / 2;
+        var sy = (sh - size) / 2;
+
+        ctx.drawImage(sourceImg, sx, sy, size, size, tx, ty, targetSize, targetSize);
+    }
+
+    @if (!isset($post) || !$post->social_image)
+        renderDefaultSocial();
+    @endif
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            var file = fileInput.files && fileInput.files[0];
+            if (!file) return;
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var newImg = new Image();
+                newImg.onload = function () {
+                    coverImg.src = e.target.result;
+                    coverImg.style.display = 'block';
+                    if (coverEmpty) coverEmpty.style.display = 'none';
+                    if (removeCb) removeCb.checked = false;
+                    renderCoverSocial(newImg);
+                };
+                newImg.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (removeCb) {
+        removeCb.addEventListener('change', function () {
+            if (removeCb.checked) {
+                coverImg.style.display = 'none';
+                if (coverEmpty) coverEmpty.style.display = 'block';
+                if (fileInput) fileInput.value = '';
+                renderDefaultSocial();
+            } else if (coverImg && coverImg.getAttribute('src')) {
+                coverImg.style.display = 'block';
+                if (coverEmpty) coverEmpty.style.display = 'none';
+                var existingImg = new Image();
+                existingImg.onload = function () { renderCoverSocial(existingImg); };
+                existingImg.src = coverImg.src;
+            }
+        });
+    }
 })();
 </script>
 @endpush
