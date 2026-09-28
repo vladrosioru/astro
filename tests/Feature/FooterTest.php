@@ -41,4 +41,20 @@ class FooterTest extends TestCase
             ->assertOk()
             ->assertDontSee('site-footer', false);
     }
+
+    public function test_footer_renders_social_icons_in_horizontal_wrapper_with_facebook_then_instagram(): void
+    {
+        $response = $this->get('/en');
+        $content = $response->getContent();
+
+        $response->assertOk()
+            ->assertSee('class="site-footer__socials"', false);
+
+        $fbPos = strpos($content, 'aria-label="Facebook"');
+        $igPos = strpos($content, 'aria-label="Instagram"');
+
+        $this->assertNotFalse($fbPos);
+        $this->assertNotFalse($igPos);
+        $this->assertLessThan($igPos, $fbPos, 'Facebook must appear before (to the left of) Instagram');
+    }
 }

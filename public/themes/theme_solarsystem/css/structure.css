@@ -338,6 +338,12 @@ body > .site-footer .container {
     position: relative;
 }
 body > .site-footer p { margin: 0; }
+body > .site-footer .site-footer__socials {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--space-unit) * 3);
+}
 body > .site-footer .site-footer__social {
     display: inline-flex;
     align-items: center;
