@@ -4,6 +4,15 @@ This document establishes operational context, architecture constraints, and qua
 
 ---
 
+## 0. Language Policy & Communication Standard
+
+**STRICT MANDATE**: 
+- **ALL conversations, explanations, responses, and planning in this project MUST take place in English.**
+- **NEVER answer in Romanian**, unless the user explicitly asks a question in Romanian OR explicitly instructs you to reply in Romanian.
+- This applies even when reviewing Romanian code, Romanian text strings, database seeds, or localized UI elements. Always maintain English as the working conversation language.
+
+---
+
 ## 1. Project Overview & Core Philosophy
 
 **Astrotherapia** is a reusable, multilingual marketing site and journal/blog platform built on **Laravel 13**, tailored specifically for deployment to **cPanel shared hosting**.
