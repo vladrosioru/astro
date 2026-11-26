@@ -225,9 +225,11 @@
                 </div>
             </div>
 
-            <p class="about-manifesto__cta">
-                <a class="about-btn" href="/{{ $locale }}/contact">Book a Session</a>
-            </p>
+            @if ($contactVisible)
+                <p class="about-manifesto__cta">
+                    <a class="about-btn" href="/{{ $locale }}/contact">Book a Session</a>
+                </p>
+            @endif
         </div>
     </section>
 
@@ -257,9 +259,11 @@
                 </div>
             </div>
 
-            <p class="about-manifesto__cta">
-                <a class="about-btn" href="/{{ $locale }}/contact">Book a Session</a>
-            </p>
+            @if ($contactVisible)
+                <p class="about-manifesto__cta">
+                    <a class="about-btn" href="/{{ $locale }}/contact">Book a Session</a>
+                </p>
+            @endif
         </div>
     </section>
 

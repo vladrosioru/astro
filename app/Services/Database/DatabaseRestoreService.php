@@ -2,6 +2,7 @@
 
 namespace App\Services\Database;
 
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -42,6 +43,8 @@ class DatabaseRestoreService
             $this->eachStatement($archivePath, fn (string $statement) => DB::unprepared($statement));
             $this->rewriteMediaPaths($mediaFallbackUrl);
         });
+
+        SiteSetting::flushCurrentCache();
 
         return ['snapshot' => $snapshot, 'rows' => $this->countRows()];
     }

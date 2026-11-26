@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Author;
 use App\Models\Post;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -116,5 +117,21 @@ class SeoPhase3Test extends TestCase
         $logoPath = public_path('img/logo-nav.png');
         $this->assertFileExists($logoPath);
         $this->assertLessThan(100 * 1024, filesize($logoPath), 'Logo should be compressed under 100 KB');
+    }
+
+    public function test_sitemap_excludes_disabled_sections(): void
+    {
+        $this->createPostWithTranslations('published');
+
+        $setting = SiteSetting::current();
+        $setting->update(['sections' => ['about' => false, 'blog' => false] + $setting->sections]);
+
+        $content = $this->get('/sitemap.xml')->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('/en/about</loc>', $content);
+        $this->assertStringNotContainsString('/ro/about</loc>', $content);
+        $this->assertStringNotContainsString('/en/journal</loc>', $content);
+        $this->assertStringNotContainsString('/en/journal/transits-guide</loc>', $content);
+        $this->assertStringContainsString('/en/services</loc>', $content);
     }
 }

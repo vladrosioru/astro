@@ -14,11 +14,10 @@ class BlogController extends Controller
 
         $locale = app()->getLocale();
         $posts = Post::published()
-            ->with(['translations', 'author'])
+            ->whereHas('translations', fn ($q) => $q->where('locale', $locale))
+            ->with(['translations' => fn ($q) => $q->where('locale', $locale), 'author'])
             ->latest('published_at')
-            ->get()
-            ->filter(fn (Post $p) => $p->translation($locale) !== null)
-            ->values();
+            ->paginate(12);
 
         return view('blog.index', ['posts' => $posts, 'locale' => $locale]);
     }
@@ -30,29 +29,44 @@ class BlogController extends Controller
         $translation = PostTranslation::where('locale', $locale)
             ->where('slug', $slug)
             ->whereHas('post', fn ($q) => $q->published())
-            ->with('post.author')
+            ->with('post.author', 'post.translations')
             ->first();
 
         abort_if($translation === null, 404);
 
         // Chronological neighbors (oldest -> newest), restricted to posts that
         // have a translation in this locale so a prev/next link never 404s.
-        $ordered = Post::published()
-            ->with('translations')
-            ->orderBy('published_at')
-            ->get()
-            ->filter(fn (Post $p) => $p->translation($locale) !== null)
-            ->values();
+        $publishedAt = $translation->post->published_at;
+        $postId = $translation->post_id;
+        $hasLocale = fn ($q) => $q->where('locale', $locale);
 
-        $index = $ordered->search(fn (Post $p) => $p->id === $translation->post_id);
-        $previous = $index !== false && $index > 0 ? $ordered[$index - 1]->translation($locale) : null;
-        $next = $index !== false && $index < $ordered->count() - 1 ? $ordered[$index + 1]->translation($locale) : null;
+        $previousPost = Post::published()
+            ->whereHas('translations', $hasLocale)
+            ->where(function ($q) use ($publishedAt, $postId) {
+                $q->where('published_at', '<', $publishedAt)
+                    ->orWhere(fn ($q2) => $q2->where('published_at', '=', $publishedAt)->where('id', '<', $postId));
+            })
+            ->with(['translations' => $hasLocale])
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->first();
+
+        $nextPost = Post::published()
+            ->whereHas('translations', $hasLocale)
+            ->where(function ($q) use ($publishedAt, $postId) {
+                $q->where('published_at', '>', $publishedAt)
+                    ->orWhere(fn ($q2) => $q2->where('published_at', '=', $publishedAt)->where('id', '>', $postId));
+            })
+            ->with(['translations' => $hasLocale])
+            ->orderBy('published_at')
+            ->orderBy('id')
+            ->first();
 
         return view('blog.show', [
             't' => $translation,
             'locale' => $locale,
-            'previous' => $previous,
-            'next' => $next,
+            'previous' => $previousPost?->translation($locale),
+            'next' => $nextPost?->translation($locale),
         ]);
     }
 }

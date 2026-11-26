@@ -411,4 +411,62 @@ class AdminPostCrudTest extends TestCase
         $this->assertSame('Updated SEO Title', $fresh->seo_title);
         $this->assertSame('Updated SEO description.', $fresh->seo_description);
     }
+
+    public function test_updating_post_text_does_not_regenerate_social_image(): void
+    {
+        Storage::fake('public');
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->post('/admin/posts', [
+            'status' => 'draft',
+            'en_title' => 'Social Once',
+            'card_image' => UploadedFile::fake()->image('card.jpg', 1200, 1200),
+        ])->assertRedirect('/admin/posts');
+
+        $post = Post::first();
+        $originalSocial = $post->social_image;
+        $initialMediaCount = Media::count();
+        $this->assertNotNull($originalSocial);
+
+        $this->actingAs($admin)->put("/admin/posts/{$post->id}", [
+            'status' => 'draft',
+            'en_title' => 'Social Once Edited',
+        ])->assertRedirect('/admin/posts');
+
+        $this->assertSame($originalSocial, $post->fresh()->social_image);
+        $this->assertSame($initialMediaCount, Media::count());
+    }
+
+    public function test_creating_post_validates_status_author_and_requires_a_title(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->post('/admin/posts', [
+            'status' => 'bogus',
+            'en_title' => 'Valid',
+        ])->assertSessionHasErrors('status');
+
+        $this->actingAs($admin)->post('/admin/posts', [
+            'status' => 'draft',
+            'author_id' => 999999,
+            'en_title' => 'Valid',
+        ])->assertSessionHasErrors('author_id');
+
+        $this->actingAs($admin)->post('/admin/posts', [
+            'status' => 'draft',
+        ])->assertSessionHasErrors('en_title');
+    }
+
+    public function test_admin_posts_index_paginates_beyond_25_posts(): void
+    {
+        for ($i = 1; $i <= 26; $i++) {
+            $post = Post::create(['status' => 'draft']);
+            $post->translations()->create(['locale' => 'en', 'title' => "Admin Post {$i}", 'slug' => "admin-post-{$i}"]);
+        }
+
+        $this->actingAs($this->admin())->get('/admin/posts')
+            ->assertOk()
+            ->assertSee('26 total')
+            ->assertSee('page=2', false);
+    }
 }

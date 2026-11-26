@@ -376,4 +376,15 @@ class PublicPagesTest extends TestCase
 
         $response->assertOk()->assertSeeInOrder(['flip-card--center', 'Identity &amp; growth'], false);
     }
+
+    public function test_services_page_hides_all_contact_ctas_when_contact_disabled(): void
+    {
+        $setting = SiteSetting::current();
+        $setting->update(['sections' => ['contact' => false] + $setting->sections]);
+
+        $this->get('/en/services')
+            ->assertOk()
+            ->assertDontSee('Book a Session')
+            ->assertDontSee('Schedule Your Session');
+    }
 }

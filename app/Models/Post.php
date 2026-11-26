@@ -28,8 +28,11 @@ class Post extends Model
 
     public function translation(string $locale): ?PostTranslation
     {
-        return $this->translations->firstWhere('locale', $locale)
-            ?? $this->translations()->where('locale', $locale)->first();
+        if ($this->relationLoaded('translations')) {
+            return $this->translations->firstWhere('locale', $locale);
+        }
+
+        return $this->translations()->where('locale', $locale)->first();
     }
 
     public function scopePublished(Builder $query): Builder

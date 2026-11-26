@@ -31,11 +31,11 @@ class PageController extends Controller
         // translation for the current locale. The newest post is shown as a
         // featured card; the rest page through the "From the Journal" carousel.
         $journalPosts = Post::published()
-            ->with(['translations', 'author'])
+            ->whereHas('translations', fn ($q) => $q->where('locale', $locale))
+            ->with(['translations' => fn ($q) => $q->where('locale', $locale), 'author'])
             ->latest('published_at')
             ->get()
             ->map(fn (Post $p) => ['post' => $p, 'translation' => $p->translation($locale)])
-            ->filter(fn (array $entry) => $entry['translation'] !== null)
             ->values();
 
         return view('pages.home', [

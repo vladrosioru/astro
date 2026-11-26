@@ -15,8 +15,14 @@
         <div class="blog-grid blog-grid--journal">
             @foreach ($posts as $i => $post)
                 @php($t = $post->translation($locale))
-                @include('partials.journal-card', ['post' => $post, 'translation' => $t, 'locale' => $locale, 'first' => $i === 0])
+                @include('partials.journal-card', ['post' => $post, 'translation' => $t, 'locale' => $locale, 'first' => $posts->currentPage() === 1 && $i === 0])
             @endforeach
         </div>
+
+        @if ($posts->hasPages())
+            <div class="about-pager" aria-label="Journal pagination">
+                {{ $posts->links() }}
+            </div>
+        @endif
     </div>
 @endsection

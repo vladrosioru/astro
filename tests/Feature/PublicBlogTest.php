@@ -209,4 +209,46 @@ class PublicBlogTest extends TestCase
 
         $this->get('/en/journal')->assertOk()->assertDontSee('card__reading-time', false);
     }
+
+    public function test_text_only_card_shows_author_byline(): void
+    {
+        $this->publishedPost();
+
+        $this->get('/en/journal')->assertOk()
+            ->assertDontSee('card__media', false)
+            ->assertSee('card__author', false)
+            ->assertSee('Andrei | AstroTherapia');
+    }
+
+    public function test_article_page_omits_author_img_when_author_picture_is_null(): void
+    {
+        $author = Author::create(['name' => 'No Photo Author', 'description' => 'Bio']);
+        $post = Post::create(['status' => 'published', 'published_at' => now(), 'author_id' => $author->id]);
+        $post->translations()->create(['locale' => 'en', 'title' => 'Hello', 'slug' => 'no-photo', 'body' => '<p>Hi</p>']);
+
+        $this->get('/en/journal/no-photo')->assertOk()
+            ->assertSee('article-author', false)
+            ->assertDontSee('article-author__media', false);
+    }
+
+    public function test_index_paginates_published_posts(): void
+    {
+        for ($i = 1; $i <= 13; $i++) {
+            $post = Post::create(['status' => 'published', 'published_at' => now()->subDays($i)]);
+            $post->translations()->create([
+                'locale' => 'en',
+                'title' => "Journal Entry {$i}",
+                'slug' => "journal-entry-{$i}",
+                'body' => '<p>Body</p>',
+            ]);
+        }
+
+        $this->get('/en/journal')->assertOk()
+            ->assertSee('Journal Entry 1')
+            ->assertDontSee('Journal Entry 13')
+            ->assertSee('page=2', false);
+
+        $this->get('/en/journal?page=2')->assertOk()
+            ->assertSee('Journal Entry 13');
+    }
 }

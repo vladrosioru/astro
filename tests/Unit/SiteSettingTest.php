@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class SiteSettingTest extends TestCase
@@ -53,5 +54,23 @@ class SiteSettingTest extends TestCase
     public function test_current_has_default_theme_pointer(): void
     {
         $this->assertSame('solarsystem', SiteSetting::current()->theme);
+    }
+
+    public function test_current_memoizes_and_caches_without_repeated_queries(): void
+    {
+        SiteSetting::current();
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        for ($i = 0; $i < 5; $i++) {
+            SiteSetting::current();
+        }
+
+        $this->assertCount(0, DB::getQueryLog());
+        DB::disableQueryLog();
+
+        SiteSetting::current()->switchTheme('default');
+        $this->assertSame('default', SiteSetting::current()->theme);
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Post;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class PostTest extends TestCase
@@ -27,5 +28,23 @@ class PostTest extends TestCase
         Post::create(['status' => 'published', 'published_at' => now()]);
 
         $this->assertSame(1, Post::published()->count());
+    }
+
+    public function test_translation_does_not_fire_n_plus_one_query_when_eager_loaded(): void
+    {
+        $post = Post::create(['status' => 'published', 'published_at' => now()]);
+        $post->translations()->create([
+            'locale' => 'en', 'title' => 'Hello', 'slug' => 'hello', 'body' => '<p>Hi</p>',
+        ]);
+
+        $loaded = Post::with('translations')->first();
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $this->assertNull($loaded->translation('ro'));
+        $this->assertCount(0, DB::getQueryLog());
+
+        DB::disableQueryLog();
     }
 }

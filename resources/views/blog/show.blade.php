@@ -85,7 +85,7 @@
     <div class="container">
         @if ($post->featured_image)
             <div class="article-image">
-                <img src="{{ $post->featured_image }}" alt="{{ $t->title }}" width="1200" height="630" loading="lazy">
+                <img src="{{ $post->featured_image }}" alt="{{ $t->title }}" width="1200" height="1200" fetchpriority="high">
             </div>
         @endif
 
@@ -100,9 +100,11 @@
         @if ($post->author)
             @php($nameParts = explode('|', $post->author->name, 2))
             <div class="article-author">
-                <div class="article-author__media">
-                    <img src="{{ asset($post->author->picture) }}" alt="{{ $post->author->name }}" width="80" height="80" loading="lazy">
-                </div>
+                @if ($post->author->picture)
+                    <div class="article-author__media">
+                        <img src="{{ asset($post->author->picture) }}" alt="{{ $post->author->name }}" width="80" height="80" loading="lazy">
+                    </div>
+                @endif
                 <div class="article-author__body">
                     <p class="article-author__label">Author</p>
                     <h2 class="article-author__name"><span class="article-author__name-first">{{ trim($nameParts[0]) }}</span>@if (isset($nameParts[1]))<span class="article-author__name-rest"> | {{ trim($nameParts[1]) }}</span>@endif</h2>

@@ -4,15 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Author;
-use App\Models\Media;
+use App\Services\MediaUploadService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 
 class AuthorController extends Controller
 {
+    public function __construct(private MediaUploadService $uploads) {}
+
     public function index()
     {
         return view('admin.authors.index', [
@@ -43,13 +41,14 @@ class AuthorController extends Controller
     {
         $request->validate($this->validationRules());
 
-        $author->update($this->authorData($request));
+        $author->update($this->authorData($request, $author));
 
         return redirect()->route('admin.authors.index');
     }
 
     public function destroy(Author $author)
     {
+        $this->uploads->deleteByUrl($author->picture);
         $author->delete();
 
         return redirect()->route('admin.authors.index');
@@ -63,7 +62,7 @@ class AuthorController extends Controller
         ];
     }
 
-    private function authorData(Request $request): array
+    private function authorData(Request $request, ?Author $author = null): array
     {
         $data = [
             'name' => $request->input('name'),
@@ -72,17 +71,16 @@ class AuthorController extends Controller
 
         $picture = $this->pictureUrl($request);
         if ($picture !== null) {
+            $this->uploads->deleteByUrl($author?->picture);
             $data['picture'] = $picture;
         } elseif ($request->boolean('remove_picture')) {
+            $this->uploads->deleteByUrl($author?->picture);
             $data['picture'] = null;
         }
 
         return $data;
     }
 
-    // Upload an author picture: validate, square-crop (centered cover) to
-    // 400x400, store on the public disk, record a Media row, and return the
-    // root-relative URL. Returns null when no file was submitted.
     private function pictureUrl(Request $request): ?string
     {
         $file = $request->file('picture');
@@ -92,28 +90,6 @@ class AuthorController extends Controller
 
         validator(['picture' => $file], ['picture' => ['image', 'max:8192']])->validate();
 
-        $manager = new ImageManager(new Driver);
-        $image = $manager->decodePath($file->getRealPath());
-        $image->cover(400, 400);
-
-        $keepsAlpha = in_array($file->getMimeType(), ['image/png', 'image/webp', 'image/gif'], true);
-        $extension = $keepsAlpha ? 'png' : 'jpg';
-        $encoded = $keepsAlpha
-            ? $image->encodeUsingFileExtension('png')
-            : $image->encodeUsingFileExtension('jpg', quality: 82);
-
-        $path = 'media/'.Str::uuid().'.'.$extension;
-        Storage::disk('public')->put($path, (string) $encoded);
-
-        $url = parse_url(Storage::disk('public')->url($path), PHP_URL_PATH);
-
-        Media::create([
-            'path' => $path,
-            'url' => $url,
-            'width' => $image->width(),
-            'height' => $image->height(),
-        ]);
-
-        return $url;
+        return $this->uploads->store(file: $file, squareSize: 400, errorField: 'picture')->url;
     }
 }

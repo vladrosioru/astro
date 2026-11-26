@@ -11,7 +11,7 @@
     @if ($post->featured_image)
         <div class="card__row">
             <a class="card__media-link" href="{{ $url }}">
-                <img class="card__media" src="{{ $post->featured_image }}" alt="{{ $translation->title }}">
+                <img class="card__media" src="{{ $post->featured_image }}" alt="{{ $translation->title }}" width="1200" height="1200" loading="lazy">
             </a>
             <div class="card__content">
                 <div class="card__meta">
@@ -54,6 +54,9 @@
             @endif
             @if ($frag['lead'] !== '')
                 <p class="card__excerpt">{{ $frag['lead'] }}@if($frag['continued']) {{ $frag['continued'] }}@endif <a class="card__ellipsis" href="{{ $url }}">[...]</a></p>
+            @endif
+            @if ($post->author)
+                <p class="card__author">{{ $post->author->name }}</p>
             @endif
             <a class="card__more btn btn-primary" href="{{ $url }}">Read more</a>
         </div>

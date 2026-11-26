@@ -6,10 +6,9 @@
     @include('admin.partials._topbar')
 
     <main class="adm-main">
-        @php($draftCount = $posts->where('status', 'draft')->count())
         <div class="adm-head">
             <h2 class="adm-head__title">Posts</h2>
-            <span class="adm-head__count">{{ $posts->count() }} total &middot; {{ $draftCount }} {{ Str::plural('draft', $draftCount) }}</span>
+            <span class="adm-head__count">{{ $posts->total() }} total &middot; {{ $draftCount }} {{ Str::plural('draft', $draftCount) }}</span>
             <span class="adm-head__grow"></span>
             <a class="adm-btn adm-btn--primary" href="{{ route('admin.posts.create') }}">New post</a>
         </div>
@@ -50,6 +49,12 @@
                         ])
                     @endforeach
                 </div>
+
+                @if ($posts->hasPages())
+                    <div class="adm-panel__body">
+                        {{ $posts->links() }}
+                    </div>
+                @endif
             @endif
         </div>
     </main>

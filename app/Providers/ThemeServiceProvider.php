@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use App\Services\ThemeManager;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,18 +22,18 @@ class ThemeServiceProvider extends ServiceProvider
         // callAfterResolving defers execution until the view factory is first used,
         // by which point migrations have already run.
         $this->callAfterResolving('view', function () {
-            if (! Schema::hasTable('site_settings')) {
-                return;
+            try {
+                $manager = $this->app->make('theme.manager');
+
+                if ($path = $manager->viewsPath()) {
+                    View::addNamespace('theme', $path);
+                }
+
+                View::share('themeManager', $manager);
+                View::share('theme', $manager->manifest());
+            } catch (QueryException) {
+                // During test bootstrap before migrations run, site_settings may not exist yet.
             }
-
-            $manager = $this->app->make('theme.manager');
-
-            if ($path = $manager->viewsPath()) {
-                View::addNamespace('theme', $path);
-            }
-
-            View::share('themeManager', $manager);
-            View::share('theme', $manager->manifest());
         });
     }
 }

@@ -74,4 +74,17 @@ class AttachmentUploadTest extends TestCase
         $this->assertStringEndsWith('.gif', $media->path);
         $this->assertSame($gifBytes, Storage::disk('public')->get($media->path));
     }
+
+    public function test_corrupt_gif_upload_returns_validation_error_instead_of_500(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        // Starts with GIF89a header so finfo detects image/gif, but has no valid dimensions.
+        $response = $this->actingAs($admin)->postJson('/admin/attachments', [
+            'upload' => UploadedFile::fake()->createWithContent('corrupt.gif', 'GIF89a'),
+        ]);
+
+        $response->assertStatus(422);
+    }
 }

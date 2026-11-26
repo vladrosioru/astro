@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class SiteSetting extends Model
 {
+    public const CACHE_KEY = 'site_settings.v1';
+
     protected $guarded = [];
 
     protected $casts = [
@@ -17,9 +20,35 @@ class SiteSetting extends Model
         'hero' => 'array',
     ];
 
+    protected static function booted(): void
+    {
+        static::saved(fn () => static::flushCurrentCache());
+        static::deleted(fn () => static::flushCurrentCache());
+    }
+
     public static function current(): self
     {
-        return static::firstOrCreate(['id' => 1], static::defaults());
+        $container = app();
+        if ($container->bound('site_setting.current')) {
+            return $container->make('site_setting.current');
+        }
+
+        // Cache raw attributes (plain array) rather than an Eloquent object,
+        // respecting config/cache.php `serializable_classes => false`.
+        $attributes = Cache::rememberForever(self::CACHE_KEY, function (): array {
+            return static::firstOrCreate(['id' => 1], static::defaults())->getAttributes();
+        });
+
+        $instance = (new static)->newFromBuilder($attributes);
+        $container->instance('site_setting.current', $instance);
+
+        return $instance;
+    }
+
+    public static function flushCurrentCache(): void
+    {
+        app()->forgetInstance('site_setting.current');
+        Cache::forget(self::CACHE_KEY);
     }
 
     public static function defaults(): array

@@ -4,24 +4,29 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Author;
-use App\Models\Media;
 use App\Models\Post;
 use App\Models\PostTranslation;
+use App\Services\MediaUploadService;
 use App\Services\SocialImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
+use Illuminate\Validation\Rule;
 
 class PostController extends Controller
 {
     private array $locales = ['en', 'ro'];
 
+    public function __construct(
+        private MediaUploadService $uploads,
+        private SocialImageService $socialImages,
+    ) {}
+
     public function index()
     {
-        return view('admin.posts.index', ['posts' => Post::with('translations')->latest()->get()]);
+        return view('admin.posts.index', [
+            'posts' => Post::with(['translations', 'author'])->latest()->paginate(25),
+            'draftCount' => Post::where('status', 'draft')->count(),
+        ]);
     }
 
     public function create()
@@ -60,8 +65,12 @@ class PostController extends Controller
     private function dateValidationRules(): array
     {
         return [
+            'status' => ['required', Rule::in(['draft', 'published'])],
+            'author_id' => ['nullable', 'integer', 'exists:authors,id'],
             'published_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:2026-01-01', 'before_or_equal:today'],
             'reading_time' => ['nullable', 'integer', 'min:1', 'max:99'],
+            'en_title' => ['required_without:ro_title', 'nullable', 'string', 'max:255'],
+            'ro_title' => ['required_without:en_title', 'nullable', 'string', 'max:255'],
             'en_seo_title' => ['nullable', 'string', 'max:255'],
             'ro_seo_title' => ['nullable', 'string', 'max:255'],
             'en_seo_description' => ['nullable', 'string', 'max:500'],
@@ -71,6 +80,8 @@ class PostController extends Controller
 
     public function destroy(Post $post)
     {
+        $this->uploads->deleteByUrl($post->featured_image);
+        $this->uploads->deleteByUrl($post->social_image);
         $post->delete();
 
         return redirect()->route('admin.posts.index');
@@ -92,17 +103,24 @@ class PostController extends Controller
 
         $cardImage = $this->cardImageUrl($request);
         $featuredImage = $post?->featured_image;
+        $coverChanged = false;
 
         if ($cardImage !== null) {
+            $this->uploads->deleteByUrl($post?->featured_image);
             $data['featured_image'] = $cardImage;
             $featuredImage = $cardImage;
+            $coverChanged = true;
         } elseif ($request->boolean('remove_card_image')) {
+            $this->uploads->deleteByUrl($post?->featured_image);
             $data['featured_image'] = null;
             $featuredImage = null;
+            $coverChanged = true;
         }
 
-        $socialService = app(SocialImageService::class);
-        $data['social_image'] = $socialService->generateForPost($featuredImage);
+        if ($post === null || $coverChanged || empty($post->social_image)) {
+            $this->uploads->deleteByUrl($post?->social_image);
+            $data['social_image'] = $this->socialImages->generateForPost($featuredImage);
+        }
 
         return $data;
     }
@@ -131,9 +149,6 @@ class PostController extends Controller
         return $submittedDate ? Carbon::parse($submittedDate)->startOfDay() : ($post?->published_at ?? now());
     }
 
-    // Upload a per-post card image: validate, square-crop (centered cover) to
-    // 1200x1200, store on the public disk, record a Media row, and return the
-    // root-relative URL. Returns null when no file was submitted.
     private function cardImageUrl(Request $request): ?string
     {
         $file = $request->file('card_image');
@@ -143,33 +158,7 @@ class PostController extends Controller
 
         validator(['card_image' => $file], ['card_image' => ['image', 'max:8192']])->validate();
 
-        $manager = new ImageManager(new Driver);
-        $image = $manager->decodePath($file->getRealPath());
-        $image->cover(1200, 1200);
-
-        // Formats that can carry an alpha channel keep it by staying PNG;
-        // re-encoding those to JPEG (no alpha) flattens transparent pixels to
-        // white. Everything else (plain photos) still gets JPEG for size.
-        $keepsAlpha = in_array($file->getMimeType(), ['image/png', 'image/webp', 'image/gif'], true);
-        $extension = $keepsAlpha ? 'png' : 'jpg';
-        $encoded = $keepsAlpha
-            ? $image->encodeUsingFileExtension('png')
-            : $image->encodeUsingFileExtension('jpg', quality: 82);
-
-        $path = 'media/'.Str::uuid().'.'.$extension;
-        Storage::disk('public')->put($path, (string) $encoded);
-
-        // Root-relative URL so the image resolves on any host/port/domain.
-        $url = parse_url(Storage::disk('public')->url($path), PHP_URL_PATH);
-
-        Media::create([
-            'path' => $path,
-            'url' => $url,
-            'width' => $image->width(),
-            'height' => $image->height(),
-        ]);
-
-        return $url;
+        return $this->uploads->store(file: $file, squareSize: 1200, errorField: 'card_image')->url;
     }
 
     private function saveTranslations(Post $post, Request $request): void
