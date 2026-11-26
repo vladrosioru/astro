@@ -93,6 +93,31 @@ class AdminDatabasePullTest extends TestCase
         );
     }
 
+    public function test_pull_rewrites_posts_social_image_to_the_fallback_origin(): void
+    {
+        $this->configureSource();
+        $post = Post::on('source')->create([
+            'status' => 'published',
+            'featured_image' => '/storage/media/cover.jpg',
+            'social_image' => '/storage/media/social-abc.jpg',
+        ]);
+        PostTranslation::on('source')->create([
+            'post_id' => $post->id,
+            'locale' => 'en',
+            'title' => 'Prod Title',
+            'slug' => 'prod-title',
+            'body' => '<p>Body</p>',
+        ]);
+
+        $this->actingAs($this->admin())
+            ->post('/admin/database/pull')
+            ->assertRedirect('/admin/database');
+
+        $pulled = Post::first();
+        $this->assertSame('https://astrotherapia.com/storage/media/cover.jpg', $pulled->featured_image);
+        $this->assertSame('https://astrotherapia.com/storage/media/social-abc.jpg', $pulled->social_image);
+    }
+
     public function test_pull_takes_a_pre_restore_snapshot_of_dev(): void
     {
         $this->configureSource();

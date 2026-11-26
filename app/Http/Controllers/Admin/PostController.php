@@ -62,6 +62,10 @@ class PostController extends Controller
         return [
             'published_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:2026-01-01', 'before_or_equal:today'],
             'reading_time' => ['nullable', 'integer', 'min:1', 'max:99'],
+            'en_seo_title' => ['nullable', 'string', 'max:255'],
+            'ro_seo_title' => ['nullable', 'string', 'max:255'],
+            'en_seo_description' => ['nullable', 'string', 'max:500'],
+            'ro_seo_description' => ['nullable', 'string', 'max:500'],
         ];
     }
 

@@ -86,20 +86,23 @@ $kernel->bootstrap();
 
 /**
  * Run an artisan command, echo its output. A non-zero exit on a `$fatal`
- * command makes the whole hook return HTTP 500 so `curl -f` fails the CI job.
+ * command marks the hook as failed (HTTP 500) so `curl -f` fails the CI job.
  */
-$run = function (string $command, array $params = [], bool $fatal = true) use ($kernel): void {
+$failed = false;
+ob_start();
+
+$run = function (string $command, array $params = [], bool $fatal = true) use ($kernel, &$failed): void {
     echo "\n$ php artisan {$command}\n";
     try {
         $status = $kernel->call($command, $params);
         echo $kernel->output();
         if ($status !== 0 && $fatal) {
-            http_response_code(500);
+            $failed = true;
         }
     } catch (Throwable $e) {
         echo 'ERROR: '.$e->getMessage()."\n";
         if ($fatal) {
-            http_response_code(500);
+            $failed = true;
         }
     }
 };
@@ -115,4 +118,11 @@ $run('config:cache');
 $run('route:cache');
 $run('view:cache');
 
-echo "\nDeploy hook finished.\n";
+if ($failed) {
+    http_response_code(500);
+    echo "\nDeploy hook failed.\n";
+} else {
+    echo "\nDeploy hook finished.\n";
+}
+
+ob_end_flush();

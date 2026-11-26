@@ -105,6 +105,10 @@ class DatabaseRestoreService
 
     private function rewriteMediaPaths(?string $mediaFallbackUrl): void
     {
+        if ($mediaFallbackUrl === null || trim($mediaFallbackUrl) === '') {
+            return;
+        }
+
         $rewriter = new MediaPathRewriter($mediaFallbackUrl);
 
         DB::table('authors')->orderBy('id')->chunkById(200, function ($rows) use ($rewriter) {
@@ -124,7 +128,10 @@ class DatabaseRestoreService
         DB::table('posts')->orderBy('id')->chunkById(200, function ($rows) use ($rewriter) {
             foreach ($rows as $row) {
                 DB::table('posts')->where('id', $row->id)
-                    ->update(['featured_image' => $rewriter->rewriteUrl($row->featured_image)]);
+                    ->update([
+                        'featured_image' => $rewriter->rewriteUrl($row->featured_image),
+                        'social_image' => $rewriter->rewriteUrl($row->social_image),
+                    ]);
             }
         });
 

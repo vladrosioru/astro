@@ -44,4 +44,20 @@ class AdminAuthTest extends TestCase
         $this->actingAs($admin)->post('/admin/logout')->assertRedirect('/admin/login');
         $this->assertGuest();
     }
+
+    public function test_admin_login_is_rate_limited_after_five_failed_attempts(): void
+    {
+        $admin = User::factory()->create([
+            'password' => Hash::make('secret123'),
+            'is_admin' => true,
+        ]);
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->post('/admin/login', ['email' => $admin->email, 'password' => 'wrong'])
+                ->assertSessionHasErrors('email');
+        }
+
+        $this->post('/admin/login', ['email' => $admin->email, 'password' => 'wrong'])
+            ->assertStatus(429);
+    }
 }

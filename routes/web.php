@@ -9,11 +9,14 @@ use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\RedirectController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/admin/login', [AuthController::class, 'show'])->name('admin.login');
-Route::post('/admin/login', [AuthController::class, 'login'])->name('admin.login.attempt');
+Route::post('/admin/login', [AuthController::class, 'login'])
+    ->middleware('throttle:5,1')
+    ->name('admin.login.attempt');
 Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
 
 Route::prefix('admin')->middleware('admin')->group(function () {
@@ -52,7 +55,7 @@ Route::prefix('admin')->middleware('admin')->group(function () {
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
-Route::get('/', fn () => redirect('/'.config('app.locale')));
+Route::get('/', [RedirectController::class, 'home']);
 
 Route::prefix('{locale}')
     ->where(['locale' => 'en|ro'])
@@ -72,8 +75,8 @@ Route::prefix('{locale}')
         Route::get('/journal/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
         // Back-compat: the feature used to live at /blog, then /articles.
-        Route::get('/blog', fn (string $locale) => redirect("/{$locale}/journal"));
-        Route::get('/blog/{slug}', fn (string $locale, string $slug) => redirect("/{$locale}/journal/{$slug}"));
-        Route::get('/articles', fn (string $locale) => redirect("/{$locale}/journal"));
-        Route::get('/articles/{slug}', fn (string $locale, string $slug) => redirect("/{$locale}/journal/{$slug}"));
+        Route::get('/blog', [RedirectController::class, 'journal']);
+        Route::get('/blog/{slug}', [RedirectController::class, 'journal']);
+        Route::get('/articles', [RedirectController::class, 'journal']);
+        Route::get('/articles/{slug}', [RedirectController::class, 'journal']);
     });

@@ -377,4 +377,38 @@ class AdminPostCrudTest extends TestCase
 
         $this->assertSame(0, Post::count());
     }
+
+    public function test_post_form_exposes_and_persists_seo_title_and_seo_description(): void
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->post('/admin/posts', [
+            'status' => 'draft',
+            'en_title' => 'SEO Post',
+            'en_seo_title' => 'Custom SEO Title',
+            'en_seo_description' => 'Custom SEO description for search engines.',
+        ])->assertRedirect('/admin/posts');
+
+        $post = Post::first();
+        $this->assertSame('Custom SEO Title', $post->translation('en')->seo_title);
+        $this->assertSame('Custom SEO description for search engines.', $post->translation('en')->seo_description);
+
+        $this->actingAs($admin)->get("/admin/posts/{$post->id}/edit")
+            ->assertOk()
+            ->assertSee('name="en_seo_title"', false)
+            ->assertSee('name="en_seo_description"', false)
+            ->assertSee('Custom SEO Title')
+            ->assertSee('Custom SEO description for search engines.');
+
+        $this->actingAs($admin)->put("/admin/posts/{$post->id}", [
+            'status' => 'draft',
+            'en_title' => 'SEO Post Updated',
+            'en_seo_title' => 'Updated SEO Title',
+            'en_seo_description' => 'Updated SEO description.',
+        ])->assertRedirect('/admin/posts');
+
+        $fresh = $post->fresh()->translation('en');
+        $this->assertSame('Updated SEO Title', $fresh->seo_title);
+        $this->assertSame('Updated SEO description.', $fresh->seo_description);
+    }
 }

@@ -61,7 +61,10 @@
                         @csrf
                         <div class="adm-field">
                             <label for="confirm-host">Type {{ $host }} to confirm</label>
-                            <input id="confirm-host" type="text" autocomplete="off" data-confirm="{{ $host }}">
+                            <input id="confirm-host" name="confirm_host" type="text" autocomplete="off" data-confirm="{{ $host }}">
+                            @error('confirm_host')
+                                <p class="adm-err">{{ $message }}</p>
+                            @enderror
                         </div>
                         <div class="adm-actions">
                             <a class="adm-btn" href="{{ route('admin.database.index') }}">Cancel</a>

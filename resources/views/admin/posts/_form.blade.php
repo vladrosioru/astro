@@ -76,6 +76,19 @@
                     <span class="adm-field__hint">The editing surface is admin-styled. <strong>Preview</strong> renders the article in an isolated frame using the live theme, so what you check is what readers get.</span>
                 </div>
 
+                <div class="adm-two">
+                    <div class="adm-field">
+                        <label for="{{ $locale }}_seo_title">SEO Title</label>
+                        <input id="{{ $locale }}_seo_title" type="text" name="{{ $locale }}_seo_title" maxlength="255" value="{{ old("{$locale}_seo_title", $t($locale)?->seo_title) }}">
+                        <span class="adm-field__hint">Optional search title (recommended &le; 60 chars). Falls back to post title.</span>
+                    </div>
+                    <div class="adm-field">
+                        <label for="{{ $locale }}_seo_description">SEO Description</label>
+                        <input id="{{ $locale }}_seo_description" type="text" name="{{ $locale }}_seo_description" maxlength="500" value="{{ old("{$locale}_seo_description", $t($locale)?->seo_description) }}">
+                        <span class="adm-field__hint">Optional meta description (recommended &le; 160 chars). Falls back to subtitle.</span>
+                    </div>
+                </div>
+
                 <div class="adm-actions">
                     <button class="adm-btn adm-btn--primary" type="submit">{{ $submitLabel }}</button>
                     <button class="preview-toggle adm-btn" type="button" data-locale="{{ $locale }}">Preview</button>

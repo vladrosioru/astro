@@ -7,7 +7,10 @@ use App\Services\Database\BackupRepository;
 use App\Services\Database\DatabaseBackupService;
 use App\Services\Database\DatabaseRestoreService;
 use App\Services\Database\InvalidBackupException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class DatabaseController extends Controller
 {
@@ -75,15 +78,22 @@ class DatabaseController extends Controller
      * Media paths are deliberately not rewritten — this backup came from this
      * host, so they already resolve.
      */
-    public function restore(string $file)
+    public function restore(Request $request, string $file)
     {
         abort_unless($this->backups->isRestorable($file), 404);
+
+        $expectedHost = $this->backups->hostOf($file);
+        $request->validate([
+            'confirm_host' => ['required', 'string', Rule::in([$expectedHost])],
+        ]);
 
         try {
             $result = $this->restoreService->restore($this->backups->path($file), null);
         } catch (InvalidBackupException $e) {
             return back()->withErrors(['restore' => $e->getMessage()]);
         }
+
+        Artisan::call('view:clear');
 
         return redirect()->route('admin.database.index')->with(
             'status',
@@ -129,6 +139,8 @@ class DatabaseController extends Controller
         } finally {
             @unlink($temp);
         }
+
+        Artisan::call('view:clear');
 
         return redirect()->route('admin.database.index')->with(
             'status',

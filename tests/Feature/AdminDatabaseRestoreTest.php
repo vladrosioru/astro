@@ -143,10 +143,29 @@ class AdminDatabaseRestoreTest extends TestCase
         PostTranslation::query()->update(['title' => 'Wrecked']);
 
         $this->actingAs($this->admin())
-            ->post('/admin/database/restore/'.$name)
+            ->post('/admin/database/restore/'.$name, ['confirm_host' => 'example.com'])
             ->assertRedirect('/admin/database');
 
         $this->assertSame('Original', PostTranslation::first()->title);
+    }
+
+    public function test_restoring_requires_matching_confirm_host(): void
+    {
+        $post = Post::create(['status' => 'published']);
+        PostTranslation::create([
+            'post_id' => $post->id, 'locale' => 'en',
+            'title' => 'Original', 'slug' => 'original', 'body' => '<p>Body</p>',
+        ]);
+
+        $name = $this->backupCurrentContent();
+
+        PostTranslation::query()->update(['title' => 'Modified']);
+
+        $this->actingAs($this->admin())
+            ->post('/admin/database/restore/'.$name, ['confirm_host' => 'wrong.example.com'])
+            ->assertSessionHasErrors('confirm_host');
+
+        $this->assertSame('Modified', PostTranslation::first()->title);
     }
 
     public function test_restoring_snapshots_the_current_content_first(): void
@@ -154,7 +173,7 @@ class AdminDatabaseRestoreTest extends TestCase
         $name = $this->backupCurrentContent();
 
         $this->actingAs($this->admin())
-            ->post('/admin/database/restore/'.$name)
+            ->post('/admin/database/restore/'.$name, ['confirm_host' => 'example.com'])
             ->assertSessionHas('status', fn (string $status) => str_contains($status, '-auto.sql.gz'));
     }
 
@@ -163,14 +182,14 @@ class AdminDatabaseRestoreTest extends TestCase
         $name = $this->putBackup('backup-20260101-000000-dev.example.com-manual.sql.gz');
 
         $this->actingAs($this->admin())
-            ->post('/admin/database/restore/'.$name)
+            ->post('/admin/database/restore/'.$name, ['confirm_host' => 'dev.example.com'])
             ->assertNotFound();
     }
 
     public function test_restoring_a_missing_backup_is_not_found(): void
     {
         $this->actingAs($this->admin())
-            ->post('/admin/database/restore/backup-20260101-000000-example.com-manual.sql.gz')
+            ->post('/admin/database/restore/backup-20260101-000000-example.com-manual.sql.gz', ['confirm_host' => 'example.com'])
             ->assertNotFound();
     }
 
@@ -186,7 +205,7 @@ class AdminDatabaseRestoreTest extends TestCase
         Storage::disk('backups')->put(BackupRepository::DIRECTORY.'/'.$name, 'not gzip at all');
 
         $this->actingAs($this->admin())
-            ->post('/admin/database/restore/'.$name)
+            ->post('/admin/database/restore/'.$name, ['confirm_host' => 'example.com'])
             ->assertRedirect()
             ->assertSessionHasErrors('restore');
 
@@ -201,7 +220,7 @@ class AdminDatabaseRestoreTest extends TestCase
         ));
 
         $this->actingAs($this->admin())
-            ->post('/admin/database/restore/'.$name)
+            ->post('/admin/database/restore/'.$name, ['confirm_host' => 'example.com'])
             ->assertRedirect()
             ->assertSessionHasErrors('restore');
 
@@ -216,7 +235,7 @@ class AdminDatabaseRestoreTest extends TestCase
         $name = $this->backupCurrentContent();
 
         $this->actingAs($this->admin())
-            ->post('/admin/database/restore/'.$name)
+            ->post('/admin/database/restore/'.$name, ['confirm_host' => 'example.com'])
             ->assertRedirect('/admin/database');
 
         $this->assertSame('/storage/media/photo.jpg', Media::first()->url);
