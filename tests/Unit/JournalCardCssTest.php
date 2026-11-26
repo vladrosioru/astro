@@ -42,4 +42,17 @@ class JournalCardCssTest extends TestCase
             $css
         );
     }
+
+    public function test_journal_card_media_sets_height_auto_so_html_dimensions_do_not_stretch_image(): void
+    {
+        foreach (['theme_solarsystem', 'theme_default'] as $theme) {
+            $css = file_get_contents(public_path("themes/{$theme}/css/skin.css"));
+
+            $this->assertMatchesRegularExpression(
+                '/\.card__media\s*\{[^}]*height:\s*auto/s',
+                $css,
+                "{$theme}/css/skin.css .card__media must set height: auto"
+            );
+        }
+    }
 }

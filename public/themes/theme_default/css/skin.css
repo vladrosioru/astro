@@ -96,6 +96,7 @@ body > nav .nav-dropdown-btn::after { content: '\25be'; color: var(--color-muted
 .card__media {
     display: block;
     width: 100%;
+    height: auto;
     aspect-ratio: 1 / 1;        /* square: the top 2/3 of the card */
     object-fit: cover;          /* fill the square, crop overflow, no distortion */
 }

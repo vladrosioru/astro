@@ -49,4 +49,14 @@ class ArticleCssTest extends TestCase
             $css
         );
     }
+
+    public function test_article_image_sets_height_auto_so_html_dimensions_do_not_stretch_image(): void
+    {
+        $css = file_get_contents(public_path('css/article.css'));
+
+        $this->assertMatchesRegularExpression(
+            '/\.article-image\s+img\s*\{[^}]*height:\s*auto/s',
+            $css
+        );
+    }
 }
