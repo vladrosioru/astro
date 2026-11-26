@@ -159,7 +159,7 @@
 3. **Incomplete ARIA Tabs Pattern:** `services.blade.php:176-209` uses `role="tab"` and `aria-selected`, but panels lack `role="tabpanel"`, `aria-labelledby`, and `aria-controls`, and `services.js` lacks `ArrowLeft`/`ArrowRight` keyboard switching.
 4. **Pure-CSS Mobile Nav Accessibility:** Checkbox `#nav-toggle` lacks `aria-expanded` state updates, Escape-key dismissal, and focus management; nav links lack `aria-current="page"`.
 5. **Disabled Text Selection:** `skin.css:292` applies `user-select: none` to all `h1, h2, h3` globally, and `hero.css:21` applies it to `.stage`, preventing visitors from copying titles or quotes.
-6. **Extreme Mobile Body Font Scaling (`+60%`):** At `max-width: 720px`, `hero.css:313`, `structure.css:207`, `about.css:610-618`, `services.css:113-115`, `contact.css:244-247`, and `article.css:254-256` inflate body copy to `1.47rem–1.84rem` (~24–29px), breaking hierarchy (body copy becomes larger than `h2`/`h3` headings) and forcing `.flip-card .svc-card__desc` to override back down to `1rem` so it fits the fixed `height: 14rem` card.
+6. **Intentional Mobile Body Font Scaling (`+60%`):** At `max-width: 720px`, `hero.css:313`, `structure.css:207`, `about.css:610-618`, `services.css:113-115`, `contact.css:244-247`, and `article.css:254-256` scale body copy to `1.47rem–1.84rem` (~24–29px) for phone legibility (forcing `.flip-card .svc-card__desc` to override back down to `1rem` so it fits `height: 14rem`). *Owner decision (2026-11-26): keep this `+60%` phone sizing intact for readability.*
 
 ### 4.3 [MEDIUM] Design-Token & Structured Data Drift
 - **Raw Font/Color Literals Violating `config/tokens.php` Contract:**

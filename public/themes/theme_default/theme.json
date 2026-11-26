@@ -23,7 +23,8 @@
     "hero-overlay":    { "type": "color",      "role": "Journal/article hero scrim (unused — flat hero background)", "value": "rgba(0,0,0,0)" },
     "color-footer-bg": { "type": "color",      "role": "Footer background, darker than page background",  "value": "#14141a" },
     "color-footer-fg": { "type": "color",      "role": "Footer text color",                                "value": "#e6e6ea" },
-    "color-gold":      { "type": "color",      "role": "Footer top hairline / brand gold accent",          "value": "#c9a227" }
+    "color-gold":      { "type": "color",      "role": "Footer top hairline / brand gold accent",          "value": "#c9a227" },
+    "color-danger":    { "type": "color",      "role": "Validation error and alert state",                 "value": "#ef4444" }
   },
   "assets": {
     "css": ["css/structure.css", "css/skin.css"]

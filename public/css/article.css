@@ -58,7 +58,7 @@
 
 .article-paper .ck-content {
   color: var(--color-fg);
-  font-family: Helvetica, Arial, Tahoma, Verdana, sans-serif; /* --ck-font-face */
+  font-family: var(--font-base);
   line-height: 1.6;
   -webkit-user-select: text;
   user-select: text;
@@ -77,6 +77,63 @@
 
 .article-paper .ck-content a { color: var(--color-primary); }
 .article-paper .ck-content a:hover { color: var(--color-accent); }
+.article-paper .ck-content p { margin: 0 0 1em; }
+.article-paper .ck-content p:last-child { margin-bottom: 0; }
+.article-paper .ck-content ul,
+.article-paper .ck-content ol { margin: 0 0 1em; padding-left: 1.5em; }
+.article-paper .ck-content li + li { margin-top: 0.35em; }
+.article-paper .ck-content blockquote {
+  margin: 1.5em 0;
+  padding: 0.25em 0 0.25em 1.25em;
+  border-left: 3px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
+  font-style: italic;
+  color: var(--color-fg-muted);
+}
+.article-paper .ck-content hr {
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-fg) 18%, transparent);
+  margin: 2em 0;
+}
+.article-paper .ck-content figure.image {
+  margin: 1.5em auto;
+  text-align: center;
+}
+.article-paper .ck-content figure.image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+}
+.article-paper .ck-content figcaption {
+  margin-top: 0.5em;
+  font-size: 0.85em;
+  color: var(--color-fg-muted);
+}
+.article-paper .ck-content figure.table {
+  margin: 1.5em 0;
+  overflow-x: auto;
+}
+.article-paper .ck-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95em;
+}
+.article-paper .ck-content th,
+.article-paper .ck-content td {
+  border: 1px solid color-mix(in srgb, var(--color-fg) 18%, transparent);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+.article-paper .ck-content th {
+  background: color-mix(in srgb, var(--color-fg) 6%, transparent);
+  font-weight: 600;
+}
+.article-paper .ck-content pre,
+.article-paper .ck-content code {
+  background: color-mix(in srgb, var(--color-fg) 8%, transparent);
+  border-radius: 3px;
+}
+.article-paper .ck-content code { padding: 0.12em 0.35em; font-size: 0.9em; }
+.article-paper .ck-content pre { padding: 0.9em 1.1em; overflow-x: auto; }
 
 /* The post's own featured image (already square-cropped at upload time),
    shown above the body text. */

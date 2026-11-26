@@ -59,4 +59,12 @@ class ArticleCssTest extends TestCase
             $css
         );
     }
+
+    public function test_article_css_uses_font_base_token_instead_of_system_sans_fallback(): void
+    {
+        $css = (string) file_get_contents(public_path('css/article.css'));
+
+        $this->assertStringNotContainsString('Helvetica', $css);
+        $this->assertMatchesRegularExpression('/\.article-paper\s+\.ck-content\s*\{[^}]*font-family:\s*var\(--font-base\)/s', $css);
+    }
 }

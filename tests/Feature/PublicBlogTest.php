@@ -251,4 +251,14 @@ class PublicBlogTest extends TestCase
         $this->get('/en/journal?page=2')->assertOk()
             ->assertSee('Journal Entry 13');
     }
+
+    public function test_article_page_does_not_load_ckeditor5_css_and_versions_share_js(): void
+    {
+        $this->publishedPost('clean-article');
+
+        $content = $this->get('/en/journal/clean-article')->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('ckeditor5.css', $content);
+        $this->assertMatchesRegularExpression('/article-share\.js\?v=\d+/', $content);
+    }
 }

@@ -42,7 +42,7 @@ function extract_env_value(string $key, string $path): ?string
 }
 
 $expected = (string) (extract_env_value('DEPLOY_TOKEN', $appRoot.'/.env') ?? '');
-$given = (string) ($_SERVER['HTTP_X_DEPLOY_TOKEN'] ?? $_GET['token'] ?? '');
+$given = (string) ($_SERVER['HTTP_X_DEPLOY_TOKEN'] ?? '');
 
 if ($expected === '' || ! hash_equals($expected, $given)) {
     http_response_code(403);

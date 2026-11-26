@@ -118,4 +118,17 @@ class DeployHookVerificationTest extends TestCase
         // rather than throwing it away.
         $this->assertStringNotContainsString('-o /dev/null -w "%{http_code}" --max-time', $yaml);
     }
+
+    public function test_deploy_hooks_reject_query_string_token_and_storage_blocks_php(): void
+    {
+        $extract = (string) file_get_contents(base_path('public/extract.php'));
+        $deploy = (string) file_get_contents(base_path('public/deploy.php'));
+
+        $this->assertStringNotContainsString("\$_GET['token']", $extract);
+        $this->assertStringNotContainsString("\$_GET['token']", $deploy);
+
+        $storageHtaccess = public_path('storage/.htaccess');
+        $this->assertFileExists($storageHtaccess);
+        $this->assertStringContainsString('php_flag engine off', (string) file_get_contents($storageHtaccess));
+    }
 }

@@ -28,9 +28,19 @@
             });
         }
 
-        tabs.forEach(function (tab) {
+        tabs.forEach(function (tab, idx) {
             tab.addEventListener('click', function () {
                 show(tab.getAttribute('data-svc-tab'));
+            });
+            tab.addEventListener('keydown', function (e) {
+                var nextIdx = null;
+                if (e.key === 'ArrowRight') nextIdx = (idx + 1) % tabs.length;
+                else if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + tabs.length) % tabs.length;
+                if (nextIdx !== null) {
+                    e.preventDefault();
+                    tabs[nextIdx].focus();
+                    show(tabs[nextIdx].getAttribute('data-svc-tab'));
+                }
             });
         });
 

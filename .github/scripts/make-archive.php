@@ -21,12 +21,13 @@ if ($out === null) {
 }
 
 $excludeTopDirs = [
-    '.git', '.github', '.claude', '.superpowers',
+    '.git', '.github', '.claude', '.superpowers', '.agents', '.vscode',
     'tests', 'node_modules', 'storage', 'docs',
+    'AstroDynamics', 'admin_client_interface', 'content',
 ];
 $excludeExact = [
     'deploy_VPS.yml', 'database/database.sqlite', '.env',
-    'CLAUDE.md', 'README.md', 'phpunit.xml',
+    'AGENTS.md', 'CLAUDE.md', 'README.md', 'phpunit.xml',
     '.editorconfig', '.gitattributes', '.gitignore', '.phpunit.result.cache',
     // Theme docs/schema that would otherwise ship inside the web docroot.
     'public/themes/AUTHORING.md', 'public/themes/theme.schema.json',

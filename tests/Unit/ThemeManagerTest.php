@@ -55,4 +55,14 @@ class ThemeManagerTest extends TestCase
         $this->assertTrue(view()->exists('theme::hero'));
         $this->assertTrue(view()->exists('theme::cosmos'));
     }
+
+    public function test_js_assets_include_cache_busting_version(): void
+    {
+        $assets = (new ThemeManager)->jsAssets();
+        $this->assertNotEmpty($assets);
+
+        foreach ($assets as $asset) {
+            $this->assertMatchesRegularExpression('/\.js\?v=\d+$/', $asset['url']);
+        }
+    }
 }

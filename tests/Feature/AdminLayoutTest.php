@@ -135,4 +135,11 @@ class AdminLayoutTest extends TestCase
             ->assertSee('name="description"', false)
             ->assertSee('name="picture"', false);
     }
+
+    public function test_admin_pages_include_noindex_nofollow_meta_tag(): void
+    {
+        $this->get('/admin/login')
+            ->assertOk()
+            ->assertSee('<meta name="robots" content="noindex, nofollow">', false);
+    }
 }

@@ -387,4 +387,14 @@ class PublicPagesTest extends TestCase
             ->assertDontSee('Book a Session')
             ->assertDontSee('Schedule Your Session');
     }
+
+    public function test_services_page_carousels_and_tabs_have_accessible_attributes(): void
+    {
+        $content = $this->get('/en/services')->assertOk()->getContent();
+
+        $this->assertDoesNotMatchRegularExpression('/class="svc-carousel-dots"[^>]*aria-hidden="true"/', $content);
+        $this->assertDoesNotMatchRegularExpression('/class="about-testi__dots"[^>]*aria-hidden="true"/', $content);
+        $this->assertStringContainsString('role="tabpanel"', $content);
+        $this->assertStringContainsString('aria-controls="', $content);
+    }
 }

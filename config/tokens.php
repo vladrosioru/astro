@@ -23,5 +23,6 @@ return [
         'color-footer-bg' => '#14141a',
         'color-footer-fg' => '#e6e6ea',
         'color-gold' => '#c9a227',
+        'color-danger' => '#ef4444',
     ],
 ];

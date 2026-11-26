@@ -11,8 +11,8 @@
 @push('head')
     <link rel="stylesheet" href="{{ versioned_asset('css/about.css') }}">
     <link rel="stylesheet" href="{{ versioned_asset('css/services.css') }}">
-    <script src="{{ asset('js/about.js') }}" defer></script>
-    <script src="{{ asset('js/services.js') }}" defer></script>
+    <script src="{{ versioned_asset('js/about.js') }}" defer></script>
+    <script src="{{ versioned_asset('js/services.js') }}" defer></script>
 @endpush
 
 @php
@@ -175,11 +175,11 @@
         <div class="about-shell">
             <div class="svc-tabs" data-svc-tabs role="tablist">
                 @foreach ($categories as $key => $label)
-                    <button type="button" class="svc-tab @if($loop->first) is-active @endif" data-svc-tab="{{ $key }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
+                    <button type="button" id="svc-tab-{{ $key }}" class="svc-tab @if($loop->first) is-active @endif" data-svc-tab="{{ $key }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}" aria-controls="svc-panel-{{ $key }}">{{ $label }}</button>
                 @endforeach
             </div>
 
-            <div class="svc-pentagon" data-svc-panel="archetypes">
+            <div class="svc-pentagon" id="svc-panel-archetypes" role="tabpanel" aria-labelledby="svc-tab-archetypes" data-svc-panel="archetypes">
                 <button type="button" class="svc-carousel-arrow svc-carousel-arrow--prev" data-svc-prev aria-label="Previous archetype">&#8249;</button>
                 <div class="svc-track" data-svc-track>
                     <div class="svc-pentagon__row">
@@ -199,14 +199,14 @@
                     </div>
                 </div>
                 <button type="button" class="svc-carousel-arrow svc-carousel-arrow--next" data-svc-next aria-label="Next archetype">&#8250;</button>
-                <div class="svc-carousel-dots" data-svc-dots aria-hidden="true">
+                <div class="svc-carousel-dots" data-svc-dots>
                     @foreach ($archetypes as $i => $a)
-                        <button type="button" class="svc-carousel-dot @if(!empty($a['center'])) is-active @endif" data-svc-dot="{{ $i }}"></button>
+                        <button type="button" class="svc-carousel-dot @if(!empty($a['center'])) is-active @endif" data-svc-dot="{{ $i }}" aria-label="Slide {{ $i + 1 }}"></button>
                     @endforeach
                 </div>
             </div>
 
-            <div class="svc-grid" data-svc-grid data-svc-panel="astrology" hidden>
+            <div class="svc-grid" id="svc-panel-astrology" role="tabpanel" aria-labelledby="svc-tab-astrology" data-svc-grid data-svc-panel="astrology" hidden>
                 <button type="button" class="svc-carousel-arrow svc-carousel-arrow--prev" data-svc-prev aria-label="Previous service">&#8249;</button>
                 <div class="svc-track" data-svc-track>
                     @foreach ($services as $s)
@@ -218,9 +218,9 @@
                     @endforeach
                 </div>
                 <button type="button" class="svc-carousel-arrow svc-carousel-arrow--next" data-svc-next aria-label="Next service">&#8250;</button>
-                <div class="svc-carousel-dots" data-svc-dots aria-hidden="true">
+                <div class="svc-carousel-dots" data-svc-dots>
                     @foreach ($services as $i => $s)
-                        <button type="button" class="svc-carousel-dot @if($i === 0) is-active @endif" data-svc-dot="{{ $i }}"></button>
+                        <button type="button" class="svc-carousel-dot @if($i === 0) is-active @endif" data-svc-dot="{{ $i }}" aria-label="Slide {{ $i + 1 }}"></button>
                     @endforeach
                 </div>
             </div>
@@ -252,9 +252,9 @@
                     @endforeach
                 </div>
                 <button type="button" class="svc-carousel-arrow svc-carousel-arrow--next" data-svc-next aria-label="Next tarot spread">&#8250;</button>
-                <div class="svc-carousel-dots" data-svc-dots aria-hidden="true">
+                <div class="svc-carousel-dots" data-svc-dots>
                     @foreach ($tarotServices as $i => $s)
-                        <button type="button" class="svc-carousel-dot @if($i === 0) is-active @endif" data-svc-dot="{{ $i }}"></button>
+                        <button type="button" class="svc-carousel-dot @if($i === 0) is-active @endif" data-svc-dot="{{ $i }}" aria-label="Slide {{ $i + 1 }}"></button>
                     @endforeach
                 </div>
             </div>
@@ -313,9 +313,9 @@
 
                 <button class="about-testi__arrow about-testi__arrow--next" type="button" data-testi-next aria-label="Next testimonial">›</button>
 
-                <div class="about-testi__dots" data-testi-dots aria-hidden="true">
+                <div class="about-testi__dots" data-testi-dots>
                     @foreach ($testimonials as $i => $t)
-                        <button class="about-testi__dot @if($i === 0) is-active @endif" type="button" data-testi-dot="{{ $i }}"></button>
+                        <button class="about-testi__dot @if($i === 0) is-active @endif" type="button" data-testi-dot="{{ $i }}" aria-label="Slide {{ $i + 1 }}"></button>
                     @endforeach
                 </div>
             </div>

@@ -38,7 +38,6 @@
 
     var stage = document.querySelector('.stage');
     var solar = document.querySelector('[data-parallax="solar"]');
-    var layers = Array.prototype.slice.call(document.querySelectorAll('[data-depth]'));
     if (!stage) return;
 
     var targetX = 0, targetY = 0, curX = 0, curY = 0;
@@ -55,12 +54,6 @@
       // ease toward the target for a smooth, weighty feel
       curX += (targetX - curX) * 0.08;
       curY += (targetY - curY) * 0.08;
-
-      layers.forEach(function (el) {
-        var d = parseFloat(el.getAttribute('data-depth')) || 0;
-        el.style.transform = 'translate(' + (-curX * d * 32).toFixed(2) + 'px,' +
-                                            (-curY * d * 22).toFixed(2) + 'px)';
-      });
 
       if (solar) {
         solar.style.setProperty('--px', (-curX * 20).toFixed(2) + 'px');

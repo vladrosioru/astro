@@ -20,7 +20,7 @@ class SolarsystemJsTest extends TestCase
     public function test_active_theme_loads_js_deferred(): void
     {
         $js = app('theme.manager')->jsAssets();
-        $solar = array_values(array_filter($js, fn ($a) => str_ends_with($a['url'], 'solarsystem.js')));
+        $solar = array_values(array_filter($js, fn ($a) => (bool) preg_match('#/solarsystem\.js(\?v=\d+)?$#', $a['url'])));
         $this->assertNotEmpty($solar);
         $this->assertTrue($solar[0]['defer']);
     }

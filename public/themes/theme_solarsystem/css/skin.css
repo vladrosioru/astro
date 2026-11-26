@@ -1,6 +1,5 @@
 /* Skin layer: appearance only, fully token-driven. */
 body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-base); }
-h1, h2, h3 { font-family: var(--font-heading); }
 a { color: var(--color-primary); }
 .muted { color: var(--color-muted); }
 .card { border-radius: var(--radius); box-shadow: var(--shadow); }
@@ -29,7 +28,6 @@ figure.image.image-style-block-align-right { margin-left: auto; margin-right: 0;
 img.image_resized { height: auto; }
 
 /* Theme skin: appearance only, fully token-driven. */
-h1, h2, h3 { font-family: var(--font-display); color: var(--color-heading); letter-spacing: 0.04em; }
 /* Nav ribbon is transparent-but-slightly-darker-than-the-page-background on
    every page and at every width (Home and all others alike, phone and
    desktop alike) — the cosmos backdrop still shows through, just with a
@@ -241,7 +239,7 @@ a:hover { color: var(--color-accent); }
 /* Subtitle: the admin-entered short subtitle, right under the title. Same
    font-family as the article body text (public/css/article.css), italic +
    bold — distinct from .card__excerpt below, which is a plain body teaser. */
-.card__subtitle { color: var(--color-fg); font-family: Helvetica, Arial, Tahoma, Verdana, sans-serif; font-style: italic; font-weight: 700; }
+.card__subtitle { color: var(--color-fg); font-family: var(--font-base); font-style: italic; font-weight: 700; }
 .card__excerpt { color: var(--color-fg); }
 .card__ellipsis { white-space: nowrap; font-weight: 500; }
 .card--first { border-width: 2px; border-color: color-mix(in srgb, var(--color-primary) 55%, transparent); }
@@ -288,10 +286,9 @@ a:hover { color: var(--color-accent); }
     #nav-toggle:checked ~ nav .nav-eyebrow .rule { width: 28px; }
 }
 
-/* Non-selectable UI chrome: labels/headings show no text caret and can't be
-   highlighted; real links/buttons keep the pointer cursor. */
-body > nav, h1, h2, h3 { user-select: none; -webkit-user-select: none; }
-h1, h2, h3 { cursor: default; }
+/* Non-selectable UI chrome: nav links and logo image. Headings remain
+   selectable for readers and accessibility tools. */
+body > nav { user-select: none; -webkit-user-select: none; }
 /* The nav logo is a link, but it's chrome — no drag/select on the image. */
 .nav-logo img { user-select: none; -webkit-user-select: none; -webkit-user-drag: none; }
 

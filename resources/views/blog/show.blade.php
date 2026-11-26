@@ -39,9 +39,8 @@
 @endsection
 
 @push('head')
-    <link rel="stylesheet" href="{{ asset('vendor/ckeditor/ckeditor5.css') }}">
     <link rel="stylesheet" href="{{ versioned_asset('css/article.css') }}">
-    <script src="{{ asset('js/article-share.js') }}" defer></script>
+    <script src="{{ versioned_asset('js/article-share.js') }}" defer></script>
 @endpush
 
 @push('schema')

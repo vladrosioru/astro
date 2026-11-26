@@ -106,4 +106,11 @@ class HeroTest extends TestCase
     {
         $this->get('/en')->assertSee('class="page-home"', false);
     }
+
+    public function test_home_page_has_exactly_one_main_landmark(): void
+    {
+        $content = $this->get('/en')->assertOk()->getContent();
+
+        $this->assertSame(1, substr_count($content, '<main'));
+    }
 }

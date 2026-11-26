@@ -48,6 +48,11 @@
     <meta name="twitter:image" content="@hasSection('meta_twitter_image')@yield('meta_twitter_image')@else{{ asset('img/og-default.jpg') }}@endif">
 
     @include('partials.tokens')
+    @if (app('theme.manager')->active() === 'solarsystem')
+        <link rel="preload" as="font" type="font/woff2" href="{{ asset('themes/theme_solarsystem/fonts/jost-400.woff2') }}" crossorigin>
+        <link rel="preload" as="font" type="font/woff2" href="{{ asset('themes/theme_solarsystem/fonts/cormorant-garamond-400.woff2') }}" crossorigin>
+        <link rel="preload" as="font" type="font/woff2" href="{{ asset('themes/theme_solarsystem/fonts/cinzel-600.woff2') }}" crossorigin>
+    @endif
     @foreach (app('theme.manager')->cssUrls() as $href)
         <link rel="stylesheet" href="{{ $href }}">
     @endforeach

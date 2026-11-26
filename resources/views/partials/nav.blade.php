@@ -19,11 +19,11 @@
     <div class="container">
         <ul class="nav-left">
             @if ($setting->sectionVisible('about'))
-                <li><a href="/{{ $locale }}/about">About</a></li>
+                <li><a href="/{{ $locale }}/about"@if(request()->is($locale . '/about')) aria-current="page"@endif>About</a></li>
             @endif
             {{-- 'blog' is the internal feature key; the menu label + URL are "Journal". --}}
             @if ($setting->sectionVisible('blog'))
-                <li><a href="/{{ $locale }}/journal">Journal</a></li>
+                <li><a href="/{{ $locale }}/journal"@if(request()->is($locale . '/journal*')) aria-current="page"@endif>Journal</a></li>
             @endif
         </ul>
         <div class="nav-brand">
@@ -36,7 +36,7 @@
         </div>
         <ul class="nav-right">
             @if ($setting->sectionVisible('services'))
-                <li><a href="/{{ $locale }}/services">Services</a></li>
+                <li><a href="/{{ $locale }}/services"@if(request()->is($locale . '/services')) aria-current="page"@endif>Services</a></li>
             @endif
             {{-- Services submenu (7-item dropdown) is disabled — plain link above only.
                  To re-enable: replace the <li> above with the block below (uncomment,
@@ -65,12 +65,28 @@
             </li>
             --}}
             @if ($setting->sectionVisible('contact'))
-                <li><a href="/{{ $locale }}/contact">Contact</a></li>
+                <li><a href="/{{ $locale }}/contact"@if(request()->is($locale . '/contact')) aria-current="page"@endif>Contact</a></li>
             @endif
         </ul>
-        <label for="nav-toggle" class="nav-toggle-btn" aria-label="Toggle menu">
+        <label for="nav-toggle" class="nav-toggle-btn" aria-label="Toggle menu" aria-expanded="false">
             <span></span><span></span><span></span>
         </label>
         <label for="nav-toggle" class="nav-scrim" aria-hidden="true"></label>
     </div>
 </nav>
+<script>
+(function () {
+    var cb = document.getElementById('nav-toggle');
+    var btn = document.querySelector('.nav-toggle-btn');
+    if (!cb || !btn) return;
+    cb.addEventListener('change', function () {
+        btn.setAttribute('aria-expanded', cb.checked ? 'true' : 'false');
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && cb.checked) {
+            cb.checked = false;
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+})();
+</script>

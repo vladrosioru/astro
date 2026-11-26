@@ -55,4 +55,12 @@ class JournalCardCssTest extends TestCase
             );
         }
     }
+
+    public function test_solarsystem_skin_uses_font_base_token_and_allows_heading_selection(): void
+    {
+        $css = (string) file_get_contents(public_path('themes/theme_solarsystem/css/skin.css'));
+
+        $this->assertStringNotContainsString('Helvetica', $css);
+        $this->assertDoesNotMatchRegularExpression('/h1,\s*h2,\s*h3\s*\{[^}]*user-select:\s*none/s', $css);
+    }
 }

@@ -75,7 +75,7 @@ class ThemeManager
     public function jsAssets(): array
     {
         return array_map(fn ($js) => [
-            'url' => asset($this->rel($js['src'])),
+            'url' => versioned_asset($this->rel($js['src'])),
             'defer' => (bool) ($js['defer'] ?? false),
             'async' => (bool) ($js['async'] ?? false),
         ], $this->manifest()['assets']['js'] ?? []);

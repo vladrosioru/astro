@@ -23,11 +23,11 @@
     <div class="vignette"></div>
 
     {{-- hero copy --}}
-    <main class="hero">
+    <div class="hero">
         <h1 class="title">{{ $hero['headline'] }}</h1>
         <p class="lede">{{ $hero['subhead'] }}</p>
         <div class="actions">
             <img class="hero-logo" src="{{ asset('img/logo-nav.png') }}" alt="{{ config('app.name') }}">
         </div>
-    </main>
+    </div>
 </section>

@@ -10,7 +10,7 @@
 
 @push('head')
     <link rel="stylesheet" href="{{ versioned_asset('css/about.css') }}">
-    <script src="{{ asset('js/about.js') }}" defer></script>
+    <script src="{{ versioned_asset('js/about.js') }}" defer></script>
 @endpush
 
 @php
