@@ -2,7 +2,8 @@
 /node_modules
 /public/build
 /public/hot
-/public/storage
+/public/storage/*
+!/public/storage/.htaccess
 /storage/*.key
 /storage/pail
 /database/backups

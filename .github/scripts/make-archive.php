@@ -33,7 +33,7 @@ $excludeExact = [
     // Theme docs/schema that would otherwise ship inside the web docroot.
     'public/themes/AUTHORING.md', 'public/themes/theme.schema.json',
 ];
-$excludePrefixes = ['.env.']; // .env.backup, .env.production, ...
+$excludePrefixes = ['.env.', 'public/storage/media']; // .env.*, uploaded media
 
 $zip = new ZipArchive;
 if ($zip->open($out, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {

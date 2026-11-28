@@ -56,7 +56,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ env.PHP_VERSION }}
-          extensions: mbstring, pdo_sqlite, sqlite3, gd, curl, fileinfo, intl, bcmath
+          extensions: mbstring, pdo_sqlite, sqlite3, gd, curl, fileinfo, intl, bcmath, zip
           coverage: none
       - uses: ramsey/composer-install@v4
       - name: Prepare test env
