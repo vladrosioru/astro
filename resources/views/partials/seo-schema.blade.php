@@ -1,14 +1,18 @@
 @php
-    $orgSchema = [
+    $contactEmail = trim((string) (\App\Models\SiteSetting::current()->contact['email'] ?? ''));
+
+    $orgSchema = array_filter([
         '@context' => 'https://schema.org',
         '@type' => 'Organization',
         'name' => config('app.name', 'AstroTherapia'),
         'url' => url('/'),
         'logo' => asset('img/logo-nav.png'),
+        'email' => $contactEmail !== '' ? $contactEmail : null,
         'sameAs' => [
             'https://www.facebook.com/astrotherapia.ro',
+            'https://www.instagram.com/astrotherapia/',
         ],
-    ];
+    ], fn ($v) => $v !== null);
 
     $webSiteSchema = [
         '@context' => 'https://schema.org',

@@ -9,6 +9,7 @@
         ['route' => 'admin.authors.index', 'label' => 'Authors', 'pattern' => 'admin.authors.*'],
         ['route' => 'admin.payments.edit', 'label' => 'Payments', 'pattern' => 'admin.payments.*'],
         ['route' => 'admin.themes.index', 'label' => 'Themes', 'pattern' => 'admin.themes.*'],
+        ['route' => 'admin.settings.edit', 'label' => 'Settings', 'pattern' => 'admin.settings.*'],
         ['route' => 'admin.database.index', 'label' => 'Database', 'pattern' => 'admin.database.*'],
     ];
 @endphp

@@ -5,7 +5,7 @@
 <footer class="site-footer">
     <div class="container">
         <p class="site-footer__quote">&ldquo;Every man and every woman is a Star&rdquo;</p>
-        <p class="site-footer__copyright">AstroTherapia © 2025 - 2026</p>
+        <p class="site-footer__copyright">AstroTherapia © 2025 - {{ date('Y') }}</p>
         @if ($setting->sectionVisible('contact'))
             <p class="site-footer__contact"><a href="/{{ $locale }}/contact">Contact Us</a></p>
         @endif

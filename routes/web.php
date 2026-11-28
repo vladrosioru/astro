@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AuthorController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DatabaseController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PageController;
@@ -35,6 +36,9 @@ Route::prefix('admin')->middleware('admin')->group(function () {
 
     Route::get('themes', [ThemeController::class, 'index'])->name('admin.themes.index');
     Route::patch('themes', [ThemeController::class, 'update'])->name('admin.themes.update');
+
+    Route::get('settings', [SettingController::class, 'edit'])->name('admin.settings.edit');
+    Route::patch('settings', [SettingController::class, 'update'])->name('admin.settings.update');
 
     Route::get('database', [DatabaseController::class, 'index'])->name('admin.database.index');
     Route::post('database/backup', [DatabaseController::class, 'backup'])->name('admin.database.backup');

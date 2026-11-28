@@ -125,4 +125,20 @@ class SeoPhase2Test extends TestCase
         $this->assertStringContainsString('"@type": "Service"', $content);
         $this->assertStringContainsString('Natal Chart Analysis', $content);
     }
+
+    public function test_organization_schema_includes_instagram_and_omits_empty_og_description(): void
+    {
+        $home = $this->get('/en')->assertOk()->getContent();
+        preg_match_all('/<script type="application\/ld\+json">(.*?)<\/script>/s', $home, $matches);
+        $orgJson = collect($matches[1] ?? [])
+            ->map(fn (string $json) => json_decode(trim($json), true))
+            ->first(fn ($data) => is_array($data) && ($data['@type'] ?? null) === 'Organization');
+
+        $this->assertNotNull($orgJson);
+        $this->assertContains('https://www.instagram.com/astrotherapia/', $orgJson['sameAs'] ?? []);
+
+        $renderedLayout = view('layouts.app')->render();
+        $this->assertStringNotContainsString('<meta property="og:description" content="">', $renderedLayout);
+        $this->assertStringNotContainsString('<meta name="twitter:description" content="">', $renderedLayout);
+    }
 }

@@ -30,10 +30,16 @@
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
 
     <!-- Open Graph -->
+    @php
+        $ogDesc = trim((string) (View::hasSection('meta_og_description') ? View::yieldContent('meta_og_description') : View::yieldContent('meta_description')));
+        $twitterDesc = trim((string) (View::hasSection('meta_twitter_description') ? View::yieldContent('meta_twitter_description') : View::yieldContent('meta_description')));
+    @endphp
     <meta property="og:site_name" content="{{ config('app.name') }}">
     <meta property="og:type" content="@yield('meta_og_type', 'website')">
     <meta property="og:title" content="@hasSection('meta_og_title')@yield('meta_og_title')@else@yield('title', config('app.name'))@endif">
-    <meta property="og:description" content="@hasSection('meta_og_description')@yield('meta_og_description')@else@yield('meta_description')@endif">
+@if ($ogDesc !== '')
+    <meta property="og:description" content="{{ $ogDesc }}">
+@endif
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:locale" content="{{ app()->getLocale() === 'ro' ? 'ro_RO' : 'en_US' }}">
     <meta property="og:locale:alternate" content="{{ app()->getLocale() === 'ro' ? 'en_US' : 'ro_RO' }}">
@@ -44,7 +50,9 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="@yield('meta_twitter_card', 'summary_large_image')">
     <meta name="twitter:title" content="@hasSection('meta_twitter_title')@yield('meta_twitter_title')@else@yield('title', config('app.name'))@endif">
-    <meta name="twitter:description" content="@hasSection('meta_twitter_description')@yield('meta_twitter_description')@else@yield('meta_description')@endif">
+@if ($twitterDesc !== '')
+    <meta name="twitter:description" content="{{ $twitterDesc }}">
+@endif
     <meta name="twitter:image" content="@hasSection('meta_twitter_image')@yield('meta_twitter_image')@else{{ asset('img/og-default.jpg') }}@endif">
 
     @include('partials.tokens')

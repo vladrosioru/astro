@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Mail\ContactMessage;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\PendingMail;
 use Illuminate\Support\Facades\Mail;
@@ -171,5 +172,19 @@ class ContactFormTest extends TestCase
         $this->get('/en/contact')
             ->assertSee('https://www.instagram.com/astrotherapia/', false)
             ->assertDontSee('href="about:blank"', false);
+    }
+
+    public function test_valid_submission_routes_to_configured_site_setting_contact_email(): void
+    {
+        Mail::fake();
+
+        $setting = SiteSetting::current();
+        $setting->update(['contact' => ['email' => 'custom@astrotherapia.example'] + ($setting->contact ?? [])]);
+
+        $this->from('/en/contact')->post('/en/contact', $this->validPayload())->assertRedirect('/en/contact');
+
+        Mail::assertSent(ContactMessage::class, function (ContactMessage $mail) {
+            return $mail->hasTo('custom@astrotherapia.example');
+        });
     }
 }

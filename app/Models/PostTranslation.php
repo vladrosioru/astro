@@ -43,18 +43,19 @@ class PostTranslation extends Model
      */
     public function excerptFragments(): array
     {
-        $text = trim((string) preg_replace('/\s+/', ' ', html_entity_decode(strip_tags((string) $this->body), ENT_QUOTES)));
+        $html = preg_replace('/<(?:br\s*\/?>|\/(?:p|div|h[1-6]|li|blockquote)>)/i', ' ', (string) $this->body);
+        $text = trim((string) preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags((string) $html), ENT_QUOTES, 'UTF-8')));
 
         if ($text === '') {
             return ['lead' => '', 'continued' => null];
         }
 
-        $sentences = preg_split('/(?<=[.!?])\s+/', $text, -1, PREG_SPLIT_NO_EMPTY);
+        $sentences = preg_split('/(?<=[.!?])\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY);
         $lead = $sentences[0] ?? $text;
         $continued = null;
 
         if (isset($sentences[1])) {
-            $words = preg_split('/\s+/', trim($sentences[1]), -1, PREG_SPLIT_NO_EMPTY);
+            $words = preg_split('/\s+/u', trim($sentences[1]), -1, PREG_SPLIT_NO_EMPTY);
             $continued = implode(' ', array_slice($words, 0, 5));
         }
 

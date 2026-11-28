@@ -42,4 +42,16 @@ class PostTranslationTest extends TestCase
 
         $this->assertSame('same-title', PostTranslation::uniqueSlug('Same Title', 'en', $translation->id));
     }
+
+    public function test_excerpt_fragments_preserve_spaces_between_adjacent_html_blocks_and_unicode(): void
+    {
+        $translation = new PostTranslation([
+            'body' => '<p>First paragraph ends here.</p><p>Second sentence starts cleanly now.</p>',
+        ]);
+
+        $fragments = $translation->excerptFragments();
+
+        $this->assertSame('First paragraph ends here.', $fragments['lead']);
+        $this->assertSame('Second sentence starts cleanly now.', $fragments['continued']);
+    }
 }

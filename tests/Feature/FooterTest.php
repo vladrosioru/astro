@@ -17,7 +17,7 @@ class FooterTest extends TestCase
             ->assertOk()
             ->assertSee('site-footer', false)
             ->assertSee('Every man and every woman is a Star')
-            ->assertSee('AstroTherapia © 2025 - 2026')
+            ->assertSee('AstroTherapia © 2025 - '.date('Y'))
             ->assertSee('/en/contact', false)
             ->assertSee('https://www.facebook.com/astrotherapia.ro', false)
             ->assertSee('https://www.instagram.com/astrotherapia/', false);

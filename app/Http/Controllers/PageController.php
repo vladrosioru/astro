@@ -92,8 +92,10 @@ class PageController extends Controller
             return back()->with('contact_status', 'sent');
         }
 
+        $recipient = SiteSetting::current()->contactEmail();
+
         try {
-            Mail::to('office@astrotherapia.com')->send(new ContactMessage($data));
+            Mail::to($recipient)->send(new ContactMessage($data));
         } catch (\Throwable $e) {
             // A misconfigured/unreachable SMTP host (e.g. a STARTTLS cert-hostname
             // mismatch) must not surface as a 500 to the visitor. Log it and show
@@ -102,7 +104,7 @@ class PageController extends Controller
 
             return back()
                 ->withInput()
-                ->withErrors(['contact' => 'Sorry — we could not send your message right now. Please try again shortly, or email us directly at office@astrotherapia.com.']);
+                ->withErrors(['contact' => 'Sorry — we could not send your message right now. Please try again shortly, or email us directly at '.$recipient.'.']);
         }
 
         return back()->with('contact_status', 'sent');
