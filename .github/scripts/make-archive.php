@@ -28,6 +28,7 @@ $excludeTopDirs = [
 $excludeExact = [
     'deploy_VPS.yml', 'database/database.sqlite', '.env',
     'AGENTS.md', 'CLAUDE.md', 'README.md', 'phpunit.xml',
+    'cron-deploy.php', '.deploy-pending', '.deploy.lock', 'deploy-result.txt',
     '.editorconfig', '.gitattributes', '.gitignore', '.phpunit.result.cache',
     // Theme docs/schema that would otherwise ship inside the web docroot.
     'public/themes/AUTHORING.md', 'public/themes/theme.schema.json',

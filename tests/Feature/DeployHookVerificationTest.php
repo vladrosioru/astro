@@ -63,17 +63,28 @@ class DeployHookVerificationTest extends TestCase
     }
 
     #[DataProvider('workflowsCallingTheHooks')]
-    public function test_every_workflow_calls_the_hooks_through_the_verifying_runner(string $file): void
+    public function test_every_workflow_triggers_deploys_through_ftps_and_cpanel_cron(string $file): void
     {
         $yaml = $this->workflow($file);
 
-        // No bare curl straight at a hook: that is the shape that went green on
-        // a challenge page.
+        // HTTP deploy hooks are intercepted by the host WAF on GitHub Actions IPs,
+        // so automated pipelines upload app.zip + cron-deploy.php + .deploy-pending
+        // over FTPS and poll deploy-result.txt via wait-cron-deploy.sh.
         $this->assertDoesNotMatchRegularExpression('/curl[^\n]*\$\{?APP_URL\}?\/extract\.php/', $yaml);
         $this->assertDoesNotMatchRegularExpression('/curl[^\n]*\$\{?APP_URL\}?\/deploy\.php/', $yaml);
 
-        $this->assertStringContainsString('run-deploy-hook.sh "${APP_URL}/extract.php"', $yaml);
-        $this->assertStringContainsString('run-deploy-hook.sh "${APP_URL}/deploy.php"', $yaml);
+        $this->assertStringContainsString('up "cron-deploy.php"', $yaml);
+        $this->assertStringContainsString('.deploy-pending', $yaml);
+        $this->assertStringContainsString('wait-cron-deploy.sh', $yaml);
+    }
+
+    public function test_cron_deploy_script_and_wait_helper_exist_and_archive_excludes_cron_script(): void
+    {
+        $this->assertFileExists(base_path('cron-deploy.php'));
+        $this->assertFileExists(base_path('.github/scripts/wait-cron-deploy.sh'));
+
+        $archiveScript = (string) file_get_contents(base_path('.github/scripts/make-archive.php'));
+        $this->assertStringContainsString("'cron-deploy.php'", $archiveScript);
     }
 
     public function test_the_asserted_markers_are_the_strings_the_hooks_actually_print(): void
@@ -81,16 +92,8 @@ class DeployHookVerificationTest extends TestCase
         $extract = (string) file_get_contents(base_path('public/extract.php'));
         $deploy = (string) file_get_contents(base_path('public/deploy.php'));
 
-        // Guards against the marker drifting out of sync with the hook output,
-        // which would turn every deploy red for no reason.
         $this->assertStringContainsString('Archive removed.', $extract);
         $this->assertStringContainsString('Deploy hook finished.', $deploy);
-
-        foreach (['cicd.yml', 'rollback-prod.yml'] as $file) {
-            $yaml = $this->workflow($file);
-            $this->assertStringContainsString('"Archive removed."', $yaml);
-            $this->assertStringContainsString('"Deploy hook finished."', $yaml);
-        }
     }
 
     #[DataProvider('workflowsCallingTheHooks')]

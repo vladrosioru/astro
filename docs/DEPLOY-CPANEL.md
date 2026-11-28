@@ -5,12 +5,15 @@ This site deploys to shared cPanel hosting via GitHub Actions. The host offers
 
 1. builds the production app in CI (`composer install --no-dev`) into a single
    `app.zip` ([`.github/scripts/make-archive.php`](../.github/scripts/make-archive.php)),
-2. uploads three files over **FTPS** with `curl` — `app.zip`, the generated
-   `.env`, and a bootstrap [`public/extract.php`](../public/extract.php) —
-   instead of syncing thousands of `vendor/` files individually (much faster),
-3. calls token-guarded web hooks: `extract.php` unzips `app.zip` server-side,
-   then [`public/deploy.php`](../public/deploy.php) runs `artisan`
-   (migrate, seed the default author, cache).
+2. uploads `.env`, `public/.htaccess`, [`cron-deploy.php`](../cron-deploy.php),
+   `app.zip`, and a `.deploy-pending` trigger over **FTPS** with `curl` —
+   instead of syncing thousands of `vendor/` files individually (much faster)
+   or calling HTTP deploy hooks that Imunify360 can challenge on Azure runner
+   IPs,
+3. waits over FTPS via [`.github/scripts/wait-cron-deploy.sh`](../.github/scripts/wait-cron-deploy.sh)
+   while a 1-minute cPanel Cron Job executes `cron-deploy.php` server-side
+   to unzip `app.zip` and run `artisan` (`migrate`, `AuthorSeeder`, caches),
+   writing the result to `deploy-result.txt`.
 
 The server `.env` and `storage/` are never in the archive, so they survive
 every deploy. Extraction overlays files (it does not delete files removed from
@@ -68,8 +71,19 @@ with separate databases and separate app directories.
    panel is at `https://server20.romania-webhosting.com:2083` (see
    [`OPERATIONS.md`](OPERATIONS.md)).
 
+5. **Cron Jobs (Once Per Minute `* * * * *`)** — cPanel → *Cron Jobs*: add one
+   job per environment so deploys execute locally without going through HTTP/WAF:
+   ```bash
+   /usr/local/bin/ea-php84 /home/martinis/astrotherapia_dev/cron-deploy.php
+   /usr/local/bin/ea-php84 /home/martinis/astrotherapia.com/cron-deploy.php
+   ```
+   `cron-deploy.php` exits silently when `.deploy-pending` is absent (no cron
+   email spam), and logs deployments to `storage/logs/cron-deploy.log` and
+   `deploy-result.txt`.
+
 You do **not** need to upload `.env` or run any command by hand — CI writes the
-`.env` (from your GitHub secrets) and runs migrations via the deploy hook.
+`.env` (from your GitHub secrets) and cPanel Cron runs extraction and
+migrations automatically.
 
 ## GitHub setup
 
